@@ -1,0 +1,117 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  z-index: 50;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e3a8a;
+  text-decoration: none;
+  letter-spacing: 0.025em;
+}
+
+.version {
+  color: #3b82f6;
+  font-size: 0.75rem;
+  font-family: monospace;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.menuItemWrapper {
+  position: relative;
+}
+
+.navLink, .navButton {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4a5568;
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0.5rem 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  transition: color 0.2s ease;
+}
+
+.navLink:hover, .navButton:hover, .activeButton {
+  color: #2563eb;
+}
+
+.arrow {
+  font-size: 0.75rem;
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.arrowRotate {
+  transform: rotate(180deg);
+}
+
+.dropdownWindow {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  margin-top: 0.5rem;
+  width: 18rem;
+  background-color: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 0.75rem;
+  padding: 0.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  z-index: 100;
+}
+
+.dropdownLink {
+  display: block;
+  border-radius: 0.5rem;
+  padding: 0.625rem;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.dropdownLink:hover {
+  background-color: #f8fafc;
+}
+
+.subName {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #1a202c;
+  transition: color 0.2s ease;
+}
+
+.dropdownLink:hover .subName {
+  color: #2563eb;
+}
+
+.subDesc {
+  font-size: 0.75rem;
+  color: #718096;
+  margin-top: 0.125rem;
+  line-height: 1.4;
+}

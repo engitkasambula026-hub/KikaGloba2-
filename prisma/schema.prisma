@@ -3,21 +3,35 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql" // 👈 Changed from "sqlite"
+  url      = env("DATABASE_URL")
 }
+
 
 // ==========================================
 // 🧑‍💼 CORE MEMBERSHIP & DASHBOARD ECOSYSTEM
 // ==========================================
 
 model User {
-  id           Int           @id @default(autoincrement())
-  name         String        @default("User")
-  email        String        @unique
-  password     String
-  applications Application[]
-  logs         Activity[]
+  id              Int           @id @default(autoincrement())
+  name            String        @default("User")
+  email           String        @unique
+  password        String
+  
+  // 🛡️ Synchronized Identity & Vital Statistics Parameters
+  placeOfBirth    String?
+  dateOfBirth     String?
+  maritalStatus   String?
+  originCountry   String?       @default("Uganda")
+  hostCountry     String?
+  domicileStatus  String?
+  passportNumber  String?
+  gpsLocation     String?
+  profession      String?
+
+  // System Relations
+  applications    Application[]
+  logs            Activity[]
 }
 
 model Job {

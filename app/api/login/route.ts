@@ -1,36 +1,55 @@
-import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import bcrypt from "bcryptjs";
+import { NextResponse } from 'next/server';
+import { prisma } from '../../../lib/prisma';
+ // Uses the Prisma client from your lib folder
+// import bcrypt from 'bcrypt'; // Uncomment this if you are encrypting passwords
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const { email, password } = await req.json();
+    const body = await request.json();
+    const { email, password } = body;
 
-    // Look up the user
-    const user = await db.user.findUnique({ where: { email } });
+    // 1. Validate inputs
+    if (!email || !password) {
+      return NextResponse.json(
+        { error: 'Email and password are required.' },
+        { status: 400 }
+      );
+    }
+
+    // 2. Find user in your Prisma database
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
+
     if (!user) {
-      return NextResponse.json({ error: "Invalid email or password credentials." }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Invalid email or password.' },
+        { status: 401 }
+      );
     }
 
-    // Check if the password matches the hash
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) {
-      return NextResponse.json({ error: "Invalid email or password credentials." }, { status: 400 });
+    // 3. Check password 
+    // If using bcrypt: const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = user.password === password; // Plain text check (Update to bcrypt later!)
+
+    if (!isPasswordValid) {
+      return NextResponse.json(
+        { error: 'Invalid email or password.' },
+        { status: 401 }
+      );
     }
 
-    // SUCCESS: Record this login event directly into our Activity table for the Dashboard
-    await db.activity.create({
-      data: {
-        userId: user.id,
-        action: "User logged into the platform",
-      },
-    });
-
+    // 4. Login Successful
     return NextResponse.json({
-      message: "Access granted",
-      user: { id: user.id, name: user.name, email: user.email },
-    });
-  } catch (err) {
-    return NextResponse.json({ error: "Authentication failed." }, { status: 500 });
+      message: 'Login successful',
+      user: { id: user.id, email: user.email }
+    }, { status: 200 });
+
+  } catch (error: any) {
+    console.error('Login API Error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error.' },
+      { status: 500 }
+    );
   }
 }

@@ -3,10 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // 👈 Changed from "sqlite"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
-
 
 // ==========================================
 // 🧑‍💼 CORE MEMBERSHIP & DASHBOARD ECOSYSTEM
@@ -32,6 +31,8 @@ model User {
   // System Relations
   applications    Application[]
   logs            Activity[]
+  voipAccount     VoipAccount?
+  remittances     RemittanceLog[]
 }
 
 model Job {
@@ -81,7 +82,8 @@ model NetworkRegistry {
 
 model RemittanceLog {
   id                  String             @id @default(uuid())
-  senderId            String
+  senderId            Int                // 🟢 FIXED: Type aligned to match User.id (Int)
+  user                User               @relation(fields: [senderId], references: [id], onDelete: Cascade) // 🟢 FIXED: Missing relational map added
   recipientName       String
   recipientAccount    String
   amount              Float
@@ -99,21 +101,33 @@ model RemittanceLog {
   @@index([senderId])
 }
 
-model SaccoSubscription {
-  id               String          @id @default(uuid())
-  memberSacco      String
-  membershipType   String
-  idType           String
-  idNumber         String
-  sharesCapital    Float           // Initial Equity Injection
-  balanceUGX       Float           @default(0.0) // Running Ledger Cash Pool
-  complianceAgreed Boolean         @default(true)
-  status           String          @default("ACTIVE")
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
+// ==========================================
+// 🏛️ B2B INSTITUTIONAL SACCO CORPORATE REGISTRY
+// ==========================================
 
-  // 🔗 Connection Tracking mapping incoming investment cashflows
-  remittances      RemittanceLog[]
+model SaccoInstitution {
+  id                 String   @id @default(uuid())
+  saccoLegalName     String
+  registrationNumber String   @unique // Statutory registration code issued by the Ministry of Trade, Industry & Cooperatives
+  licenseType        String   // "TIER_4_MICROFINANCE", "COMMUNITY_COOP", "DISTRICT_UNION"
+  headOfficeAddress  String
+  primaryContactEmail String  @unique
+  primaryContactPhone String
+  
+  // 🏦 SETTLEMENT BANKING TRUNK NODE (Where diaspora funding flows are routed)
+  settlementBankName String   // e.g., "Stanbic Bank Uganda", "Centenary Bank", "DFCU Bank"
+  settlementAccountNo String
+  settlementBranch   String
+  swiftCode          String?  // Optional SWIFT code routing for international direct wire integrations
+  
+  status             String   @default("PENDING_VERIFICATION") // "PENDING_VERIFICATION", "ACTIVE", "SUSPENDED"
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  // Relational link to aggregate all diaspora funding transits hitting this institution
+  remittances        RemittanceLog[]
+
+
 
   @@index([idNumber])
 }
@@ -124,7 +138,8 @@ model SaccoSubscription {
 
 model VoipAccount {
   id            String        @id @default(uuid())
-  userId        Int           @unique
+  userId        Int           @unique // Linked to User.id (Int)
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade) // 🟢 FIXED: Missing relational map added
   virtualNumber String        @unique
   balanceUGX    Float         @default(5000.0)
   tierClass     String        @default("DIASPORA_STANDARD")

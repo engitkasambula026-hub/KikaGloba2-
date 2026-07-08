@@ -1,118 +1,208 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 
-interface AuthProps {
-  showRegister: boolean;
-  setShowRegister: (show: boolean) => void;
-  loginPhone: string;
-  setLoginPhone: (val: string) => void;
-  regName: string;
-  setRegName: (val: string) => void;
-  regPhone: string;
-  setRegPhone: (val: string) => void;
-  regCountry: string;
-  setRegCountry: (val: string) => void;
-  handleLoginSubmit: (e: React.FormEvent) => void;
-  handleRegisterSubmit: (e: React.FormEvent) => void;
-  callStatus: string;
+interface AuthFormsProps {
+  handleRegisterSubmit: (payload: {
+    name: string;
+    phone: string;
+    password: string;
+    nodeRegion: string;
+  }) => Promise<void>;
 }
 
-export default function AuthForms({
-  showRegister,
-  setShowRegister,
-  loginPhone,
-  setLoginPhone,
-  regName,
-  setRegName,
-  regPhone,
-  setRegPhone,
-  regCountry,
-  setRegCountry,
-  handleLoginSubmit,
-  handleRegisterSubmit,
-  callStatus
-}: AuthProps) {
-  
-  // Custom local state reference to catch passwords without breaking top orchestration layout definitions
+export default function AuthForms({ handleRegisterSubmit }: AuthFormsProps) {
+  const [nameInput, setNameInput] = useState("");
+  const [phoneInput, setPhoneInput] = useState("+256");
   const [passwordInput, setPasswordInput] = useState("");
+  const [nodeRegionInput, setNodeRegionInput] = useState("Uganda (MTN / Airtel Network Node)");
+  const [processingState, setProcessingState] = useState("");
 
-  // Intermediate function packages state attributes seamlessly right on submit events
-  const onLocalLoginSubmit = (e: React.FormEvent) => {
+  const onLocalRegisterSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Injects the credential dynamically into a custom dataset object property if needed later
-    // @ts-ignore
-    e.currentTarget.password = passwordInput;
-    handleLoginSubmit(e);
+    setProcessingState("Processing proxy node activation...");
+
+    const cleanPayload = {
+      name: nameInput,
+      phone: phoneInput,
+      password: passwordInput,
+      nodeRegion: nodeRegionInput,
+    };
+
+    try {
+      await handleRegisterSubmit(cleanPayload);
+    } catch (err) {
+      setProcessingState("Error: Local gateway submission failed.");
+    }
   };
 
-  const onLocalRegisterSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // @ts-ignore
-    e.currentTarget.password = passwordInput;
-    handleRegisterSubmit(e);
-  };
+  return (
+    <div style={{
+      width: "100%",
+      maxWidth: "450px",
+      backgroundColor: "#0B1528",
+      border: "1px solid #1E293B",
+      padding: "24px",
+      borderRadius: "16px",
+      boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.3)",
+      margin: "0 auto",
+      boxSizing: "border-box",
+      fontFamily: "sans-serif"
+    }}>
+      <div style={{ marginBottom: "20px" }}>
+        <h2 style={{ fontSize: "20px", fontWeight: "bold", color: "#F1F5F9", margin: "0 0 6px 0" }}>
+          Secure Member Calling Gate
+        </h2>
+        <p style={{ fontSize: "13px", color: "#94A3B8", margin: "0" }}>
+          Configure your proxy node credentials to sync the active device
+        </p>
+      </div>
 
-  // ==========================================
-  // 1. DYNAMIC REGISTRATION INTERFACE PANEL
-  // ==========================================
-  if (showRegister) {
-    return (
-      <form onSubmit={onLocalRegisterSubmit} style={{ backgroundColor: "#1e293b", padding: "30px", borderRadius: "16px", border: "1px solid #334155" }}>
-        <h3 style={{ margin: "0 0 10px 0", color: "#ffffff", fontSize: "20px", fontWeight: "bold" }}>📝 KIKA Member Registration</h3>
-        <p style={{ color: "#94a3b8", fontSize: "13px", marginBottom: "20px" }}>This phone matrix vector is unlisted. File a privilege request to claim a node wallet profile.</p>
+      <form onSubmit={onLocalRegisterSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         
-        <div style={{ marginBottom: "15px" }}>
-          <label style={{ display: "block", color: "#94a3b8", fontSize: "11px", fontWeight: "bold", marginBottom: "6px" }}>FULL MEMBER NAME</label>
-          <input required type="text" id="kikaRegName" name="newName" value={regName} onChange={(e) => setRegName(e.target.value)} style={{ width: "100%", backgroundColor: "#0f172a", border: "1px solid #334155", borderRadius: "6px", padding: "12px", color: "#ffffff", outline: "none", boxSizing: "border-box" }} />
-        </div>
-        
-        <div style={{ marginBottom: "15px" }}>
-          <label style={{ display: "block", color: "#94a3b8", fontSize: "11px", fontWeight: "bold", marginBottom: "6px" }}>PRIMARY PHONE NUMBER</label>
-          <input required type="tel" id="kikaRegPhone" name="newPhone" placeholder="+256..." value={regPhone} onChange={(e) => setRegPhone(e.target.value)} style={{ width: "100%", backgroundColor: "#0f172a", border: "1px solid #334155", borderRadius: "6px", padding: "12px", color: "#ffffff", outline: "none", boxSizing: "border-box" }} />
+        {/* Full Member Name Input */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+          {/* 🛠️ ALIGNED FIXED STYLE: Corrected 'uppercase: "true"' to standard 'textTransform: "uppercase"' */}
+          <label style={{ fontSize: "11px", fontWeight: "600", color: "#CBD5E1", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            Full Member Name
+          </label>
+          <input
+            type="text"
+            required
+            value={nameInput}
+            onChange={(e) => setNameInput(e.target.value)}
+            placeholder="e.g. Kika-global"
+            style={{
+              width: "100%",
+              boxSizing: "border-box",
+              backgroundColor: "#020617",
+              border: "1px solid #334155",
+              borderRadius: "8px",
+              padding: "10px 14px",
+              fontSize: "14px",
+              color: "#F8FAFC",
+              outline: "none"
+            }}
+          />
         </div>
 
-        <div style={{ marginBottom: "15px" }}>
-          <label style={{ display: "block", color: "#94a3b8", fontSize: "11px", fontWeight: "bold", marginBottom: "6px" }}>CREATE SECURE ACCOUNT PASSWORD</label>
-          <input required type="password" id="kikaRegPass" name="password" placeholder="••••••••••••" value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)} style={{ width: "100%", backgroundColor: "#0f172a", border: "1px solid #334155", borderRadius: "6px", padding: "12px", color: "#ffffff", outline: "none", boxSizing: "border-box" }} />
+        {/* Phone Configuration Link Number Input */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+          <label style={{ fontSize: "11px", fontWeight: "600", color: "#CBD5E1", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            Phone Configuration Link Number
+          </label>
+          <input
+            type="tel"
+            required
+            value={phoneInput}
+            onChange={(e) => setPhoneInput(e.target.value)}
+            placeholder="e.g. +2567021234567"
+            style={{
+              width: "100%",
+              boxSizing: "border-box",
+              backgroundColor: "#020617",
+              border: "1px solid #334155",
+              borderRadius: "8px",
+              padding: "10px 14px",
+              fontSize: "14px",
+              fontFamily: "monospace",
+              color: "#F8FAFC",
+              outline: "none"
+            }}
+          />
         </div>
-        
-        <div style={{ marginBottom: "20px" }}>
-          <label style={{ display: "block", color: "#94a3b8", fontSize: "11px", fontWeight: "bold", marginBottom: "6px" }}>NODE REGION COUNTRY LOCATION</label>
-          <select id="kikaRegCountry" name="country" value={regCountry} onChange={(e) => setRegCountry(e.target.value)} style={{ width: "100%", backgroundColor: "#0f172a", border: "1px solid #334155", borderRadius: "6px", padding: "12px", color: "#ffffff", outline: "none", boxSizing: "border-box" }}>
-            <option value="UG">Uganda (MTN / Airtel Network Node)</option>
-            <option value="KE">Kenya (Safaricom Network Node)</option>
+
+        {/* Security Password Input */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+          <label style={{ fontSize: "11px", fontWeight: "600", color: "#CBD5E1", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            Security Node Password / Key
+          </label>
+          <input
+            type="password"
+            required
+            value={passwordInput}
+            onChange={(e) => setPasswordInput(e.target.value)}
+            placeholder="••••••••••••"
+            style={{
+              width: "100%",
+              boxSizing: "border-box",
+              backgroundColor: "#020617",
+              border: "1px solid #334155",
+              borderRadius: "8px",
+              padding: "10px 14px",
+              fontSize: "14px",
+              color: "#F8FAFC",
+              outline: "none"
+            }}
+          />
+        </div>
+
+        {/* Network Node Region Selection Dropdown */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+          <label style={{ fontSize: "11px", fontWeight: "600", color: "#CBD5E1", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            Target Destination Node Region
+          </label>
+          <select
+            value={nodeRegionInput}
+            onChange={(e) => setNodeRegionInput(e.target.value)}
+            style={{
+              width: "100%",
+              boxSizing: "border-box",
+              backgroundColor: "#020617",
+              border: "1px solid #334155",
+              borderRadius: "8px",
+              padding: "10px 14px",
+              fontSize: "14px",
+              color: "#F8FAFC",
+              outline: "none",
+              cursor: "pointer"
+            }}
+          >
+            <option value="Uganda (MTN / Airtel Network Node)">Uganda (MTN / Airtel Network Node)</option>
+            <option value="Kenya (Safaricom / Airtel Network Node)">Kenya (Safaricom / Airtel Network Node)</option>
+            <option value="Tanzania (Vodacom / Tigo Network Node)">Tanzania (Vodacom / Tigo Network Node)</option>
+            <option value="International Cross-Border Node">International Cross-Border Node</option>
           </select>
         </div>
-        
-        <button type="submit" style={{ width: "100%", padding: "14px", backgroundColor: "#38bdf8", color: "#0f172a", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer", marginBottom: "10px" }}>Submit Proxy Node Request</button>
-        <button type="button" onClick={() => { setShowRegister(false); setPasswordInput(""); }} style={{ width: "100%", padding: "10px", backgroundColor: "transparent", color: "#94a3b8", border: "none", cursor: "pointer", fontSize: "13px" }}>← Back to Secure Login</button>
+
+        {/* Execution Submit Action Button Panel */}
+        <div style={{ paddingTop: "8px" }}>
+          <button
+            type="submit"
+            style={{
+              width: "100%",
+              backgroundColor: "#2563EB",
+              color: "#FFFFFF",
+              fontWeight: "bold",
+              padding: "12px 16px",
+              borderRadius: "8px",
+              fontSize: "14px",
+              border: "none",
+              cursor: "pointer",
+              boxShadow: "0 4px 12px rgba(37, 99, 235, 0.2)"
+            }}
+          >
+            Submit Proxy Node Request
+          </button>
+        </div>
       </form>
-    );
-  }
 
-  // ==========================================
-  // 2. PRODUCTION GATEKEEPER LOGIN INTERFACE
-  // ==========================================
-  return (
-    <form onSubmit={onLocalLoginSubmit} style={{ backgroundColor: "#1e293b", padding: "30px", borderRadius: "16px", border: "1px solid #334155", textAlign: "center" }}>
-      <span style={{ fontSize: "40px", display: "block", marginBottom: "15px" }}>🔒</span>
-      <h3 style={{ margin: "0 0 10px 0", color: "#ffffff", fontSize: "18px", fontWeight: "bold" }}>Secure Member Calling Gate</h3>
-      <p style={{ color: "#94a3b8", fontSize: "13px", marginBottom: "25px", lineHeight: "1.4" }}>Enter your registered KIKA Member phone configuration number to access your localized communication networks.</p>
-      
-      <div style={{ marginBottom: "15px", textAlign: "left" }}>
-        <label style={{ display: "block", color: "#64748b", fontSize: "10px", fontWeight: "bold", marginBottom: "4px" }}>PHONE CONFIGURATION NUMBER</label>
-        <input required type="tel" id="kikaLoginPhone" name="loginPhoneNumber" placeholder="e.g. +256701234567" autoComplete="username" value={loginPhone} onChange={(e) => setLoginPhone(e.target.value)} style={{ width: "100%", backgroundColor: "#0f172a", border: "1px solid #334155", borderRadius: "6px", padding: "14px", color: "#ffffff", fontSize: "16px", textAlign: "center", outline: "none", boxSizing: "border-box" }} />
-      </div>
-
-      <div style={{ marginBottom: "20px", textAlign: "left" }}>
-        <label style={{ display: "block", color: "#64748b", fontSize: "10px", fontWeight: "bold", marginBottom: "4px" }}>ENCRYPTED PASSWORD KEY</label>
-        <input required type="password" id="kikaLoginPass" name="loginPassword" placeholder="••••••••" autoComplete="current-password" value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)} style={{ width: "100%", backgroundColor: "#0f172a", border: "1px solid #334155", borderRadius: "6px", padding: "14px", color: "#ffffff", fontSize: "16px", textAlign: "center", outline: "none", boxSizing: "border-box" }} />
-      </div>
-
-      <button type="submit" style={{ width: "100%", padding: "14px", backgroundColor: "#16a34a", color: "#ffffff", border: "none", borderRadius: "8px", fontWeight: "bold", fontSize: "15px", cursor: "pointer" }}>Authorize Terminal Sync</button>
-      
-      <p style={{ marginTop: "20px", fontSize: "12px", color: "#64748b" }}>Status: {callStatus}</p>
-    </form>
+      {/* Dynamic Status Reporting Strip */}
+      {processingState && (
+        <div style={{
+          marginTop: "16px",
+          textAlign: "center",
+          fontSize: "12px",
+          fontFamily: "monospace",
+          color: "#60A5FA",
+          backgroundColor: "rgba(30, 58, 138, 0.4)",
+          border: "1px solid rgba(30, 58, 138, 0.5)",
+          padding: "8px 12px",
+          borderRadius: "8px"
+        }}>
+          {processingState}
+        </div>
+      )}
+    </div>
   );
 }

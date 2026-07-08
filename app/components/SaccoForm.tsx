@@ -1,89 +1,85 @@
 "use client";
-import React, { useState } from "react";
+
+import { useState } from "react";
 
 export default function SaccoForm() {
-  const [memberSacco, setMemberSacco] = useState("");
-  const [membershipType, setMembershipType] = useState("");
-  const [sharesCapital, setSharesCapital] = useState("");
-  const [idType, setIdType] = useState("");
+  const [membershipType, setMembershipType] = useState("STANDARD");
   const [idNumber, setIdNumber] = useState("");
-  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [sharesCapital, setSharesCapital] = useState("50000");
+  const [statusText, setStatusText] = useState("Status: Ready to Enroll");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSaccoEnrollment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!agreeTerms) {
-      alert("Please confirm the SACCO compliance declaration.");
-      return;
-    }
-    alert(`SACCO Node Initialized!\nCooperative: ${memberSacco}\nTier: ${membershipType}\nContribution: UGX ${sharesAmountFormatter(sharesCapital)}`);
-  };
+    setStatusText("Status: Activating Capital Ledger...");
 
-  const sharesAmountFormatter = (numStr: string) => {
-    return numStr ? parseInt(numStr).toLocaleString() : "0";
+    try {
+      // Points directly to our structured SACCO background database API endpoint
+      const response = await fetch("/api/sacco", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: "1", // Hardcoded test index until user session logic is linked
+          membershipType,
+          idNumber,
+          sharesCapital,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setStatusText(`Status: Co-op Account Active! ID: ${data.saccoId.substring(0, 10)}`);
+      } else {
+        setStatusText(`Status: Error - ${data.error}`);
+      }
+    } catch (err) {
+      setStatusText("Status: Database connection timeout");
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ backgroundColor: "#ffffff", padding: "35px", borderRadius: "12px", border: "1px solid #e2e8f0", boxShadow: "0 4px 6px rgba(0,0,0,0.05)" }}>
-      
-      <h3 style={{ marginTop: "0", marginBottom: "20px", color: "#1e293b", borderBottom: "2px solid #f1f5f9", paddingBottom: "10px", fontSize: "18px" }}>Section I: Institutional Cooperative Selection</h3>
-      
-      <div style={{ marginBottom: "20px" }}>
-        <label style={{ display: "block", fontWeight: "bold", marginBottom: "8px", color: "#334155" }}>Target Savings Cooperative (SACCO)</label>
-        <select required value={memberSacco} onChange={(e) => setMemberSacco(e.target.value)} style={{ width: "100%", padding: "11px", borderRadius: "6px", border: "1px solid #cbd5e1", backgroundColor: "#ffffff", color: "#1e293b" }}>
-          <option value="" disabled>-- Select Registered SACCO Vector --</option>
-          <option value="Kampala Tech Diaspora SACCO">🏢 Kampala Tech Diaspora SACCO</option>
-          <option value="East African Agricultural Production Cooperative">🌱 East African Agricultural Production Cooperative</option>
-          <option value="Buganda Region Development Infrastructure Node">🏗️ Buganda Region Development Infrastructure Node</option>
-          <option value="Uganda Diaspora Real Estate & Land Pool">🏡 Uganda Diaspora Real Estate & Land Pool</option>
-        </select>
+    <div style={{
+      width: "100%", maxWidth: "450px", backgroundColor: "#0B1528",
+      border: "1px solid #1E293B", padding: "24px", borderRadius: "16px",
+      margin: "20px auto", color: "#F8FAFC", fontFamily: "sans-serif", boxSizing: "border-box"
+    }}>
+      <div style={{ marginBottom: "16px" }}>
+        <h2 style={{ fontSize: "20px", fontWeight: "bold", margin: "0 0 4px 0" }}>Kika Co-op SACCO Registry</h2>
+        <p style={{ fontSize: "12px", color: "#94A3B8", margin: "0" }}>Initialize initial equity injections to unlock member dividends</p>
       </div>
 
-      <div style={{ marginBottom: "20px" }}>
-        <label style={{ display: "block", fontWeight: "bold", marginBottom: "8px", color: "#334155" }}>Membership Class Subscription Tier</label>
-        <select required value={membershipType} onChange={(e) => setMembershipType(e.target.value)} style={{ width: "100%", padding: "11px", borderRadius: "6px", border: "1px solid #cbd5e1", backgroundColor: "#ffffff", color: "#1e293b" }}>
-          <option value="" disabled>-- Select Allocation Class --</option>
-          <option value="Standard Shareholder">🟢 Standard Shareholder (Voting Rights + Dividends)</option>
-          <option value="Institutional Investor">🔵 Institutional Investor (Capital Asset Pool Placement)</option>
-          <option value="Youth / Heritage Trust Account">🟡 Youth / Heritage Trust Node (Generational Capital)</option>
-        </select>
+      <div style={{
+        backgroundColor: "#020617", border: "1px solid #1E293B", color: "#60A5FA",
+        fontSize: "12px", padding: "8px", borderRadius: "8px", textAlign: "center",
+        fontFamily: "monospace", marginBottom: "16px"
+      }}>
+        {statusText}
       </div>
 
-      <h3 style={{ marginBottom: "20px", color: "#1e293b", borderBottom: "2px solid #f1f5f9", paddingBottom: "10px", fontSize: "18px" }}>Section II: Regulatory Compliance Metrics</h3>
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px", marginBottom: "20px" }}>
-        <div>
-          <label style={{ display: "block", fontWeight: "bold", marginBottom: "8px", color: "#334155" }}>Verification ID Document</label>
-          <select required value={idType} onChange={(e) => setIdType(e.target.value)} style={{ width: "100%", padding: "11px", borderRadius: "6px", border: "1px solid #cbd5e1", backgroundColor: "#ffffff", color: "#1e293b" }}>
-            <option value="" disabled>-- Select Type --</option>
-            <option value="National ID">Ugandan National ID</option>
-            <option value="Passport">International Passport</option>
-            <option value="Dual Passport">Host Country Passport</option>
+      <form onSubmit={handleSaccoEnrollment} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+          <label style={{ fontSize: "11px", fontWeight: "600", color: "#CBD5E1" }}>MEMBERSHIP TYPE</label>
+          <select value={membershipType} onChange={(e) => setMembershipType(e.target.value)} style={{ width: "100%", backgroundColor: "#020617", border: "1px solid #334155", padding: "10px", borderRadius: "8px", color: "#FFF", outline: "none" }}>
+            <option value="STANDARD">Standard Diaspora Member</option>
+            <option value="PREMIUM">Premium Investment Tier</option>
+            <option value="CORPORATE">Corporate Co-op Node</option>
           </select>
         </div>
-        <div>
-          <label style={{ display: "block", fontWeight: "bold", marginBottom: "8px", color: "#334155" }}>Document Code (NIN / Number)</label>
-          <input type="text" placeholder="Enter identification string" required value={idNumber} onChange={(e) => setIdNumber(e.target.value)} style={{ width: "100%", padding: "11px", borderRadius: "6px", border: "1px solid #cbd5e1" }} />
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+          <label style={{ fontSize: "11px", fontWeight: "600", color: "#CBD5E1" }}>IDENTITY PASSPORT NUMBER</label>
+          <input type="text" required placeholder="e.g. A00123456" value={idNumber} onChange={(e) => setIdNumber(e.target.value)} style={{ width: "100%", backgroundColor: "#020617", border: "1px solid #334155", padding: "10px", borderRadius: "8px", color: "#FFF", outline: "none", boxSizing: "border-box" }} />
         </div>
-      </div>
 
-      <div style={{ marginBottom: "25px" }}>
-        <label style={{ display: "block", fontWeight: "bold", marginBottom: "8px", color: "#334155" }}>Initial Shares Capital Injection (UGX)</label>
-        <input type="number" placeholder="Value in Uganda Shillings (e.g., 500000)" required value={sharesCapital} onChange={(e) => setSharesCapital(e.target.value)} style={{ width: "100%", padding: "11px", borderRadius: "6px", border: "1px solid #cbd5e1" }} />
-        {sharesCapital && (
-          <p style={{ margin: "5px 0 0 0", fontSize: "13px", color: "#16a34a", fontWeight: "bold" }}>Formatted Allocation: UGX {sharesAmountFormatter(sharesCapital)}</p>
-        )}
-      </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+          <label style={{ fontSize: "11px", fontWeight: "600", color: "#CBD5E1" }}>INITIAL EQUITY INJECTION (UGX)</label>
+          <input type="number" required value={sharesCapital} onChange={(e) => setSharesCapital(e.target.value)} style={{ width: "100%", backgroundColor: "#020617", border: "1px solid #334155", padding: "10px", borderRadius: "8px", color: "#FFF", outline: "none", boxSizing: "border-box" }} />
+        </div>
 
-      <div style={{ marginBottom: "30px" }}>
-        <label style={{ display: "inline-flex", alignItems: "flex-start", gap: "10px", cursor: "pointer", fontSize: "14px", color: "#64748b", lineHeight: "1.4" }}>
-          <input type="checkbox" checked={agreeTerms} onChange={() => setAgreeTerms(!agreeTerms)} style={{ width: "18px", height: "18px", marginTop: "2px", cursor: "pointer" }} />
-          <span>I authorize KIKA Global to index this membership profile. I declare that the capital injections comply with the Anti-Money Laundering regulatory parameters enforced by the Financial Intelligence Authority (FIA) of Uganda.</span>
-        </label>
-      </div>
-
-      <button type="submit" style={{ width: "100%", backgroundColor: "#0f172a", color: "#ffffff", border: "none", padding: "14px", fontSize: "16px", fontWeight: "bold", borderRadius: "6px", cursor: "pointer", boxShadow: "0 4px 6px rgba(15,23,42,0.15)" }}>
-        Finalize SACCO Shareholder Subscription
-      </button>
-    </form>
+        <button type="submit" style={{ width: "100%", backgroundColor: "#2563EB", color: "#FFF", fontWeight: "bold", padding: "12px", borderRadius: "8px", border: "none", cursor: "pointer", marginTop: "6px" }}>
+          Submit Activation Request
+        </button>
+      </form>
+    </div>
   );
 }

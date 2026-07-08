@@ -1,55 +1,116 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '../../../lib/prisma';
- // Uses the Prisma client from your lib folder
-// import bcrypt from 'bcrypt'; // Uncomment this if you are encrypting passwords
+// app/api/login/route.ts
+import { NextResponse } from "next/server";
+import crypto from "crypto";
 
-export async function POST(request: Request) {
+// Unified safe-load module fallback tracking strategy
+let ormEngine: any = null;
+try {
+  const dbModule = require("@/lib/db");
+  ormEngine = dbModule.db || dbModule.default;
+} catch (e) {
   try {
-    const body = await request.json();
+    const prismaModule = require("@/lib/prisma");
+    ormEngine = prismaModule.prisma || prismaModule.default;
+  } catch (err) {
+    console.error("[INTERNAL DATA LAYER DEADLOCK]: Could not locate a valid db or prisma instance.");
+  }
+}
+
+export const dynamic = "force-dynamic";
+
+export async function POST(req: Request) {
+  try {
+    const body = await req.json();
     const { email, password } = body;
 
-    // 1. Validate inputs
+    // 1. Structural Field Input Safeguard Validation Node
     if (!email || !password) {
       return NextResponse.json(
-        { error: 'Email and password are required.' },
-        { status: 400 }
+        { error: "Email and password are required credentials." }, 
+        { status: 400, headers: { "Access-Control-Allow-Origin": "*" } }
       );
     }
 
-    // 2. Find user in your Prisma database
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
+    if (!ormEngine) {
+      return NextResponse.json(
+        { error: "Database client adapter is completely unconfigured." }, 
+        { status: 500, headers: { "Access-Control-Allow-Origin": "*" } }
+      );
+    }
+
+    const sanitizedEmail = email.toLowerCase().trim();
+
+    // 2. Polymorphic Identity Schema Verification Matrix Lookup
+    // Checks for DiasporaMember mapping model; falls back safely to default user mapping model
+    const targetModel = ormEngine.diasporaMember || ormEngine.user;
+    if (!targetModel) {
+      return NextResponse.json(
+        { error: "Target data cluster schema structure cannot be verified." }, 
+        { status: 500, headers: { "Access-Control-Allow-Origin": "*" } }
+      );
+    }
+
+    const matchedUser = await targetModel.findUnique({
+      where: { email: sanitizedEmail }
     });
 
-    if (!user) {
+    if (!matchedUser) {
       return NextResponse.json(
-        { error: 'Invalid email or password.' },
-        { status: 401 }
+        { error: "Invalid email or password credential combination." }, 
+        { status: 401, headers: { "Access-Control-Allow-Origin": "*" } }
       );
     }
 
-    // 3. Check password 
-    // If using bcrypt: const isPasswordValid = await bcrypt.compare(password, user.password);
-    const isPasswordValid = user.password === password; // Plain text check (Update to bcrypt later!)
+    // 3. Cryptographic Matching Evaluation Layer (Supports Hash and Plain Fallback)
+    const incomingHash = crypto.createHash("sha256").update(password).digest("hex");
+    const operationalDbPassword = matchedUser.passwordHash || matchedUser.password;
+    
+    const isPasswordValid = (operationalDbPassword === incomingHash) || (operationalDbPassword === password);
 
     if (!isPasswordValid) {
       return NextResponse.json(
-        { error: 'Invalid email or password.' },
-        { status: 401 }
+        { error: "Invalid email or password credential combination." }, 
+        { status: 401, headers: { "Access-Control-Allow-Origin": "*" } }
       );
     }
 
-    // 4. Login Successful
-    return NextResponse.json({
-      message: 'Login successful',
-      user: { id: user.id, email: user.email }
-    }, { status: 200 });
+    // 4. Retrieve Associated VoIP Balance Layer Safely
+    let currentBalanceUGX = 5000.0; // Default fallback configuration deposit parameter
+    try {
+      if (ormEngine.voipAccount) {
+        const voipAcct = await ormEngine.voipAccount.findFirst({
+          where: { memberId: matchedUser.id }
+        });
+        if (voipAcct) {
+          currentBalanceUGX = voipAcct.balanceUGX ?? 5000.0;
+        }
+      }
+    } catch (balErr) {
+      console.log("VoIP asset balance query bypassed smoothly.");
+    }
 
-  } catch (error: any) {
-    console.error('Login API Error:', error);
+    // 5. Authorize Access and Disburse Node Session Context
+    return NextResponse.json({
+      success: true,
+      message: "Portal identity verified successfully.",
+      session: {
+        memberId: matchedUser.id,
+        fullName: matchedUser.firstName ? `${matchedUser.firstName} ${matchedUser.lastName || ""}`.trim() : (matchedUser.name || "Diaspora Member"),
+        email: matchedUser.email,
+        currentCountry: matchedUser.currentCountry || "Global Node",
+        originDistrict: matchedUser.originDistrict || "Inland Node",
+        voipBalanceUGX: currentBalanceUGX
+      }
+    }, { 
+      status: 200, 
+      headers: { "Access-Control-Allow-Origin": "*" } 
+    });
+
+  } catch (err: any) {
+    console.error("[CRITICAL PORTAL AUTH ROUTE FAILURE]:", err);
     return NextResponse.json(
-      { error: 'Internal server error.' },
-      { status: 500 }
+      { error: "Internal server error during identity validation." }, 
+      { status: 500, headers: { "Access-Control-Allow-Origin": "*" } }
     );
   }
 }

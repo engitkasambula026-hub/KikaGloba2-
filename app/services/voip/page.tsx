@@ -1,20 +1,23 @@
+// app/services/voip/page.tsx
 "use client";
 
-import { useEffect } from "react";
+import React from 'react';
+// 🛠️ ALIGNED FIXED PATH: Points cleanly up to your main shared components folder!
+import WebRTCDialer from '@/app/components/WebRTCDialer'; 
 
-export default function VoipRedirectPage() {
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      // Instantly forces a redirect to the working plural dialer view
-      window.location.replace("/services/voip-calls");
-    }
-  }, []);
-
+export default function VoipServicePage() {
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#0f172a", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Arial, sans-serif" }}>
-      <p style={{ color: "#94a3b8", fontSize: "16px", fontWeight: "bold" }}>
-        Optimizing KIKA Communications Node Pipeline...
-      </p>
-    </div>
+    <main style={{
+      minHeight: "100vh", 
+      backgroundColor: "#0F172A",
+      display: "flex", 
+      alignItems: "center", 
+      justifyContent: "center", 
+      padding: "20px",
+      boxSizing: "border-box"
+    }}>
+      {/* Dialer isolated cleanly inside its standalone service sub-route view space */}
+      <WebRTCDialer />
+    </main>
   );
 }

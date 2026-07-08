@@ -1,61 +1,61 @@
+// app/page.tsx - Restored Kika Global Landing Master Template
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Navigation from "./components/Navigation";
-import Hero from "./components/Hero";
-import Features from "./components/Features";
-import Footer from "./components/Footer";
-import WebRTCDialer from "./components/WebRTCDialer";
+import Link from "next/link";
+import CentralDropdown from "./components/CentralDropdown";
 
-export default function Page() {
-  const [isMounted, setIsMounted] = useState(false);
-  // Controlled flag to launch the secure dialing terminal panel window
-  const [showTerminal, setShowTerminal] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) return null;
-
+export default function KikaLandingPage() {
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#0f172a", margin: 0, padding: 0, color: "#f8fafc" }}>
-      
-      {/* @ts-ignore - Temporary bypass to clear red lines until sub-components are audited */}
-      <Navigation onOpenTerminal={() => setShowTerminal(true)} />
-
-      <main style={{ minHeight: "calc(100vh - 70px)", display: "block" }}>
-        
-        {/* Polished marketing presentation array */}
-        {/* @ts-ignore - Temporary bypass to clear red lines until sub-components are audited */}
-        <Hero onOpenTerminal={() => setShowTerminal(true)} />
-        
-        <Features />
-        
-        <Footer />
-
-      </main>
-
-      {/* SECURE OVERLAY TERMINAL PORTAL MODULE */}
-      {showTerminal && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(15, 23, 42, 0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 5000, padding: "20px", backdropFilter: "blur(4px)" }}>
-          <div style={{ position: "relative", width: "100%", maxWidth: "450px" }}>
-            
-            {/* Close Terminal Cross Indicator Button */}
-            <button 
-              onClick={() => setShowTerminal(false)} 
-              style={{ position: "absolute", top: "-40px", right: "0", background: "none", border: "none", color: "#94a3b8", fontSize: "28px", cursor: "pointer", fontWeight: "300" }}
-            >
-              &times; Close Matrix
-            </button>
-
-            {/* Renders your secure entry point and dialing keypad */}
-            <WebRTCDialer />
-            
-          </div>
+    <main style={{
+      minHeight: "100vh", backgroundColor: "#0F172A", color: "#F8FAFC",
+      fontFamily: "sans-serif", display: "flex", flexDirection: "column", boxSizing: "border-box"
+    }}>
+      {/* 🧭 TOP MASTER HEADER NAVIGATION BAR CONTAINER */}
+      <header style={{
+        width: "100%", backgroundColor: "#0B1528", borderBottom: "1px solid #1E293B",
+        padding: "16px 24px", display: "flex", justifyContent: "space-between",
+        alignItems: "center", boxSizing: "border-box"
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <span style={{ fontSize: "24px", fontWeight: "bold", color: "#3B82F6", letterSpacing: "0.05em" }}>
+            KIKA GLOBAL
+          </span>
+          <span style={{ backgroundColor: "#1E293B", color: "#10B981", fontSize: "11px", fontWeight: "bold", padding: "4px 8px", borderRadius: "6px", fontFamily: "monospace" }}>
+            PORT 3000 ACTIVE
+          </span>
         </div>
-      )}
-      
-    </div>
+
+        {/* 🌟 Central Dropdown Link Hub - Renders your navigation blocks automatically */}
+        <nav style={{ display: "flex", gap: "20px" }}>
+          <CentralDropdown />
+        </nav>
+      </header>
+
+      {/* 🚀 MAIN HERO WELCOME SPACE MATRIX PANEL */}
+      <section style={{
+        flex: "1", display: "flex", flexDirection: "column", alignItems: "center",
+        justifyContent: "center", textAlign: "center", padding: "40px 20px", maxWidth: "800px", margin: "0 auto"
+      }}>
+        <h1 style={{ fontSize: "42px", fontWeight: "bold", color: "#FFF", marginBottom: "16px", lineHeight: "1.2" }}>
+          Cross-Border Diaspora Automation Ecosystem
+        </h1>
+        <p style={{ fontSize: "16px", color: "#94A3B8", maxWidth: "600px", margin: "0 0 32px 0", lineHeight: "1.6" }}>
+          Unified technical channels bridging global communication, remittance capital trunks, and local cooperative SACCO ledgers seamlessly from your disk.
+        </p>
+
+        {/* Rapid Deployment Link Quick-Launch Cards Grid Array */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px", width: "100%" }}>
+          <Link href="/services/voip" style={{ textDecoration: "none", padding: "20px", backgroundColor: "#0B1528", border: "1px solid #1E293B", borderRadius: "14px", color: "#FFF", textAlign: "left" }}>
+            <div style={{ fontSize: "20px", marginBottom: "6px" }}>🎙️ Voice Link</div>
+            <div style={{ fontSize: "12px", color: "#94A3B8" }}>Open secure 3x3 circular layout dialpad keypad consoles to fire outbound proxy calls.</div>
+          </Link>
+
+          <Link href="/services/send-money" style={{ textDecoration: "none", padding: "20px", backgroundColor: "#0B1528", border: "1px solid #1E293B", borderRadius: "14px", color: "#FFF", textAlign: "left" }}>
+            <div style={{ fontSize: "20px", marginBottom: "6px" }}>💳 Remittance Trunk</div>
+            <div style={{ fontSize: "12px", color: "#94A3B8" }}>Access multi-country exchange calculation rate windows to route capital.</div>
+          </Link>
+        </div>
+      </section>
+    </main>
   );
 }

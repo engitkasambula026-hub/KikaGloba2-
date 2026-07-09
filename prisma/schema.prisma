@@ -2,10 +2,12 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// 🟢 UPGRADED MULTI-TENANT PRODUCTION RAILS
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
+
 
 // ==========================================
 // 🧑‍💼 CORE MEMBERSHIP & DASHBOARD ECOSYSTEM
@@ -81,22 +83,22 @@ model NetworkRegistry {
 // ==========================================
 
 model RemittanceLog {
-  id                  String             @id @default(uuid())
-  senderId            Int                // 🟢 FIXED: Type aligned to match User.id (Int)
-  user                User               @relation(fields: [senderId], references: [id], onDelete: Cascade) // 🟢 FIXED: Missing relational map added
+  id                  String            @id @default(uuid())
+  senderId            Int               
+  user                User              @relation(fields: [senderId], references: [id], onDelete: Cascade) 
   recipientName       String
   recipientAccount    String
   amount              Float
-  currency            String             @default("UGX")
-  gateway             String             @default("mpesa")
-  status              String             @default("PENDING")
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
+  currency            String            @default("UGX")
+  gateway             String            @default("mpesa")
+  status              String            @default("PENDING")
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
 
-  // 🔗 Connection Nodes back to SACCO Capital Accounts
-  isSaccoDeposit      Boolean            @default(false)
-  saccoSubscriptionId String?
-  saccoSubscription   SaccoSubscription? @relation(fields: [saccoSubscriptionId], references: [id])
+  // 🔗 Connection Nodes back to B2B SACCO Corporate Registry
+  isSaccoDeposit      Boolean           @default(false)
+  saccoInstitutionId  String?           // 🟢 FIXED: Remapped from subscription to institution id
+  saccoInstitution    SaccoInstitution? @relation(fields: [saccoInstitutionId], references: [id])
 
   @@index([senderId])
 }
@@ -106,30 +108,28 @@ model RemittanceLog {
 // ==========================================
 
 model SaccoInstitution {
-  id                 String   @id @default(uuid())
-  saccoLegalName     String
-  registrationNumber String   @unique // Statutory registration code issued by the Ministry of Trade, Industry & Cooperatives
-  licenseType        String   // "TIER_4_MICROFINANCE", "COMMUNITY_COOP", "DISTRICT_UNION"
-  headOfficeAddress  String
-  primaryContactEmail String  @unique
+  id                  String          @id @default(uuid())
+  saccoLegalName      String
+  registrationNumber  String          @unique // Statutory registration code issued by the Ministry of Trade, Industry & Cooperatives
+  licenseType         String          // "TIER_4_MICROFINANCE", "COMMUNITY_COOP", "DISTRICT_UNION"
+  headOfficeAddress   String
+  primaryContactEmail String          @unique
   primaryContactPhone String
   
   // 🏦 SETTLEMENT BANKING TRUNK NODE (Where diaspora funding flows are routed)
-  settlementBankName String   // e.g., "Stanbic Bank Uganda", "Centenary Bank", "DFCU Bank"
+  settlementBankName  String          // e.g., "Stanbic Bank Uganda", "Centenary Bank", "DFCU Bank"
   settlementAccountNo String
-  settlementBranch   String
-  swiftCode          String?  // Optional SWIFT code routing for international direct wire integrations
+  settlementBranch    String
+  swiftCode           String?         // Optional SWIFT code routing for international direct wire integrations
   
-  status             String   @default("PENDING_VERIFICATION") // "PENDING_VERIFICATION", "ACTIVE", "SUSPENDED"
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  status              String          @default("PENDING_VERIFICATION") // "PENDING_VERIFICATION", "ACTIVE", "SUSPENDED"
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
 
-  // Relational link to aggregate all diaspora funding transits hitting this institution
-  remittances        RemittanceLog[]
+  // 🔗 Connection Tracking mapping incoming investment cashflows
+  remittances         RemittanceLog[]
 
-
-
-  @@index([idNumber])
+  @@index([registrationNumber])     // 🟢 FIXED: Updated to match your actual field name
 }
 
 // ==========================================

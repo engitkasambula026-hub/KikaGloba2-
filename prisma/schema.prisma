@@ -209,3 +209,28 @@ model JobApplication {
   status        String      @default("PENDING") // PENDING, UNDER_REVIEW, ACCEPTED, REJECTED
   createdAt     DateTime    @default(now())
 }
+// Specialized Schema Models for the KiKa National Loan Sub-System
+
+model LoanProduct {
+  id               String        @id @default(uuid())
+  name             String        // e.g., "OWC Poultry Equipment Loan", "PDM Value-Addition Line"
+  interestRateAnnual Float       // Interest percentage (e.g., 5.0 or 8.5)
+  maxAmountUGX     Float
+  minSaccoShares   Float         // Minimum equity share deposit required to qualify
+  repaymentTermMonths Int
+  description      String        @db.Text
+  applications     LoanApplication[]
+}
+
+model LoanApplication {
+  id             String       @id @default(uuid())
+  loanProductId  String
+  product        LoanProduct  @relation(fields: [loanProductId], references: [id], onDelete: Cascade)
+  userId         String       // Links to verified Diaspora Profile ID
+  userEmail      String
+  requestedAmount Float
+  saccoSharesUGX Float        // Proved equity multiplier
+  repaymentPlan  String       // Monthly, Quarterly, Bi-Annual
+  status         String       @default("PENDING") // PENDING, UNDER_REVIEW, APPROVED, REJECTED
+  createdAt      DateTime     @default(now())
+}

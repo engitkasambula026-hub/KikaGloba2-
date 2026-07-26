@@ -76,9 +76,17 @@ export const navigationTraffic: NavigationSection[] = [
         name: "🏢 Managed Diaspora Real Estate Escrow",
         path: "/business-hub/registry?category=real-estate", // Updated to point directly to your folder
         desc: "Securely fund trust escrow accounts for verified housing and land development assets managed by KiKa Global Services."
-      }
-    ]
-  },
+      },
+      
+        // 🟢 PASTE THIS EXACT ROW RIGHT HERE BEFORE THE SUBMENU ARRAY CLOSES:
+    {
+      name: "📉 Low-Rate National Loan Access Hub",
+      path: "/services/loans", 
+      desc: "Leverage group diaspora Sacco balances to clear statutory criteria for low-interest development financing lines."
+    }
+  ]
+},
+
     {
     name: "Ecosystem Portals",
     submenus: [

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma"; // 🟢 CRITICAL: Imports your central PostgreSQL client node
 
-// A. GET ROUTE: Fetches accredited national loan products
+// A. GET ROUTE: Fetches accredited national loan products from PostgreSQL
 export async function GET() {
   try {
     const activeProducts = await prisma.loanProduct.findMany();
@@ -11,7 +11,7 @@ export async function GET() {
   }
 }
 
-// B. POST ROUTE: Processes incoming loan enrollment applications
+// B. POST ROUTE: Processes incoming loan enrollment applications securely
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Validation Rejected: Missing critical financial metrics." }, { status: 400 });
     }
 
-    // 2. Query product specifications to verify compliance
+    // 2. Query product specifications from PostgreSQL to verify compliance
     const targetProduct = await prisma.loanProduct.findUnique({ where: { id: loanProductId } });
     if (!targetProduct) {
       return NextResponse.json({ error: "Product Not Found: Invalid loan allocation code." }, { status: 404 });
@@ -35,14 +35,14 @@ export async function POST(request: Request) {
       }, { status: 403 });
     }
 
-    // 4. Log the immutable loan application ledger entry
+    // 4. Log the immutable loan application ledger entry directly into your cloud Neon DB
     const secureApplication = await prisma.loanApplication.create({
       data: {
         loanProductId,
         userId,
         userEmail,
-        requestedAmount,
-        saccoSharesUGX,
+        requestedAmount: parseFloat(requestedAmount),
+        saccoSharesUGX: parseFloat(saccoSharesUGX),
         repaymentPlan,
         status: "PENDING"
       }
@@ -55,6 +55,7 @@ export async function POST(request: Request) {
     }, { status: 201 });
 
   } catch (error: any) {
+    console.error("[LOAN BACKEND ROUTE ERROR]:", error);
     return NextResponse.json({ error: `Internal execution pipeline error: ${error.message}` }, { status: 500 });
   }
 }

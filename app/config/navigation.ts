@@ -60,24 +60,66 @@ export const navigationTraffic: NavigationSection[] = [
         name: "💼 Portfolio Investments Fund", 
         path: "/business/investments", 
         desc: "Explore synchronized country-by-country resource commodity assets." 
+      },
+      
+      {
+        name: "🌾 OWC & PDM Agribusiness Cooperatives",
+        path: "/business-hub/registry?category=agribusiness", // Updated to point directly to your folder
+        desc: "Enroll in audited corporate Sacco savings pools for Poultry, Cattle, and Crop processing networks linked to Operation Wealth Creation."
+      },
+      {
+        name: "🏭 Simple Industrial & Value-Addition Nodes",
+        path: "/business-hub/registry?category=industrial", // Updated to point directly to your folder
+        desc: "Partner with local micro-manufacturing lines, packaging hubs, and milling plants backed by national financial support lines."
+      },
+      {
+        name: "🏢 Managed Diaspora Real Estate Escrow",
+        path: "/business-hub/registry?category=real-estate", // Updated to point directly to your folder
+        desc: "Securely fund trust escrow accounts for verified housing and land development assets managed by KiKa Global Services."
       }
     ]
   },
-  {
+    {
     name: "Ecosystem Portals",
     submenus: [
+      // PRESERVED: Your original project service modules
       { 
         name: "🌍 Job Matchmaker Engine", 
         path: "/explore-jobs", 
         desc: "Aggregated international job vacancy search node (Indeed, Monster)." 
       },
+      {
+        name: "💡 Technical Innovation Board",
+        path: "/innovation-board",
+        desc: "Regional tech incubation indices and project development trackers."
+      },
+      
+      // PRESERVED: Your diaspora production corridors
       { 
-        name: "🔬 Technical Innovation Board", 
-        path: "/explore-talent", 
-        desc: "Submit research credentials and look for project development funding." 
+        name: "📊 Placements & Scholarships Matrix", 
+        path: "/services/job-portal", 
+        desc: "Connect university researchers to dissertation data nodes, internships, and global placements." 
+      },
+      { 
+        name: "⚖️ Ecosystem Rules & Terms", 
+        path: "/terms", 
+        desc: "Statutory multi-tenant regulatory guidelines and user service parameters." 
+      },
+      { 
+        name: "🔒 Data Privacy Policy", 
+        path: "/privacy-policy", 
+        desc: "Uganda PDPO and NITA-U data sovereignty and encryption compliance rules." 
+      },
+
+      // 🟢 ADDED: The Co-Founder Memorial & Historical Foundation Node
+      {
+        name: "🏛️ Legacy Foundation History",
+        path: "/foundation-history",
+        desc: "The founding roadmap, charter variables, and social vision honoring the KiKa co-founder legacy."
       }
     ]
   }
+
 ];
 
 // 🛡️ RE-ADDED COMPLIANCE LAYER: Satisfies the static Navbar dropdown variable mappings

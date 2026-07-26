@@ -131,6 +131,28 @@ model SaccoInstitution {
 
   @@index([registrationNumber])     // 🟢 FIXED: Updated to match your actual field name
 }
+model Wallet {
+  id           String        @id @default(uuid())
+  userId       String        @unique
+  balance      Int           @default(0) // Stored in minor currency units (e.g., Cents/Shillings x 100)
+  currency     String        @default("UGX")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  transactions Transaction[]
+}
+
+model Transaction {
+  id               String   @id @default(uuid())
+  walletId         String
+  wallet           Wallet   @relation(fields: [walletId], references: [id])
+  reference        String   @unique // Paystack tracking ID (e.g., paystack_ref_123)
+  type             String   // "DEPOSIT" (Card-to-Wallet) or "WITHDRAWAL" / "TRANSFER" (Wallet-to-Bank)
+  purpose          String   // "SAVINGS_POOL", "REMITTANCE", "SACCO_CONTRIBUTION"
+  amount           Int      // Amount in cents/shillings x 100
+  status           String   // "PENDING", "SUCCESS", "FAILED"
+  recipientAccount String?  // Stores destination phone/bank metadata if outbound
+  createdAt        DateTime @default(now())
+}
 
 // ==========================================
 // 📞 VOIP COMMUNICATIONS ARRAY
@@ -156,5 +178,34 @@ model VoipCallLog {
   durationSecs  Int
   costUGX       Float
   status        String      @default("COMPLETED")
+  createdAt     DateTime    @default(now())
+}
+// Expanded Data Models for KiKa Global Placements Engine
+
+model Opportunity {
+  id              String           @id @default(uuid())
+  title           String           // e.g., "Senior Software Engineer", "MSc Machine Learning Research"
+  type            String           // "JOB", "SCHOLARSHIP", "RESEARCH_INTERNSHIP"
+  category        String           // "TECH", "HEALTHCARE", "ACADEMIC", "ENGINEERING"
+  hostInstitution String           // Name of foreign company or university (e.g., "Uppsala University")
+  hostCountry     String           // Destination (e.g., "Sweden", "Germany", "UAE")
+  description     String           @db.Text
+  requirements    String           @db.Text
+  compensation    String?          // Salary range, or "FULLY_FUNDED" / "STIPEND_PROVIDED"
+  applicationUrl  String?          // Direct portal link or fallback internal routing point
+  isVetted        Boolean          @default(false) // Strict regulatory protection node
+  createdAt       DateTime         @default(now())
+  applications    JobApplication[]
+}
+
+model JobApplication {
+  id            String      @id @default(uuid())
+  opportunityId String
+  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  userId        String      // Links to your existing Diaspora/Local User Profile
+  userEmail     String
+  resumeUrl     String      // Cloud storage link to PDF CV
+  proposalText  String      @db.Text // Cover letter or research abstract overview
+  status        String      @default("PENDING") // PENDING, UNDER_REVIEW, ACCEPTED, REJECTED
   createdAt     DateTime    @default(now())
 }

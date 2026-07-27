@@ -6,6 +6,7 @@ export const metadata = {
   description: 'Diaspora infrastructure ecosystem networks',
 };
 
+// 🟢 ORIGINAL RESTORATION: Removed all rigid maximumScale and overflow-X restrictions
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">

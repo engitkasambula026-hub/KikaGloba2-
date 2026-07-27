@@ -7,17 +7,27 @@ import CentralDropdown from "./components/CentralDropdown";
 export default function KikaLandingPage() {
   return (
     <main style={{
-      minHeight: "100vh", backgroundColor: "#0F172A", color: "#F8FAFC",
-      fontFamily: "sans-serif", display: "flex", flexDirection: "column", boxSizing: "border-box"
+      minHeight: "100vh", // 🟢 Restores full screen length on your ThinkPad laptop monitor
+      backgroundColor: "#0F172A",
+      color: "#F8FAFC",
+      fontFamily: "sans-serif",
+      display: "flex",
+      flexDirection: "column",
+      boxSizing: "border-box"
     }}>
       {/* 🧭 TOP MASTER HEADER NAVIGATION BAR CONTAINER */}
       <header style={{
-        width: "100%", backgroundColor: "#0B1528", borderBottom: "1px solid #1E293B",
-        padding: "16px 24px", display: "flex", justifyContent: "space-between",
-        alignItems: "center", boxSizing: "border-box"
+        width: "100%",
+        backgroundColor: "#0B1528",
+        borderBottom: "1px solid #1E293B",
+        padding: "16px 24px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        boxSizing: "border-box"
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <span style={{ fontSize: "22            px", fontWeight: "bold", color: "#3B82F6", letterSpacing: "0.05em" }}>
+          <span style={{ fontSize: "20px", fontWeight: "bold", color: "#3B82F6", letterSpacing: "0.05em" }}>
             KIKA GLOBAL SERVICE
           </span>
           <span style={{ backgroundColor: "#1E293B", color: "#10B981", fontSize: "11px", fontWeight: "bold", padding: "4px 8px", borderRadius: "6px", fontFamily: "monospace" }}>
@@ -25,7 +35,7 @@ export default function KikaLandingPage() {
           </span>
         </div>
 
-        {/* 🌟 Central Dropdown Link Hub - Renders your navigation blocks automatically */}
+        {/* 🌟 Central Dropdown Link Hub - Allows side scrolling to access all menus easily */}
         <nav style={{ display: "flex", gap: "20px" }}>
           <CentralDropdown />
         </nav>
@@ -33,10 +43,17 @@ export default function KikaLandingPage() {
 
       {/* 🚀 MAIN HERO WELCOME SPACE MATRIX PANEL */}
       <section style={{
-        flex: "1", display: "flex", flexDirection: "column", alignItems: "center",
-        justifyContent: "center", textAlign: "center", padding: "40px 20px", maxWidth: "800px", margin: "0 auto"
+        flex: "1",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        textAlign: "center",
+        padding: "40px 20px",
+        maxWidth: "800px",
+        margin: "0 auto"
       }}>
-        <h1 style={{ fontSize: "42px", fontWeight: "bold", color: "#FFF", marginBottom: "16px", lineHeight: "1.2" }}>
+        <h1 style={{ fontSize: "38px", fontWeight: "bold", color: "#FFF", marginBottom: "16px", lineHeight: "1.2" }}>
           Cross-Border Diaspora Automation Ecosystem
         </h1>
         <p style={{ fontSize: "16px", color: "#94A3B8", maxWidth: "600px", margin: "0 0 32px 0", lineHeight: "1.6" }}>

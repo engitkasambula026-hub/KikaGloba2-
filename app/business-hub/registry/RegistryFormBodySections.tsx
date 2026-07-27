@@ -32,7 +32,7 @@ export default function RegistryFormBodySections({ form, setForm, loading, setSt
     <>
       <div style={sectionDividerTitleStyle}>1. Primary Access Intent & Personal Info</div>
 
-      <div style={{ margin: "12px 0 20px 0" }}>
+      <div style={{ margin: "12px 0 16px 0" }}>
         <label style={labelStyle}>Primary Goal of Registration</label>
         <select value={form.registrationReason} onChange={e => setForm({...form, registrationReason: e.target.value})} style={{ ...inputStyle, border: "1px solid #34d399", background: "rgba(52, 211, 153, 0.02)" }}>
           <option value="AGRIBUSINESS_OWC">🌾 Access OWC Poultry, Cattle & Crop Processing Programs</option>
@@ -43,12 +43,13 @@ export default function RegistryFormBodySections({ form, setForm, loading, setSt
         </select>
       </div>
 
-      <div style={formRowGridStyle}>
-        <div style={{ flex: 1 }}>
+      {/* 📱 MOBILE RESPONSIVE GRID OVERHAUL: Automatically stacks fields vertically on iPhones */}
+      <div style={formResponsiveGridStyle}>
+        <div>
           <label style={labelStyle}>Full Legal Name (As in Passport)</label>
           <input type="text" placeholder="Johnathan Mukasa" required value={form.fullName} onChange={e => setForm({...form, fullName: e.target.value})} style={inputStyle} />
         </div>
-        <div style={{ flex: 1 }}>
+        <div>
           <label style={labelStyle}>Primary Secure Email Address</label>
           <input type="email" placeholder="mukasa@diaspora.ug" required value={form.emailAddress} onChange={e => setForm({...form, emailAddress: e.target.value})} style={inputStyle} />
         </div>
@@ -56,19 +57,19 @@ export default function RegistryFormBodySections({ form, setForm, loading, setSt
 
       <div style={sectionDividerTitleStyle}>2. Locational Boundaries & Spatial Tracking</div>
 
-      <div style={formRowGridStyle}>
-        <div style={{ flex: 1 }}>
+      <div style={formResponsiveGridStyle}>
+        <div>
           <label style={labelStyle}>Country of Origin</label>
           <input type="text" value={form.originCountry} required onChange={e => setForm({...form, originCountry: e.target.value})} style={inputStyle} />
         </div>
-        <div style={{ flex: 1 }}>
+        <div>
           <label style={labelStyle}>Current Host Country of Residence</label>
           <input type="text" value={form.hostCountry} required onChange={e => setForm({...form, hostCountry: e.target.value})} style={inputStyle} />
         </div>
       </div>
 
-      <div style={formRowGridStyle}>
-        <div style={{ flex: 1 }}>
+      <div style={formResponsiveGridStyle}>
+        <div>
           <label style={labelStyle}>Residential / Domicile Status</label>
           <select value={form.domicileStatus} onChange={e => setForm({...form, domicileStatus: e.target.value})} style={inputStyle}>
             <option value="TEMPORARY">Temporary Domicile Visa Node</option>
@@ -77,7 +78,7 @@ export default function RegistryFormBodySections({ form, setForm, loading, setSt
             <option value="CITIZEN">Dual National / Sovereign Citizen</option>
           </select>
         </div>
-        <div style={{ flex: 1 }}>
+        <div>
           <label style={labelStyle}>International Passport / ID Number</label>
           <input type="text" placeholder="A00000000" required value={form.passportNumber} onChange={e => setForm({...form, passportNumber: e.target.value})} style={inputStyle} />
         </div>
@@ -101,16 +102,17 @@ export default function RegistryFormBodySections({ form, setForm, loading, setSt
         {loading ? "Synchronizing Matrix Parameters..." : "Authorize Gateway Account & Verify KYC"}
       </button>
 
-      <p style={{ textAlign: "center", marginTop: "24px", fontSize: "14px", color: "#94a3b8", fontFamily: "Arial" }}>
+      <p style={{ textAlign: "center", marginTop: "24px", fontSize: "13px", color: "#94a3b8", fontFamily: "Arial" }}>
         Already Have Active Access Permissions? <Link href="/login" style={{ color: "#34d399", fontWeight: "bold", textDecoration: "none", marginLeft: "4px" }}>Sign In</Link>
       </p>
     </>
   );
 }
 
-const sectionDividerTitleStyle = { color: "#34d399", fontSize: "12px", fontWeight: "bold" as const, textTransform: "uppercase" as const, letterSpacing: "1.5px", marginTop: "24px", marginBottom: "12px", borderBottom: "1px solid #334155", paddingBottom: "6px" };
-const formRowGridStyle = { display: "flex", gap: "16px", margin: "12px 0" };
-const labelStyle = { display: "block", fontSize: "11px", fontWeight: "bold" as const, color: "#94a3b8", textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: "6px", fontFamily: "Arial" };
-const inputStyle = { width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #334155", background: "#0f172a", color: "#ffffff", boxSizing: "border-box" as const, fontSize: "14px", outline: "none" };
-const gpsBtnStyle = { width: "100%", padding: "12px", background: "rgba(52, 211, 153, 0.05)", border: "1px dashed #34d399", borderRadius: "8px", fontWeight: "bold" as const, fontSize: "12px", cursor: "pointer", marginTop: "16px", color: "#34d399", transition: "all 0.2s" };
-const submitBtnStyle = { width: "100%", padding: "16px", background: "#34d399", color: "#0f172a", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" as const, fontSize: "15px", marginTop: "24px", boxShadow: "0 4px 14px rgba(52, 211, 153, 0.3)" };
+// Optimized Mobile-First CSS Variables Spec Sheets
+const sectionDividerTitleStyle = { color: "#34d399", fontSize: "11px", fontWeight: "bold" as const, textTransform: "uppercase" as const, letterSpacing: "1.5px", marginTop: "20px", marginBottom: "12px", borderBottom: "1px solid #334155", paddingBottom: "6px" };
+const formResponsiveGridStyle = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "14px", margin: "12px 0" };
+const labelStyle = { display: "block", fontSize: "10.5px", fontWeight: "bold" as const, color: "#94a3b8", textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: "6px", fontFamily: "Arial" };
+const inputStyle = { width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #334155", background: "#0f172a", color: "#ffffff", boxSizing: "border-box" as const, fontSize: "13.5px", outline: "none" };
+const gpsBtnStyle = { width: "100%", padding: "11px", background: "rgba(52, 211, 153, 0.05)", border: "1px dashed #34d399", borderRadius: "8px", fontWeight: "bold" as const, fontSize: "11.5px", cursor: "pointer", marginTop: "12px", color: "#34d399" };
+const submitBtnStyle = { width: "100%", padding: "14px", background: "#34d399", color: "#0f172a", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" as const, fontSize: "14px", marginTop: "20px", boxShadow: "0 4px 14px rgba(52, 211, 153, 0.3)" };

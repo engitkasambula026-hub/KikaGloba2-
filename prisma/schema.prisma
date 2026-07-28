@@ -234,3 +234,27 @@ model LoanApplication {
   status         String       @default("PENDING") // PENDING, UNDER_REVIEW, APPROVED, REJECTED
   createdAt      DateTime     @default(now())
 }
+// 🏦 Specialized Schema Extensions for the KiKa Sacco Banking & Savings Sub-System
+
+model SaccoPool {
+  id               String            @id @default(uuid())
+  name             String            // e.g., "Wakiso Agribusiness Diaspora Sacco", "Ankole Dairy Cooperative"
+  district         String            // Geographic registration boundary in Uganda
+  totalCapitalUGX  Float             @default(0)
+  interestRateAuto Float             @default(4.5) // Annual dividend matching metric
+  memberships      SaccoMembership[]
+}
+
+model SaccoMembership {
+  id           String     @id @default(uuid())
+  userId       String     // Reference binding to verified Diaspora Profile ID
+  userEmail    String
+  saccoPoolId  String
+  saccoPool    SaccoPool  @relation(fields: [saccoPoolId], references: [id], onDelete: Cascade)
+  sharesCount  Float      @default(0) // Total accumulated equity units
+  savingsValue Float      @default(0) // Running liquid cash savings balance inside the Sacco
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([userEmail, saccoPoolId]) // Prevents duplicate membership tracking arrays
+}

@@ -17,7 +17,9 @@ export async function POST(req: Request) {
     const { toNumber, fromNumber, action, audioOfferPayload } = rawBody;
     const targetNumber = toNumber || fromNumber || "Sandbox WebRTC Channel";
 
-    // 1. WebRTC Signaling Multi-Threading Check
+    // ==========================================
+    //  TRACK 1: NGROK / WEBRTC CLOUD TESTING CORRIDOR
+    // ==========================================
     if (action === "INITIALIZE_CALL_STREAM") {
       activeWebRtcOffers["kika_sandbox_tester"] = { audioOfferPayload, timestamp: Date.now() };
       console.log(`🔌 [WebRTC SANDBOX SIGNALLING] Audio packet pipeline streaming via ngrok proxy.`);
@@ -30,7 +32,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, message: "Buffers flushed." });
     }
 
-    // 2. Gateway Core Check Selector Switching Loop
+    // ==========================================
+    // TRACK 2: EXTERNAL CARRIER GATEWAYS LOOP (TWILIO / AFRICA'S TALKING PLUGIN)
+    // ==========================================
     const mode = process.env.NEXT_PUBLIC_VOIP_MODE || "sandbox";
     let callSid = "TRUNK_REF_" + Math.random().toString(36).substring(2, 11);
     let isSuccess = false;
@@ -42,7 +46,7 @@ export async function POST(req: Request) {
     } 
     
     else if (mode === "africastalking") {
-      // 🌍 AFRICAS TALKING LIVE PRODUCTION CORRIDOR
+      // 🌍 AFRICAS TALKING LIVE PRODUCTION CORRIDOR WIRE (FIXED API ENDPOINT)
       const username = process.env.AT_USERNAME || "sandbox";
       const apiKey = process.env.AT_API_KEY;
       
@@ -62,7 +66,7 @@ export async function POST(req: Request) {
 
       const data = await atResponse.json();
       if (atResponse.ok && data.status === "Success") {
-        callSid = data.entries[0]?.sessionId || callSid;
+        callSid = data.entries?.[0]?.sessionId || callSid;
         isSuccess = true;
       } else {
         console.error("AfricasTalking Rejection:", data);
@@ -70,7 +74,7 @@ export async function POST(req: Request) {
     } 
     
     else if (mode === "twilio") {
-      // 📞 TWILIO PRODUCTION CORRIDOR (FIXED ASSIGNMENT STRING)
+      // 📞 TWILIO PRODUCTION CORRIDOR (FIXED BRACE STRING INTERPOLATION)
       const accountSid = process.env.TWILIO_ACCOUNT_SID;
       const authToken = process.env.TWILIO_AUTH_TOKEN;
       const twilioNumber = process.env.TWILIO_PHONE_NUMBER;
@@ -107,7 +111,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Communication channel negotiation loop failed on provider platform." }, { status: 400 });
     }
 
-    // 🔒 3. Synchronize Running Ledger Cash Balance Deductions (Mapped cleanly to active prisma models)
+    // ==========================================
+    // TRACK 3: IMMUTABLE FINANCE LEDGER DEDUCTIONS
+    // ==========================================
     try {
       const activeVoipAccount = await prisma.wallet.findFirst(); 
       if (activeVoipAccount) {
@@ -116,7 +122,7 @@ export async function POST(req: Request) {
             walletId: activeVoipAccount.id,
             reference: callSid,
             type: "DEBIT",
-            amount: 15000, // Logs 150.00 UGX in ledger tracking minor units
+            amount: 15000, // Deducts 150.00 UGX tracking minor units cleanly
             status: "SUCCESS"
           }
         });

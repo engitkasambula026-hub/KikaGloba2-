@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import InteractiveVoipDialer from "./InteractiveVoipDialer";
 
 export default function VoipRegistrationServicePage() {
   const router = useRouter();
@@ -85,12 +86,14 @@ export default function VoipRegistrationServicePage() {
         </button>
       </header>
 
-      {/* CENTRAL ENTRY MOUNT AREA */}
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", flex: 1, padding: "40px 20px" }}>
-        <form onSubmit={handleFormSubmission} style={{ background: "#1e293b", padding: "40px", borderRadius: "16px", width: "100%", maxWidth: "680px", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)", border: "1px solid #334155" }}>
+      {/* 📱 DYNAMIC FLEX GRID DISPLAY SHIFT WORKSPACE */}
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", alignItems: "flex-start", flex: 1, padding: "30px 20px", gap: "30px", maxWidth: "1200px", margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
+        
+        {/* LEFT COLUMN PANEL: FORM INTERFACE LAYER */}
+        <form onSubmit={handleFormSubmission} style={{ background: "#1e293b", padding: "40px", borderRadius: "16px", flex: "1 1 500px", maxWidth: "680px", boxSizing: "border-box", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)", border: "1px solid #334155" }}>
           
-          <h2 style={{ color: "#ffffff", margin: "0 0 4px 0", textAlign: "center" }}>Diaspora Automation Registration Portal</h2>
-          <p style={{ color: "#94a3b8", margin: "0 0 24px 0", fontSize: "13px", textAlign: "center" }}>Configure spatial tracking indices, authorize node access keys, and initialize automated sub-Saharan communication routing profiles.</p>
+          <h2 style={{ color: "#ffffff", margin: "0 0 4px 0", textAlign: "center", fontSize: "20px" }}>Diaspora Automation Registration Portal</h2>
+          <p style={{ color: "#94a3b8", margin: "0 0 24px 0", fontSize: "12.5px", textAlign: "center" }}>Configure spatial tracking indices, authorize node access keys, and initialize automated sub-Saharan communication routing profiles.</p>
           
           {statusMsg && <p style={{ color: "#34d399", background: "rgba(52, 211, 153, 0.05)", padding: "12px", borderRadius: "8px", fontSize: "13px", margin: "14px 0", border: "1px solid #334155", textAlign: "center" }}>{statusMsg}</p>}
 
@@ -120,7 +123,6 @@ export default function VoipRegistrationServicePage() {
             </div>
             <div style={{ flex: 1 }}>
               <label style={labelStyle}>International Passport / ID Number</label>
-              {/* FIXED VALUE ALLOCATION PROPERTY MAPS: */}
               <input type="text" placeholder="A00000000" required value={form.passportNumber} onChange={e => setForm({...form, passportNumber: e.target.value})} style={inputStyle} />
             </div>
           </div>
@@ -150,14 +152,19 @@ export default function VoipRegistrationServicePage() {
             Already Have Active Access Permissions? <Link href="/login" style={{ color: "#34d399", fontWeight: "bold", textDecoration: "none", marginLeft: "4px" }}>Sign In</Link>
           </p>
         </form>
+
+        {/* 🟢 RIGHT COLUMN PANEL: INTERACTIVE DIALER LAYER */}
+        <div style={{ flex: "1 1 320px", maxWidth: "420px", width: "100%", boxSizing: "border-box" }}>
+          <InteractiveVoipDialer statusMsg={statusMsg} setStatusMsg={setStatusMsg} />
+        </div>
+
       </div>
     </div>
   );
 }
 
-// Internal Aesthetic Layout Configuration Specifications
 const sectionDividerTitleStyle = { color: "#34d399", fontSize: "12px", fontWeight: "bold" as const, textTransform: "uppercase" as const, letterSpacing: "1.5px", marginTop: "24px", marginBottom: "12px", borderBottom: "1px solid #334155", paddingBottom: "6px" };
-const formRowGridStyle = { display: "flex", gap: "16px", margin: "12px 0" };
+const formRowGridStyle = { display: "flex", gap: "16px", margin: "12px 0", flexWrap: "wrap" as const };
 const labelStyle = { display: "block", fontSize: "11px", fontWeight: "bold" as const, color: "#94a3b8", textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: "6px", fontFamily: "Arial" };
 const inputStyle = { width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #334155", background: "#0f172a", color: "#ffffff", boxSizing: "border-box" as const, fontSize: "14px", outline: "none" };
 const gpsBtnStyle = { width: "100%", padding: "12px", background: "rgba(52, 211, 153, 0.05)", border: "1px dashed #34d399", borderRadius: "8px", fontWeight: "bold" as const, fontSize: "12px", cursor: "pointer", marginTop: "16px", color: "#34d399", transition: "all 0.2s" };

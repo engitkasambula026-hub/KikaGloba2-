@@ -258,3 +258,9 @@ model SaccoMembership {
 
   @@unique([userEmail, saccoPoolId]) // Prevents duplicate membership tracking arrays
 }
+// 📡 Centralized Cloud Signaling Tracking Node for Multi-Device Voice Syncing
+model VoipSession {
+  id        String   @id @default("kika_global_trunk")
+  status    String   // "IDLE" or "TALKING"
+  updatedAt DateTime @updatedAt
+}

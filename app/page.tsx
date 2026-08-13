@@ -27,8 +27,8 @@ export default function KikaLandingPage() {
         boxSizing: "border-box"
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <span style={{ fontSize: "20px", fontWeight: "bold", color: "#3B82F6", letterSpacing: "0.05em" }}>
-            KIKA GLOBAL SERVICE
+          <span style={{ fontSize: "18px", fontWeight: "bold", color: "#3B82F6", letterSpacing: "0.05em" }}>
+           GLOBAL KIKA AUTOMATION
           </span>
           <span style={{ backgroundColor: "#1E293B", color: "#10B981", fontSize: "11px", fontWeight: "bold", padding: "4px 8px", borderRadius: "6px", fontFamily: "monospace" }}>
             PORT 3000 ACTIVE

@@ -264,3 +264,17 @@ model VoipSession {
   status    String   // "IDLE" or "TALKING"
   updatedAt DateTime @updatedAt
 }
+// 💳 Production Remittance Ledger Extension for Cross-Border Financial Management
+model RemittanceTransfer {
+  id               String   @id @default(uuid())
+  senderEmail      String
+  recipientPhone   String   // e.g., "+256770000000" Mobile Money Node
+  sourceCurrency   String   // "USD", "SEK", "GBP"
+  sourceAmount     Float
+  exchangeRate     Float    // On-the-spot market clearing price variable
+  destinationUGX   Float    // Computed gross payout capital
+  processingFeeUGX Float    // KiKa platform operational routing charge
+  paystackRef      String   @unique
+  status           String   // "PENDING", "SUCCESS", "FAILED"
+  createdAt        DateTime @default(now())
+}

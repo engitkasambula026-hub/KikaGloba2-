@@ -20,10 +20,9 @@ export default function VoipStreamControllerPanel() {
     const mobileCheck = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     setMySeatId(mobileCheck ? "PHONE_A" : "THINKPAD");
     setTargetSeatId(mobileCheck ? "PHONE_B" : "PHONE_A");
-    addLog("📟 Mobile Wake-Lock Audio Pipeline Core Ready.");
+    addLog("📟 Production Cloud-Routed Voice Core Ready.");
   }, []);
 
-  // 🟢 FORCES DEVICE HARDWARE WAKE: Continuous dummy animation loop to prevent phone sleep states
   useEffect(() => {
     let animationFrameId: number;
     const renderWakeLock = () => {
@@ -50,7 +49,9 @@ export default function VoipStreamControllerPanel() {
     addLog(`🎙️ Initializing hardware voice capture... My Seat: ${mySeatId}`);
     
     try {
-      const absoluteCloudHostOrigin = window.location.origin;
+      // 🟢 LOCKED PRODUCTION DESTINATION URL NODE
+      const absoluteCloudHostOrigin = "https://vercel.app";
+
       const micStream = await navigator.mediaDevices.getUserMedia({ 
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, 
         video: false 
@@ -65,6 +66,7 @@ export default function VoipStreamControllerPanel() {
           reader.readAsDataURL(event.data); 
           reader.onloadend = async () => {
             const parts = reader.result?.toString().split(",");
+            // 🟢 Grabs index [1] to capture only the pure uncorrupted base64 voice string
             const pureBase64 = parts && parts.length > 1 ? parts[1] : "";
             
             if (pureBase64) {
@@ -74,6 +76,7 @@ export default function VoipStreamControllerPanel() {
                 body: JSON.stringify({
                   action: "STREAM_AUDIO_CHUNK",
                   callerId: mySeatId.trim().toUpperCase(),
+                  targetId: targetSeatId.trim().toUpperCase(),
                   audioChunkBase64: pureBase64
                 })
               });
@@ -82,8 +85,8 @@ export default function VoipStreamControllerPanel() {
         }
       };
 
-      mediaRecorder.start(350); // Fluid chunk pace to prevent network port buffer overwrite
-      addLog("🟢 Microphone locked. Streaming audio frames to the cloud engine.");
+      mediaRecorder.start(350); // Fluid chunk pace to prevent packet collisions
+      addLog("🟢 Microphone locked. Streaming audio frames to production cloud endpoint.");
     } catch (err: any) {
       addLog(`❌ Audio initialization failure: ${err.message}`);
       setLineState("IDLE");
@@ -92,9 +95,9 @@ export default function VoipStreamControllerPanel() {
 
   const unmuteAndConnectSpeakerNode = () => {
     setLineState("AUDIBLE");
-    addLog("🔊 Speaker channel unmuted! Listening for incoming data stream blocks...");
+    addLog("🔊 Speaker channel unmuted! Listening for incoming production data stream blocks...");
     
-    const absoluteCloudHostOrigin = window.location.origin;
+    const absoluteCloudHostOrigin = "https://vercel.app";
 
     if (nativeAudioRef.current) {
       nativeAudioRef.current.play().catch(() => {});
@@ -105,7 +108,10 @@ export default function VoipStreamControllerPanel() {
         const res = await fetch(`${absoluteCloudHostOrigin}/api/voip/call`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "PULL_LIVE_AUDIO", targetId: targetSeatId.trim().toUpperCase() })
+          body: JSON.stringify({ 
+            action: "PULL_LIVE_AUDIO", 
+            targetId: targetSeatId.trim().toUpperCase() 
+          })
         });
         const data = await res.json();
         
@@ -114,6 +120,7 @@ export default function VoipStreamControllerPanel() {
           
           if (currentTimestamp !== lastTimestampRef.current && nativeAudioRef.current) {
             lastTimestampRef.current = currentTimestamp;
+            // 🟢 Pipes uncorrupted base64 blocks cleanly into the native audio context tag
             nativeAudioRef.current.src = `data:audio/webm;base64,${data.activePayload.audioChunkBase64}`;
             nativeAudioRef.current.play().catch(() => {});
           }
@@ -127,7 +134,7 @@ export default function VoipStreamControllerPanel() {
     if (intervalRef.current) clearInterval(intervalRef.current);
     if (nativeAudioRef.current) nativeAudioRef.current.pause();
     
-    const absoluteCloudHostOrigin = window.location.origin;
+    const absoluteCloudHostOrigin = "https://vercel.app";
     await fetch(`${absoluteCloudHostOrigin}/api/voip/call`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -143,7 +150,6 @@ export default function VoipStreamControllerPanel() {
     <div style={{ background: "#1e293b", padding: "24px", borderRadius: "16px", border: "1px solid #334155", marginBottom: "20px" }}>
       <h4 style={{ color: "#ffffff", margin: "0 0 12px 0", fontSize: "14px" }}>UN-RESTRICTED FULL-DUPLEX SWITCH PANEL</h4>
       
-      {/* 🟢 HIDDEN WAKE LOCK CANVAS: Forces smartphone OS to keep hardware background threads active */}
       <canvas ref={wakeLockCanvasRef} width="1" height="1" style={{ display: "none" }} />
       <audio ref={nativeAudioRef} style={{ display: "none" }} preload="auto" playsInline />
 

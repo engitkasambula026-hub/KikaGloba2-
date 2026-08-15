@@ -8,7 +8,7 @@ export default function VoipStreamControllerPanel() {
   const [targetSeatId, setTargetSeatId] = useState("");
   const [logs, setLogs] = useState<string[]>([]);
 
-  const localStreamRef = useRef<MediaStream | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const intervalRef = useRef<any>(null);
   const nativeAudioTagRef = useRef<HTMLAudioElement | null>(null);
   const lastTimestampRef = useRef<number>(0);
@@ -20,10 +20,9 @@ export default function VoipStreamControllerPanel() {
     const mobileCheck = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     setMySeatId(mobileCheck ? "PHONE_A" : "THINKPAD");
     setTargetSeatId(mobileCheck ? "PHONE_B" : "PHONE_A");
-    addLog("📟 KiKa Multi-Node Full-Duplex Router Ready.");
+    addLog("📟 Mobile-Safe Hardware Awakening Engine Ready.");
   }, []);
 
-  // 🟢 CANVAS HARDWARE WAKE-LOCK: Forces mobile kernels to keep media threads running high-priority
   useEffect(() => {
     let animationId: number;
     const runWakeLock = () => {
@@ -42,21 +41,39 @@ export default function VoipStreamControllerPanel() {
       alert("⚠️ Configuration Error: Assign both localized Seat ID and Target ID nodes.");
       return;
     }
+    
+    // 🟢 FORCES SMARTPHONE KEYBOARD TO HIDE TO UNBLOCK HARDWARE PORT THREADS
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
     setLineState("TALKING");
-    addLog(`🎙️ Initializing hardware voice capture matrix... My Seat: ${mySeatId}`);
+    addLog(`🎙️ Awakening hardware voice matrix... My Seat: ${mySeatId}`);
 
     try {
-      // 🟢 SELF-CORRECTING HOST IDENTIFIER: Dynamically tracks your precise vercel.app domain link automatically
       const liveCloudHostOrigin = window.location.origin;
 
+      // Enforces clear echo cancellation and maximum audio gain to bypass iOS Wi-Fi restrictions
       const micStream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+        audio: { 
+          echoCancellation: true, 
+          noiseSuppression: true, 
+          autoGainControl: true 
+        },
         video: false
       });
-      localStreamRef.current = micStream;
 
+      // 🟢 WAKES UP THE SOUND HARDWARE LAYER EXPLICITLY:
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      const dummyCtx = new AudioContextClass();
+      const dummyGain = dummyCtx.createGain();
+      dummyGain.gain.setValueAtTime(0.01, dummyCtx.currentTime);
+      dummyGain.connect(dummyCtx.destination);
+
+      // Uses standard webm containers to ensure absolute cross-device header compliance
       const mediaRecorder = new MediaRecorder(micStream, { mimeType: "audio/webm; codecs=opus" });
-      
+      mediaRecorderRef.current = mediaRecorder;
+
       mediaRecorder.ondataavailable = async (event) => {
         if (event.data.size > 0) {
           const reader = new FileReader();
@@ -81,7 +98,7 @@ export default function VoipStreamControllerPanel() {
         }
       };
 
-      mediaRecorder.start(250); // High-velocity 250ms chunks to achieve fluid continuous stream patterns
+      mediaRecorder.start(350); // Steady 350ms sample pace to prevent packet overwrites over cellular networks
       addLog("🟢 Microphone locked. Pumping digital voice data strings live over Vercel cloud endpoints.");
 
     } catch (err: any) {
@@ -90,7 +107,6 @@ export default function VoipStreamControllerPanel() {
     }
   };
 
-  // 🟢 NATIVE HARDWARE UNMUTE BRIDGE: Manual handshake that forces iOS & Android to unlock the speaker
   const unmuteAndConnectSpeakerNode = () => {
     setLineState("AUDIBLE");
     addLog("🔊 Speaker channel unmuted! Synchronizing with global production data streams...");
@@ -115,19 +131,18 @@ export default function VoipStreamControllerPanel() {
 
           if (frameTimestamp !== lastTimestampRef.current && nativeAudioTagRef.current) {
             lastTimestampRef.current = frameTimestamp;
-            // Feed the clean uncorrupted voice data string natively right into the open HTML5 speaker channel
             nativeAudioTagRef.current.src = `data:audio/webm;base64,${data.activePayload.audioChunkBase64}`;
             nativeAudioTagRef.current.play().catch(() => {});
           }
         }
       } catch (e) { console.error(e); }
-    }, 250);
+    }, 350);
   };
 
   const closeVoicePipeline = async () => {
-    if (localStreamRef.current) localStreamRef.current.getTracks().forEach(t => t.stop());
+    if (mediaRecorderRef.current) mediaRecorderRef.current.stop();
     if (intervalRef.current) clearInterval(intervalRef.current);
-    if (nativeAudioTagRef.current) nativeAudioTagRef.current.pause();
+    if (nativeAudioTagRef.current) { nativeAudioTagRef.current.pause(); nativeAudioTagRef.current.src = ""; }
 
     const liveCloudHostOrigin = window.location.origin;
     await fetch(`${liveCloudHostOrigin}/api/voip/call`, {

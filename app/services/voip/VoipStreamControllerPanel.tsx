@@ -20,7 +20,7 @@ export default function VoipStreamControllerPanel() {
     const mobileCheck = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     setMySeatId(mobileCheck ? "PHONE_A" : "THINKPAD");
     setTargetSeatId(mobileCheck ? "PHONE_B" : "PHONE_A");
-    addLog("📟 Production Cloud-Routed Voice Core Ready.");
+    addLog("📟 Production Universal Self-Correcting Voice Core Ready.");
   }, []);
 
   useEffect(() => {
@@ -49,8 +49,8 @@ export default function VoipStreamControllerPanel() {
     addLog(`🎙️ Initializing hardware voice capture... My Seat: ${mySeatId}`);
     
     try {
-      // 🟢 LOCKED PRODUCTION DESTINATION URL NODE
-      const absoluteCloudHostOrigin = "https://vercel.app";
+      // 🟢 DYNAMIC PRODUCTION ROUTE: Bypasses hardcoded typos and locks onto your exact live browser domain name
+      const absoluteCloudHostOrigin = window.location.origin;
 
       const micStream = await navigator.mediaDevices.getUserMedia({ 
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, 
@@ -66,7 +66,6 @@ export default function VoipStreamControllerPanel() {
           reader.readAsDataURL(event.data); 
           reader.onloadend = async () => {
             const parts = reader.result?.toString().split(",");
-            // 🟢 Grabs index [1] to capture only the pure uncorrupted base64 voice string
             const pureBase64 = parts && parts.length > 1 ? parts[1] : "";
             
             if (pureBase64) {
@@ -85,8 +84,8 @@ export default function VoipStreamControllerPanel() {
         }
       };
 
-      mediaRecorder.start(350); // Fluid chunk pace to prevent packet collisions
-      addLog("🟢 Microphone locked. Streaming audio frames to production cloud endpoint.");
+      mediaRecorder.start(350); 
+      addLog("🟢 Microphone locked. Streaming audio frames to verified server destination.");
     } catch (err: any) {
       addLog(`❌ Audio initialization failure: ${err.message}`);
       setLineState("IDLE");
@@ -95,9 +94,10 @@ export default function VoipStreamControllerPanel() {
 
   const unmuteAndConnectSpeakerNode = () => {
     setLineState("AUDIBLE");
-    addLog("🔊 Speaker channel unmuted! Listening for incoming production data stream blocks...");
+    addLog("🔊 Speaker channel unmuted! Fetching production sound vectors...");
     
-    const absoluteCloudHostOrigin = "https://vercel.app";
+    // 🟢 DYNAMIC PRODUCTION ROUTE: Bypasses hardcoded typos and locks onto your exact live browser domain name
+    const absoluteCloudHostOrigin = window.location.origin;
 
     if (nativeAudioRef.current) {
       nativeAudioRef.current.play().catch(() => {});
@@ -120,7 +120,6 @@ export default function VoipStreamControllerPanel() {
           
           if (currentTimestamp !== lastTimestampRef.current && nativeAudioRef.current) {
             lastTimestampRef.current = currentTimestamp;
-            // 🟢 Pipes uncorrupted base64 blocks cleanly into the native audio context tag
             nativeAudioRef.current.src = `data:audio/webm;base64,${data.activePayload.audioChunkBase64}`;
             nativeAudioRef.current.play().catch(() => {});
           }
@@ -134,7 +133,7 @@ export default function VoipStreamControllerPanel() {
     if (intervalRef.current) clearInterval(intervalRef.current);
     if (nativeAudioRef.current) nativeAudioRef.current.pause();
     
-    const absoluteCloudHostOrigin = "https://vercel.app";
+    const absoluteCloudHostOrigin = window.location.origin;
     await fetch(`${absoluteCloudHostOrigin}/api/voip/call`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

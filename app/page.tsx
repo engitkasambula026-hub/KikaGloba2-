@@ -28,7 +28,7 @@ export default function KikaLandingPage() {
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <span style={{ fontSize: "18px", fontWeight: "bold", color: "#3B82F6", letterSpacing: "0.05em" }}>
-           Kika GLobal Ventures
+           KIKA GLOBAL VENTURES
           </span>
           <span style={{ backgroundColor: "#1E293B", color: "#10B981", fontSize: "11px", fontWeight: "bold", padding: "4px 8px", borderRadius: "6px", fontFamily: "monospace" }}>
             PORT 3000 ACTIVE

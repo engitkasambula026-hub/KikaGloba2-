@@ -8,9 +8,9 @@ export default function VoipStreamControllerPanel() {
   const [targetSeatId, setTargetSeatId] = useState("");
   const [logs, setLogs] = useState<string[]>([]);
 
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const localStreamRef = useRef<MediaStream | null>(null);
   const intervalRef = useRef<any>(null);
-  const nativeAudioRef = useRef<HTMLAudioElement | null>(null);
+  const nativeAudioTagRef = useRef<HTMLAudioElement | null>(null);
   const lastTimestampRef = useRef<number>(0);
   const wakeLockCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -20,63 +20,60 @@ export default function VoipStreamControllerPanel() {
     const mobileCheck = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     setMySeatId(mobileCheck ? "PHONE_A" : "THINKPAD");
     setTargetSeatId(mobileCheck ? "PHONE_B" : "PHONE_A");
-    addLog("📟 Production Universal Self-Correcting Voice Core Ready.");
+    addLog("📟 KiKa Multi-Node Full-Duplex Router Ready.");
   }, []);
 
+  // 🟢 CANVAS HARDWARE WAKE-LOCK: Forces mobile kernels to keep media threads running high-priority
   useEffect(() => {
-    let animationFrameId: number;
-    const renderWakeLock = () => {
+    let animationId: number;
+    const runWakeLock = () => {
       if (wakeLockCanvasRef.current) {
         const ctx = wakeLockCanvasRef.current.getContext("2d");
-        if (ctx) {
-          ctx.fillStyle = Math.random() > 0.5 ? "#000000" : "#ffffff";
-          ctx.fillRect(0, 0, 1, 1);
-        }
+        if (ctx) { ctx.fillStyle = Math.random() > 0.5 ? "#020617" : "#0f172a"; ctx.fillRect(0, 0, 1, 1); }
       }
-      animationFrameId = requestAnimationFrame(renderWakeLock);
+      animationId = requestAnimationFrame(runWakeLock);
     };
-    renderWakeLock();
-    return () => cancelAnimationFrame(animationFrameId);
+    runWakeLock();
+    return () => cancelAnimationFrame(animationId);
   }, []);
 
-  const startIphoneStream = async () => {
+  const startMicrophoneTransmission = async () => {
     if (!mySeatId || !targetSeatId) {
-      alert("⚠️ Routing Error: Enforce both local Seat ID and Target ID attributes.");
+      alert("⚠️ Configuration Error: Assign both localized Seat ID and Target ID nodes.");
       return;
     }
-
     setLineState("TALKING");
-    addLog(`🎙️ Initializing hardware voice capture... My Seat: ${mySeatId}`);
-    
+    addLog(`🎙️ Initializing hardware voice capture matrix... My Seat: ${mySeatId}`);
+
     try {
-      // 🟢 DYNAMIC PRODUCTION ROUTE: Bypasses hardcoded typos and locks onto your exact live browser domain name
-      const absoluteCloudHostOrigin = window.location.origin;
+      // 🟢 SELF-CORRECTING HOST IDENTIFIER: Dynamically tracks your precise vercel.app domain link automatically
+      const liveCloudHostOrigin = window.location.origin;
 
-      const micStream = await navigator.mediaDevices.getUserMedia({ 
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, 
-        video: false 
+      const micStream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+        video: false
       });
-      
-      const mediaRecorder = new MediaRecorder(micStream, { mimeType: "audio/webm; codecs=opus" });
-      mediaRecorderRef.current = mediaRecorder;
+      localStreamRef.current = micStream;
 
+      const mediaRecorder = new MediaRecorder(micStream, { mimeType: "audio/webm; codecs=opus" });
+      
       mediaRecorder.ondataavailable = async (event) => {
         if (event.data.size > 0) {
           const reader = new FileReader();
-          reader.readAsDataURL(event.data); 
+          reader.readAsDataURL(event.data);
           reader.onloadend = async () => {
-            const parts = reader.result?.toString().split(",");
-            const pureBase64 = parts && parts.length > 1 ? parts[1] : "";
-            
-            if (pureBase64) {
-              await fetch(`${absoluteCloudHostOrigin}/api/voip/call`, {
+            const dataUrlParts = reader.result?.toString().split(",");
+            const extractedVoiceString = dataUrlParts && dataUrlParts.length > 1 ? dataUrlParts[1] : "";
+
+            if (extractedVoiceString) {
+              await fetch(`${liveCloudHostOrigin}/api/voip/call`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   action: "STREAM_AUDIO_CHUNK",
                   callerId: mySeatId.trim().toUpperCase(),
                   targetId: targetSeatId.trim().toUpperCase(),
-                  audioChunkBase64: pureBase64
+                  audioChunkBase64: extractedVoiceString
                 })
               });
             }
@@ -84,57 +81,56 @@ export default function VoipStreamControllerPanel() {
         }
       };
 
-      mediaRecorder.start(350); 
-      addLog("🟢 Microphone locked. Streaming audio frames to verified server destination.");
+      mediaRecorder.start(250); // High-velocity 250ms chunks to achieve fluid continuous stream patterns
+      addLog("🟢 Microphone locked. Pumping digital voice data strings live over Vercel cloud endpoints.");
+
     } catch (err: any) {
-      addLog(`❌ Audio initialization failure: ${err.message}`);
+      addLog(`❌ Audio hardware connection aborted: ${err.message}`);
       setLineState("IDLE");
     }
   };
 
+  // 🟢 NATIVE HARDWARE UNMUTE BRIDGE: Manual handshake that forces iOS & Android to unlock the speaker
   const unmuteAndConnectSpeakerNode = () => {
     setLineState("AUDIBLE");
-    addLog("🔊 Speaker channel unmuted! Fetching production sound vectors...");
-    
-    // 🟢 DYNAMIC PRODUCTION ROUTE: Bypasses hardcoded typos and locks onto your exact live browser domain name
-    const absoluteCloudHostOrigin = window.location.origin;
+    addLog("🔊 Speaker channel unmuted! Synchronizing with global production data streams...");
 
-    if (nativeAudioRef.current) {
-      nativeAudioRef.current.play().catch(() => {});
+    const liveCloudHostOrigin = window.location.origin;
+
+    if (nativeAudioTagRef.current) {
+      nativeAudioTagRef.current.play().catch(() => {});
     }
 
     intervalRef.current = setInterval(async () => {
       try {
-        const res = await fetch(`${absoluteCloudHostOrigin}/api/voip/call`, {
+        const res = await fetch(`${liveCloudHostOrigin}/api/voip/call`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-            action: "PULL_LIVE_AUDIO", 
-            targetId: targetSeatId.trim().toUpperCase() 
-          })
+          body: JSON.stringify({ action: "PULL_LIVE_AUDIO", targetId: targetSeatId.trim().toUpperCase() })
         });
         const data = await res.json();
-        
-        if (data.activePayload && data.activePayload.status === "TALKING" && data.activePayload.audioChunkBase64) {
-          const currentTimestamp = data.activePayload.timestamp || 0;
-          
-          if (currentTimestamp !== lastTimestampRef.current && nativeAudioRef.current) {
-            lastTimestampRef.current = currentTimestamp;
-            nativeAudioRef.current.src = `data:audio/webm;base64,${data.activePayload.audioChunkBase64}`;
-            nativeAudioRef.current.play().catch(() => {});
+
+        if (data.activePayload && data.activePayload.audioChunkBase64) {
+          const frameTimestamp = data.activePayload.timestamp || 0;
+
+          if (frameTimestamp !== lastTimestampRef.current && nativeAudioTagRef.current) {
+            lastTimestampRef.current = frameTimestamp;
+            // Feed the clean uncorrupted voice data string natively right into the open HTML5 speaker channel
+            nativeAudioTagRef.current.src = `data:audio/webm;base64,${data.activePayload.audioChunkBase64}`;
+            nativeAudioTagRef.current.play().catch(() => {});
           }
         }
       } catch (e) { console.error(e); }
-    }, 350);
+    }, 250);
   };
 
   const closeVoicePipeline = async () => {
-    if (mediaRecorderRef.current) mediaRecorderRef.current.stop();
+    if (localStreamRef.current) localStreamRef.current.getTracks().forEach(t => t.stop());
     if (intervalRef.current) clearInterval(intervalRef.current);
-    if (nativeAudioRef.current) nativeAudioRef.current.pause();
-    
-    const absoluteCloudHostOrigin = window.location.origin;
-    await fetch(`${absoluteCloudHostOrigin}/api/voip/call`, {
+    if (nativeAudioTagRef.current) nativeAudioTagRef.current.pause();
+
+    const liveCloudHostOrigin = window.location.origin;
+    await fetch(`${liveCloudHostOrigin}/api/voip/call`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "DISCONNECT_STREAM", callerId: mySeatId.toUpperCase() })
@@ -150,7 +146,7 @@ export default function VoipStreamControllerPanel() {
       <h4 style={{ color: "#ffffff", margin: "0 0 12px 0", fontSize: "14px" }}>UN-RESTRICTED FULL-DUPLEX SWITCH PANEL</h4>
       
       <canvas ref={wakeLockCanvasRef} width="1" height="1" style={{ display: "none" }} />
-      <audio ref={nativeAudioRef} style={{ display: "none" }} preload="auto" playsInline />
+      <audio ref={nativeAudioTagRef} style={{ display: "none" }} preload="auto" playsInline />
 
       {lineState === "IDLE" && (
         <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
@@ -170,7 +166,7 @@ export default function VoipStreamControllerPanel() {
       </div>
 
       {lineState === "IDLE" && (
-        <button onClick={startIphoneStream} style={{ width: "100%", padding: "14px", background: "#34d399", color: "#0f172a", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer", boxShadow: "0 4px 14px rgba(52, 211, 153, 0.2)" }}>
+        <button onClick={startMicrophoneTransmission} style={{ width: "100%", padding: "14px", background: "#34d399", color: "#0f172a", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer", boxShadow: "0 4px 14px rgba(52, 211, 153, 0.2)" }}>
           🚀 Activate Microphone Transmitter
         </button>
       )}

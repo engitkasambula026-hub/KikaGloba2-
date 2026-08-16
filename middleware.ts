@@ -2,29 +2,24 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export const config = {
-  // 🟢 ENFORCES UNIVERSAL SITE GATEKEEPING: Intercepts all page routes except backend system assets
-  matcher: "/((?!_next/static|_next/image|favicon.ico|api/auth/login).*)",
+  // 🟢 ENFORCES SECURE PERMISSION GATEWAYS: Protects all premium business services automatically
+  matcher: ["/services/:path*", "/business-hub/:path*", "/wallet/:path*"],
 };
 
 export async function middleware(request: NextRequest) {
-  // 1. Establish your secret alpha-numeric master pass token
-  const MASTER_GATEPASS_SECRET = "KikaGlobalStaging2026";
-  
   const currentUrl = request.nextUrl.clone();
-  
-  // 2. Check if the user is attempting to submit the gatepass password form fields
-  if (request.nextUrl.pathname === "/gatepass-authorize") {
-    return NextResponse.next();
-  }
 
-  // 3. Audit check the visitor's browser cookie files for an active access pass
-  const hasPassToken = request.cookies.get("kika_gatepass_approved");
+  // Audit check the visitor's browser engine cookies for an official active user login token
+  const isSessionAuthenticated = request.cookies.get("kika_session_active");
 
-  if (!hasPassToken || hasPassToken.value !== MASTER_GATEPASS_SECRET) {
-    // Redirect unverified network traffic straight to the security authorization wall
-    currentUrl.pathname = "/gatepass-authorize";
+  if (!isSessionAuthenticated || isSessionAuthenticated.value !== "true") {
+    console.log(`🔌 [SECURITY INTERCEPT] Unauthenticated traffic redirected to Profile Verification Registry.`);
+    
+    // Smoothly route them to your dedicated flat login dashboard page
+    currentUrl.pathname = "/login";
     return NextResponse.redirect(currentUrl);
   }
 
+  // If the verified user session token exists in their system, grant unrestricted entry
   return NextResponse.next();
 }

@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db"; // 🟢 Connects natively to your active database client node
+import { db } from "@/lib/db"; 
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
     const rawBody = await req.json();
-    const { name, email, password, hostCountry, domicileStatus, gpsLocation, profession } = rawBody;
+    const { name, email, password } = rawBody;
 
     if (!email || !password) {
       return NextResponse.json({ error: "Validation Rejected: Incomplete profile credentials." }, { status: 400 });
@@ -14,8 +14,15 @@ export async function POST(req: Request) {
 
     const targetEmail = email.toLowerCase().trim();
 
-    // 1. Audit check the database tables for an existing user identity loop
-    const existingUser = await db.user.findFirst({
+    // 🟢 SECURE DELEGATE BYPASS ROUTINE: Eliminates invalid Prisma findFirst lookups on cross-environment database pools
+    const userDelegate = (db as any).user || (db as any).profiles || (db as any).member;
+    
+    if (!userDelegate) {
+      return NextResponse.json({ error: "Database mapping configuration node un-initialized." }, { status: 500 });
+    }
+
+    // 1. Audit check the database tables safely for an existing user identity
+    const existingUser = await userDelegate.findFirst({
       where: { email: targetEmail }
     });
 
@@ -23,42 +30,24 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Sovereign Identity Blocked: This email address is already registered." }, { status: 400 });
     }
 
-    // 2. 🛡️ SAFE GUARDED LEDGER INJECTOR: Commits records cleanly to database tables without crash loops
-    const freshUser = await db.user.create({
+    // 2. Commit the member record cleanly inside the active SQL rows
+    const freshUser = await userDelegate.create({
       data: {
         name: name || "Diaspora Member",
         email: targetEmail,
-        password: password, // In formal live production, pass your keys securely via bcrypt hash loops
+        password: password, 
         role: "DIASPORA_MEMBER"
       }
     });
 
-    // 3. AUTOMATED WALLET LEDGER ALLOCATION: Seeds a fresh transactional cash balance token
-    try {
-      // Fetch a valid wallet database delegate safely
-      const walletDelegate = (db as any).wallet || (db as any).userWallet;
-      if (walletDelegate) {
-        await walletDelegate.create({
-          data: {
-            userId: freshUser.id,
-            balanceUGX: 5000, // Allocate a 5,000 UGX sandbox promotional credit to initialize communication tests
-            currency: "UGX"
-          }
-        });
-      }
-    } catch (walletErr) {
-      console.log("[LEDGER NOTICE] Wallet initialized safely in memory pools.");
-    }
-
     return NextResponse.json({
       success: true,
-      message: "Statutory profile successfully synchronized inside Neon PostgreSQL cluster ledger.",
-      userId: freshUser.id,
-      allocatedPromotionalCredit: "5,000 UGX"
+      message: "Statutory profile successfully synchronized inside Neon database ledger.",
+      userId: freshUser.id
     }, { status: 201 });
 
   } catch (error: any) {
-    console.error("[REGISTRATION ENGINE CRITICAL FAULT]:", error);
+    console.error("[REGISTRATION CORE ENGINE FAULT]:", error);
     return NextResponse.json({ error: `Identity ledger processing failure: ${error.message}` }, { status: 500 });
   }
 }

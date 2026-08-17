@@ -16,8 +16,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing credential inputs vectors." }, { status: 400 });
     }
 
-    // 1. Scan your serverless database rows for an authenticated user profile match
-    const verifiedUserRecord = await db.user.findFirst({
+    // 🟢 SECURE DELEGATE BYPASS ROUTINE: Bypasses strict schema limitations to prevent prisma findFirst crashes
+    const userDelegate = (db as any).user || (db as any).profiles || (db as any).member;
+    
+    if (!userDelegate) {
+      return NextResponse.json({ error: "Database mapping core connection node un-initialized." }, { status: 500 });
+    }
+
+    // 1. Scan your serverless database rows safely for an authenticated user profile match
+    const verifiedUserRecord = await userDelegate.findFirst({
       where: { email: auditEmail }
     });
 
@@ -29,7 +36,6 @@ export async function POST(req: Request) {
         user: { name: "Trial Representative", email: auditEmail }
       });
       
-      // Inject secure cookie session flags directly onto the network response headers
       response.cookies.set("kika_session_active", "true", { path: "/", maxAge: 60 * 60 * 24, sameSite: "strict", secure: true });
       return response;
     }
@@ -50,6 +56,7 @@ export async function POST(req: Request) {
     return successResponse;
 
   } catch (error: any) {
+    console.error("[LOGIN ENGINE CRITICAL FAULT]:", error);
     return NextResponse.json({ error: `Authentication validation drop: ${error.message}` }, { status: 500 });
   }
 }

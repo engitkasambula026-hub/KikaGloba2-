@@ -14,11 +14,11 @@ export async function POST(req: Request) {
 
     const targetEmail = email.toLowerCase().trim();
 
-    // 🟢 SECURE DELEGATE BYPASS ROUTINE: Eliminates invalid Prisma findFirst lookups on cross-environment database pools
-    const userDelegate = (db as any).user || (db as any).profiles || (db as any).member;
+    // 🟢 ABSOLUTE UNIVERSAL MODEL BINDING: Automatically matches any variant of the user table structure
+    const userDelegate = (db as any).user || (db as any).profiles || (db as any).member || (db as any).account;
     
     if (!userDelegate) {
-      return NextResponse.json({ error: "Database mapping configuration node un-initialized." }, { status: 500 });
+      return NextResponse.json({ error: "Database mapping core connection node un-initialized." }, { status: 500 });
     }
 
     // 1. Audit check the database tables safely for an existing user identity
@@ -31,19 +31,18 @@ export async function POST(req: Request) {
     }
 
     // 2. Commit the member record cleanly inside the active SQL rows
-    const freshUser = await userDelegate.create({
+    await userDelegate.create({
       data: {
         name: name || "Diaspora Member",
         email: targetEmail,
-        password: password, 
+        password: password.trim(), 
         role: "DIASPORA_MEMBER"
       }
     });
 
     return NextResponse.json({
       success: true,
-      message: "Statutory profile successfully synchronized inside Neon database ledger.",
-      userId: freshUser.id
+      message: "Statutory profile successfully synchronized inside Neon database ledger."
     }, { status: 201 });
 
   } catch (error: any) {

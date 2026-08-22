@@ -16,7 +16,6 @@ export default function KikaEcosystemLandingFortress() {
   const [fullName, setFullName] = useState("");
   const [passportNum, setPassportNum] = useState("");
   const [hostCountry, setHostCountry] = useState("United Kingdom");
-  const [saccoAllocation, setSaccoAllocation] = useState("10000");
 
   useEffect(() => {
     const cookiesArray = document.cookie.split("; ");
@@ -48,17 +47,17 @@ export default function KikaEcosystemLandingFortress() {
         </div>
         <div>
           {isAuthenticated ? (
-            <button onClick={() => { document.cookie = "kika_session_active=; path=/; max-age=0; SameSite=Lax; Secure"; window.location.reload(); }} style={{ background: "transparent", border: "1px solid #ef4444", color: "#ef4444", padding: "8px 16px", borderRadius: "6px", cursor: "pointer" }}>Disconnect Node</button>
+            <button onClick={() => { document.cookie = "kika_session_active=; path=/; max-age=0; SameSite=Lax; Secure"; setIsAuthenticated(false); window.location.reload(); }} style={{ background: "transparent", border: "1px solid #ef4444", color: "#ef4444", padding: "8px 16px", borderRadius: "6px", cursor: "pointer" }}>Disconnect Node</button>
           ) : (
             <button onClick={() => router.push("/login")} style={{ background: "#10b981", border: "none", color: "#020617", padding: "8px 16px", borderRadius: "6px", cursor: "pointer", fontWeight: "bold" }}>Sign In / Enroll</button>
           )}
         </div>
       </nav>
-      <section style={{ maxWidth: "1100px", margin: "40px auto 10px auto", padding: "0 20px", textAlign: "center" }}>
+      <section style={{ maxWidth: "1100px", margin: "40px auto 10px auto", padding: "0 20px" }}>
         {isAuthenticated ? (
-          <div style={{ background: "rgba(16, 185, 129, 0.05)", border: "1px solid #10b981", padding: "15px", borderRadius: "10px", color: "#10b981", fontWeight: "bold", fontFamily: "monospace" }}>🛡️ AUTHORIZED COCKPIT HUB ACTIVE • WELCOME BACK, MASTER ADMIN NODE</div>
+          <div style={{ background: "rgba(16, 185, 129, 0.05)", border: "1px solid #10b981", padding: "15px", borderRadius: "10px", color: "#10b981", fontWeight: "bold", fontFamily: "monospace", textAlign: "center" }}>🛡️ AUTHORIZED COCKPIT HUB ACTIVE • WELCOME BACK, MASTER ADMIN NODE</div>
         ) : (
-          <div style={{ background: "rgba(239, 68, 68, 0.03)", border: "1px dashed #ef4444", padding: "15px", borderRadius: "10px", color: "#ef4444", fontWeight: "bold", fontFamily: "monospace" }}>🔒 PUBLIC NETWORK WALL: CORES SAFELY GATED BEHIND NEON SQL AUDIT CHANNELS</div>
+          <div style={{ background: "rgba(239, 68, 68, 0.03)", border: "1px dashed #ef4444", padding: "15px", borderRadius: "10px", color: "#ef4444", fontWeight: "bold", fontFamily: "monospace", textAlign: "center" }}>🔒 PUBLIC NETWORK WALL: CORES SAFELY GATED BEHIND NEON SQL AUDIT CHANNELS</div>
         )}
       </section>
 
@@ -69,7 +68,7 @@ export default function KikaEcosystemLandingFortress() {
 
       {/* 📝 COMPREHENSIVE DIASPORA ASSET REGISTRY & USER INTAKE FORM GRID */}
       <section style={{ maxWidth: "900px", margin: "0 auto 40px auto", padding: "0 20px" }}>
-        <div style={{ backgroundColor: "#0f172a", padding: "35px", borderRadius: "14px", border: "1px solid #1e293b", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)" }}>
+        <div style={{ backgroundColor: "#0f172a", padding: "35px", borderRadius: "14px", border: "1px solid #1e293b" }}>
           <h2 style={{ color: "#ffffff", fontSize: "18px", fontWeight: "bold", marginBottom: "15px" }}>📝 Comprehensive Diaspora Residency Asset Registry Intake Form</h2>
           <p style={{ color: "#64748b", fontSize: "12.5px", marginBottom: "25px" }}>Synchronize your statutory international residency variables directly with the serverless database to clear cross-border compliance barriers.</p>
           
@@ -95,7 +94,7 @@ export default function KikaEcosystemLandingFortress() {
         </div>
       </section>
 
-      {/* QUICK QUICK ACCESS BUTTON CARDS */}
+      {/* QUICK CORE ACCESS SERVICE WIDGET TILES */}
       <main style={{ maxWidth: "900px", margin: "0 auto", padding: "0 20px 40px 20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
         <div onClick={() => { if (isAuthenticated) { router.push("/services/voip"); } else { setTeaserService({ id: "v", name: "🎙️ Low-Tariff VoIP Link", description: "Stream ultra-cheap voice tunnels directly to East African mobile networks over un-restricted WebRTC channels.", targetPath: "/services/voip" }); } }} style={{ backgroundColor: "#0b1329", padding: "25px", borderRadius: "12px", border: "1px solid #1e293b", cursor: "pointer" }}>
           <h3 style={{ color: "#ffffff", margin: "0 0 5px 0" }}>🗣️ Voice Link Carrier Trunk</h3>

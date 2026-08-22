@@ -45,6 +45,8 @@ export const ecosystemMenu: Category[] = [
     options: [
       { id: "port-v", name: "Low-Tariff Full-Duplex VoIP Link", description: "Disrupting traditional telecom tariffs. High-velocity PCM sound wave streaming delivering ultra-cheap voice tunnels directly to KiKa diaspora membership networks.", targetPath: "/services/voip" }, 
       { id: "port-j", name: "Job Matchmaker Engine", description: "Aggregated international job vacancy search node seamlessly linking skilled diaspora professionals straight to cross-border institutional career lines.", targetPath: "/login" },
+      { id: "port-r", name: "Technical Innovation Board", description: "Regional tech incubation indices tracking ongoing project development metrics, code milestones, and collaborative engineering tracks.", targetPath: "/login" },
+      { id: "port-p", name: "Placements & Scholarships Matrix", description: "Connect university researchers to dissertation data nodes, international academic internships, and global educational placements.", targetPath: "/login" },
       { id: "port-legacy", name: "Legacy Foundation Charter History", description: "The complete structural founding roadmap, charter variables, and social vision honoring the Kika co-founder legacy and cross-border milestones.", targetPath: "/login" }
     ] 
   }

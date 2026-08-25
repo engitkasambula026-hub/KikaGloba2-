@@ -1,13 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // 🟢 FORCES VERCEL TO BYPASS STRICT TYPESCRIPT LINTER CHECK ERRORS DURING BUILD LOOPS:
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  // 🟢 FORCES VERCEL TO BYPASS STRICT ESLINT VALIDATION CHECKS DURING BUILD LOOPS:
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  reactStrictMode: true,
+  /* Add any additional config options your ecosystem needs here */
 };
 
-export default nextConfig;
+module.exports = nextConfig;

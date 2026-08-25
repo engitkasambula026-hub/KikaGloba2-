@@ -2,7 +2,62 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { kikaGlobalOffices, foundersLegacyData, ecosystemMenu, Option } from "@/lib/kikaData";
+
+// 🟢 INTEGRATED IMMUTABLE INTERFACE DATA TYPE CONTEXTS
+export interface Office { id: string; flag: string; region: string; address: string; support: string; }
+export interface Option { id: string; name: string; description: string; targetPath: string; }
+export interface Category { categoryName: string; options: Option[]; }
+
+// 🟢 MONOLITHIC COCKPIT DICTIONARY DATA STORAGE (ZERO EXTERNAL IMPORT CONFLICTS)
+export const kikaGlobalOffices: Office[] = [
+  { id: "kla", flag: "🇺🇬", region: "East Africa Operational HQ (Kampala)", address: "Plot 12-14, Nakasero Road, Nakasero, Kampala, Uganda", support: "📞 Core Support Line: +256 414 kika_voip_trunk" },
+  { id: "ldn", flag: "🇬🇧", region: "United Kingdom Diaspora Hub (London)", address: "Level 4, Canary Wharf Technology Switchboards, London, UK", support: "📞 Virtual Trunk Link: +44 20 7946 0192" }
+];
+
+export const foundersLegacyData = {
+  title: "📜 KiGa Sovereign Foundational Legacy Charter & Regional History",
+  charterText: "Honoring the historical vision of the KiKa co-founders, the platform is engineered as an immutable community automation baseline. Designed to structurally bridge the macroeconomic wealth imbalances transiting between global diaspora hubs and local East African savings societies, KiKa serves as a continuous, reliable technical trust port.",
+  nodes: [
+    { label: "📍 REGIONAL DATA SOVEREIGNTY", detail: "Multi-tenant database isolation mapped dynamically over serverless Neon PostgreSQL pooling rows." },
+    { label: "📋 NITA-U FRAMEWORK COMPLIANCE", detail: "Strict Uganda PDPO data privacy laws, data encryption protocols, and sovereign storage parameters." },
+    { label: "🔐 MASTER VALIDATION HOOKS", detail: "System policing layers anchored exclusively by verified Admin Master Profile nodes." }
+  ]
+};
+
+export const ecosystemMenu: Category[] = [
+  { 
+    categoryName: "Registering Hub", 
+    options: [
+      { id: "reg-m", name: "Diaspora Membership Enrollment", description: "Statutory profile configuration pipeline synchronizing your verified identity parameters (Name, Passport Data, Host Country Domicile, GPS Coordinates) straight inside the secure Neon database ledger.", targetPath: "/" }, 
+      { id: "reg-s", name: "Sacco Corporate Grouping", description: "Initialize multi-signatory asset pooling profiles to authorize combined cooperative savings tracks and joint remittance pipelines.", targetPath: "/" }
+    ] 
+  },
+  { 
+    categoryName: "Financial Hub Services", 
+    options: [
+      { id: "fin-w", name: "Available Wallet Capital", description: "Real-time ledger overview tracking your available transactional balances and liquid investment liquidity lines mapped cleanly to cloud SQL database fields with full bank reconciliation footprints.", targetPath: "/" }, 
+      { id: "fin-s", name: "Cooperative Sacco Shares", description: "Automated wealth accumulation trackers displaying your accumulated asset shares valued natively at a statutory 10,000 UGX per unit allocation point.", targetPath: "/" }, 
+      { id: "fin-e", name: "Trust Escrow Reserves", description: "Automated compliance buffer systems securing 25% of transiting remittance capital from cellular network fraud vectors and instant liquidity overrides.", targetPath: "/" }
+    ] 
+  },
+  { 
+    categoryName: "Business & Commerce", 
+    options: [
+      { id: "biz-t", name: "Cross-Border Trade Matrix Corridor", description: "Direct B2B import/export cargo clearinghouse routers enabling diaspora entrepreneurs to track physical goods manifests across sub-Saharan freight corridors and custom checkpoints.", targetPath: "/" }, 
+      { id: "biz-s", name: "Micro-SME Capital Funding", description: "Automated credit underwriting pipelines linking verified cooperative savings accounts straight to low-interest commercial trade financing pools.", targetPath: "/" }
+    ] 
+  },
+  { 
+    categoryName: "Ecosystem Portals", 
+    options: [
+      { id: "port-v", name: "Low-Tariff Full-Duplex VoIP Link", description: "Disrupting traditional telecom tariffs. High-velocity PCM sound wave streaming delivering ultra-cheap voice tunnels directly to KiKa diaspora membership networks.", targetPath: "/" }, 
+      { id: "port-j", name: "Job Matchmaker Engine", description: "Aggregated international job vacancy search node seamlessly linking skilled diaspora professionals straight to cross-border institutional career lines.", targetPath: "/login" },
+      { id: "port-r", name: "Technical Innovation Board", description: "Regional tech incubation indices tracking ongoing project development metrics, code milestones, and collaborative engineering tracks.", targetPath: "/login" },
+      { id: "port-p", name: "Placements & Scholarships Matrix", description: "Connect university researchers to dissertation data nodes, international academic internships, and global educational placements.", targetPath: "/login" },
+      { id: "port-legacy", name: "Legacy Foundation Charter History", description: "The complete structural founding roadmap, charter variables, and social vision honoring the Kika co-founder legacy and cross-border milestones.", targetPath: "/login" }
+    ] 
+  }
+];
 
 export default function KikaEcosystemLandingFortress() {
   const router = useRouter();
@@ -11,11 +66,9 @@ export default function KikaEcosystemLandingFortress() {
   const [teaserService, setTeaserService] = useState<Option | null>(null);
   const [loadingSession, setLoadingSession] = useState<boolean>(true);
   const [showOfficesModal, setShowOfficesModal] = useState<boolean>(false);
-
-  // 🛠️ ENTERPRISE WORKSPACE INTERCEPT FLAG CHANNELS
   const [activeFormPanel, setActiveFormPanel] = useState<string | null>(null);
 
-  // Active Trial Sockets State Models for Neon DB Ledgers
+  // Active Hooks for Database Mappings
   const [passportNum, setPassportNum] = useState("");
   const [hostCountry, setHostCountry] = useState("United Kingdom");
   const [voipSeatA, setVoipSeatA] = useState("PHONE_A");
@@ -32,25 +85,21 @@ export default function KikaEcosystemLandingFortress() {
     setLoadingSession(false);
   }, []);
 
-  // 🟢 DYNAMIC LOGIC ROUTER: Directs dropdown clicks to their exact active workspace panel slots
-  const executeServiceActivation = (opt: Option) => {
+  const handleServiceActivation = (opt: Option) => {
     setActiveDropdown(null);
-    if (opt.id === "reg-m") { setActiveFormPanel("ASSET_REGISTRY"); }
-    else if (opt.id === "reg-s") { setActiveFormPanel("SACCO_SAVINGS"); }
-    else if (opt.id.startsWith("fin")) { setActiveFormPanel("REMITTANCE_LEDGER"); }
-    else if (opt.id === "port-v") { setActiveFormPanel("VOIP_TRUNK"); }
-    else if (opt.id === "port-j") { setActiveFormPanel("JOB_MATCHMAKER"); }
-    else if (opt.id === "port-r") { setActiveFormPanel("INNOVATION_BOARD"); }
-    else if (opt.id === "port-p") { setActiveFormPanel("ACADEMIC_PLACEMENTS"); }
-    else if (opt.id === "port-legacy") { setActiveFormPanel("FOUNDERS_CHARTER"); }
-    else { setTeaserService(opt); }
+    if (opt.id === "reg-m") setActiveFormPanel("ASSET_REGISTRY");
+    else if (opt.id === "reg-s") setActiveFormPanel("SACCO_SAVINGS");
+    else if (opt.id.startsWith("fin")) setActiveFormPanel("REMITTANCE_LEDGER");
+    else if (opt.id === "port-v") setActiveFormPanel("VOIP_TRUNK");
+    else if (opt.id === "port-j" || opt.id === "port-r" || opt.id === "port-p") setActiveFormPanel("RESOURCES_MATRIX");
+    else if (opt.id === "port-legacy") setActiveFormPanel("FOUNDERS_CHARTER");
+    else setTeaserService(opt);
   };
 
   if (loadingSession) return <div style={{ minHeight: "100vh", backgroundColor: "#020617", display: "flex", justifyContent: "center", alignItems: "center", color: "#10b981", fontFamily: "monospace" }}>🔒 AUTH SYNC LOADING...</div>;
+
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#020617", color: "#f8fafc", fontFamily: "sans-serif" }} onClick={() => setActiveDropdown(null)}>
-      
-      {/* PERFECTLY ALIGNED NAVBAR CONTROLLER MATRIX */}
       <nav style={{ backgroundColor: "#0b1528", borderBottom: "1px solid #1e293b", padding: "16px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 40 }}>
         <div style={{ fontWeight: "900", color: "#10b981", cursor: "pointer" }} onClick={() => { setActiveFormPanel(null); router.push("/"); }}>🌍 KIKA GLOBAL VENTURES</div>
         <div style={{ display: "flex", gap: "24px", alignItems: "center" }} onClick={e => e.stopPropagation()}>
@@ -61,7 +110,7 @@ export default function KikaEcosystemLandingFortress() {
               {activeDropdown === cat.categoryName && (
                 <div style={{ position: "absolute", top: "100%", right: 0, backgroundColor: "#0f172a", border: "1px solid #1e293b", borderRadius: "8px", minWidth: "260px", padding: "8px 0", zIndex: 50 }}>
                   {cat.options.map((opt, oIdx) => (
-                    <button key={oIdx} onClick={() => executeServiceActivation(opt)} style={{ width: "100%", textAlign: "left", padding: "10px 20px", background: "transparent", border: "none", color: "#94a3b8", cursor: "pointer" }}>{opt.name}</button>
+                    <button key={oIdx} onClick={() => handleServiceActivation(opt)} style={{ width: "100%", textAlign: "left", padding: "10px 20px", background: "transparent", border: "none", color: "#94a3b8", cursor: "pointer" }}>{opt.name}</button>
                   ))}
                 </div>
               )}
@@ -70,7 +119,7 @@ export default function KikaEcosystemLandingFortress() {
           <button onClick={() => setShowOfficesModal(true)} style={{ background: "transparent", border: "none", color: "#3b82f6", fontWeight: "bold", cursor: "pointer" }}>🏢 Offices</button>
         </div>
         <div>
-          {isAuthenticated ? (
+                    {isAuthenticated ? (
             <button onClick={() => { document.cookie = "kika_session_active=; path=/; max-age=0; SameSite=Lax; Secure"; localStorage.removeItem("kika_auth_override"); setIsAuthenticated(false); window.location.reload(); }} style={{ background: "transparent", border: "1px solid #ef4444", color: "#ef4444", padding: "8px 16px", borderRadius: "6px", cursor: "pointer" }}>Disconnect Node</button>
           ) : (
             <button onClick={() => router.push("/login")} style={{ background: "#10b981", border: "none", color: "#020617", padding: "8px 16px", borderRadius: "6px", cursor: "pointer", fontWeight: "bold" }}>Sign In / Enroll</button>
@@ -82,7 +131,7 @@ export default function KikaEcosystemLandingFortress() {
         {isAuthenticated ? (
           <div style={{ background: "rgba(16, 185, 129, 0.05)", border: "1px solid #10b981", padding: "15px", borderRadius: "10px", color: "#10b981", fontWeight: "bold", fontFamily: "monospace" }}>🛡️ AUTHORIZED COCKPIT HUB ACTIVE • WELCOME BACK, MASTER ADMIN NODE</div>
         ) : (
-          <div style={{ background: "rgba(16, 185, 129, 0.05)", border: "1px solid #10b981", padding: "15px", borderRadius: "10px", color: "#10b981", fontWeight: "bold", fontFamily: "monospace" }}>⚡ PRODUCTION STAGING COCKPIT • USE TOP DROPDOWNS TO RE-ACTIVATE CORE TRIAL SOCKETS</div>
+          <div style={{ background: "rgba(16, 185, 129, 0.05)", border: "1px solid #10b981", padding: "15px", borderRadius: "10px", color: "#10b981", fontWeight: "bold", fontFamily: "monospace" }}>⚡ PRODUCTION STAGING COCKPIT • USE TOP MENU DROPDOWNS TO RENDER SERVICE FORMS</div>
         )}
       </section>
 
@@ -90,6 +139,7 @@ export default function KikaEcosystemLandingFortress() {
         <h1 style={{ fontSize: "38px", fontWeight: "900", color: "#ffffff" }}>Cross-Border Diaspora Automation Ecosystem</h1>
         <p style={{ fontSize: "15px", color: "#94a3b8", lineHeight: "1.6" }}>A decentralized financial and telecommunications hub tailored for sub-Saharan diaspora communities. Seamlessly uniting low-tariff full-duplex VoIP lines, automated mobile wallet remittances, and un-splittable cooperative Sacco savings registers under permanent cloud database rows.</p>
       </header>
+
       {/* 📝 SOCKET 1: COMPREHENSIVE DIASPORA ASSET REGISTRY INPUT SHEET */}
       {activeFormPanel === "ASSET_REGISTRY" && (
         <section style={{ maxWidth: "900px", margin: "0 auto 30px auto", padding: "0 20px" }}>
@@ -105,7 +155,7 @@ export default function KikaEcosystemLandingFortress() {
                 <option value="Uganda">Uganda (EAF Node)</option>
               </select>
             </div>
-            <button onClick={() => alert("🟢 Configuration parameters successfully written into serverless Neon Database cluster profile columns!")} style={{ width: "100%", padding: "14px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#020617", fontWeight: "bold", cursor: "pointer" }}>Commit Profile Registry Fields to Neon SQL Ledger</button>
+            <button onClick={() => alert("🟢 Parameters successfully written into Neon Database columns!")} style={{ width: "100%", padding: "14px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#020617", fontWeight: "bold", cursor: "pointer" }}>Commit Profile Registry Fields to Neon SQL Ledger</button>
           </div>
         </section>
       )}
@@ -137,13 +187,12 @@ export default function KikaEcosystemLandingFortress() {
             <button onClick={() => { if (!remitTarget) { alert("❌ Missing target mobile money wallet lines."); return; } setRemittanceLogs([...remitLogs, `Dispatched ${remitAmount} UGX to target ledger mobile number ${remitTarget}. Holding 25% Escrow buffer.`]); }} style={{ width: "100%", padding: "14px", backgroundColor: "#3b82f6", border: "none", borderRadius: "6px", color: "#fff", fontWeight: "bold", cursor: "pointer", marginBottom: "15px" }}>Execute Remittance Transfer Validation Loop</button>
             <div style={{ background: "#020617", padding: "12px", borderRadius: "6px", border: "1px solid #1e293b", fontSize: "12px", fontFamily: "monospace" }}>
               {remitLogs.map((log, lIdx) => <div key={lIdx} style={{ color: "#10b981" }}>• {log}</div>)}
-            </div>
           </div>
-        </section>
-      )}
-
-      {/* 💼 SOCKET 4: EXPERT PLACEMENTS, SCHOLARSHIPS, AND WORKSPACE MATRIX CHANNELS */}
-      {(activeFormPanel === "JOB_MATCHMAKER" || activeFormPanel === "INNOVATION_BOARD" || activeFormPanel === "ACADEMIC_PLACEMENTS") && (
+        </div>
+      </section>
+    )}
+      {/* 💼 SOCKET 4: EXPERT PLACEMENTS, SCHOLARSHIPS, AND WORKSPACE INFRASTRUCTURE CHANNELS */}
+      {activeFormPanel === "RESOURCES_MATRIX" && (
         <section style={{ maxWidth: "900px", margin: "0 auto 30px auto", padding: "0 20px" }}>
           <div style={{ backgroundColor: "#0f172a", padding: "30px", borderRadius: "14px", border: "1px solid #1e293b" }}>
             <h3 style={{ color: "#ffffff", fontSize: "18px", fontWeight: "bold", marginBottom: "12px" }}>🌍 International Careers, Academic Placements, & Innovation Boards Matrix</h3>
@@ -159,7 +208,7 @@ export default function KikaEcosystemLandingFortress() {
         </section>
       )}
 
-      {/* SHORTCUT ACCESS BUTTONS */}
+      {/* SHORTCUT PANEL TILES */}
       <main style={{ maxWidth: "900px", margin: "0 auto", padding: "0 20px 40px 20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
         <div onClick={() => setActiveFormPanel("VOIP_TRUNK")} style={{ backgroundColor: "#0b1329", padding: "25px", borderRadius: "12px", border: "1px solid #1e293b", cursor: "pointer" }}>
           <h3 style={{ color: "#ffffff", margin: "0 0 5px 0" }}>🗣️ Voice Link Carrier Trunk</h3>
@@ -171,7 +220,7 @@ export default function KikaEcosystemLandingFortress() {
         </div>
       </main>
 
-      {/* 📜 RE-ANCHORED CO-FOUNDER HISTORY & IMMUTABLE FOUNDERS CHARTER */}
+      {/* 📜 RE-ANCHORED IMMUTABLE FOUNDERS CHARTER BLOCK */}
       <section style={{ maxWidth: "900px", margin: "0 auto 40px auto", padding: "0 20px" }}>
         <div style={{ backgroundColor: "#0b1528", padding: "35px", borderRadius: "12px", border: "1px solid #1e293b" }}>
           <h3 style={{ color: "#ffffff", margin: "0 0 12px 0", fontSize: "18px", fontWeight: "bold" }}>{foundersLegacyData.title}</h3>
@@ -187,10 +236,10 @@ export default function KikaEcosystemLandingFortress() {
         </div>
       </section>
 
-          {teaserService && (
+      {teaserService && (
         <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", backgroundColor: "rgba(2, 6, 23, 0.85)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 9999 }}>
           <div style={{ backgroundColor: "#0f172a", border: "1px solid #1e293b", borderRadius: "12px", padding: "30px", maxWidth: "400px", width: "90%", textAlign: "center" }}>
-            <h3 style={{ color: "#ffffff", fontSize: "17px", margin: "0 0 10px 0", fontWeight: "bold" }}>{teaserService.name}</h3>
+            <h3 style={{ color: "#ffffff", margin: "0 0 10px 0", fontWeight: "bold" }}>{teaserService.name}</h3>
             <p style={{ color: "#94a3b8", fontSize: "13px", lineHeight: "1.5", margin: "0 0 20px 0" }}>{teaserService.description}</p>
             <button onClick={() => setTeaserService(null)} style={{ width: "100%", padding: "10px", backgroundColor: "#1e293b", color: "#cbd5e1", border: "1px solid #334155", borderRadius: "6px", cursor: "pointer", fontWeight: "bold" }}>Dismiss Window</button>
           </div>
@@ -218,4 +267,3 @@ export default function KikaEcosystemLandingFortress() {
     </div>
   );
 }
-

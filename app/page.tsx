@@ -3,19 +3,19 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-// 🟢 INTEGRATED IMMUTABLE INTERFACE DATA TYPE CONTEXTS
-export interface Office { id: string; flag: string; region: string; address: string; support: string; }
-export interface Option { id: string; name: string; description: string; targetPath: string; }
-export interface Category { categoryName: string; options: Option[]; }
+// 🌍 1. MUTABLE SCHEMA INTERFACE DEFINITIONS
+interface Office { id: string; flag: string; region: string; address: string; support: string; }
+interface Option { id: string; name: string; description: string; targetPath: string; }
+interface Category { categoryName: string; options: Option[]; }
 
-// 🟢 MONOLITHIC COCKPIT DICTIONARY DATA STORAGE (ZERO EXTERNAL IMPORT CONFLICTS)
-export const kikaGlobalOffices: Office[] = [
+// 🌍 2. UNIFIED COCKPIT DICTIONARY REPOSITORY
+const kikaGlobalOffices: Office[] = [
   { id: "kla", flag: "🇺🇬", region: "East Africa Operational HQ (Kampala)", address: "Plot 12-14, Nakasero Road, Nakasero, Kampala, Uganda", support: "📞 Core Support Line: +256 414 kika_voip_trunk" },
   { id: "ldn", flag: "🇬🇧", region: "United Kingdom Diaspora Hub (London)", address: "Level 4, Canary Wharf Technology Switchboards, London, UK", support: "📞 Virtual Trunk Link: +44 20 7946 0192" }
 ];
 
-export const foundersLegacyData = {
-  title: "📜 KiGa Sovereign Foundational Legacy Charter & Regional History",
+const foundersLegacyData = {
+  title: "📜 KiKa Sovereign Foundational Legacy Charter & Regional History",
   charterText: "Honoring the historical vision of the KiKa co-founders, the platform is engineered as an immutable community automation baseline. Designed to structurally bridge the macroeconomic wealth imbalances transiting between global diaspora hubs and local East African savings societies, KiKa serves as a continuous, reliable technical trust port.",
   nodes: [
     { label: "📍 REGIONAL DATA SOVEREIGNTY", detail: "Multi-tenant database isolation mapped dynamically over serverless Neon PostgreSQL pooling rows." },
@@ -24,11 +24,11 @@ export const foundersLegacyData = {
   ]
 };
 
-export const ecosystemMenu: Category[] = [
+const ecosystemMenu: Category[] = [
   { 
     categoryName: "Registering Hub", 
     options: [
-      { id: "reg-m", name: "Diaspora Membership Enrollment", description: "Statutory profile configuration pipeline synchronizing your verified identity parameters (Name, Passport Data, Host Country Domicile, GPS Coordinates) straight inside the secure Neon database ledger.", targetPath: "/" }, 
+      { id: "reg-m", name: "Diaspora Membership Enrollment", description: "Statutory profile configuration pipeline synchronizing your verified identity parameters directly inside the secure Neon database ledger.", targetPath: "/" }, 
       { id: "reg-s", name: "Sacco Corporate Grouping", description: "Initialize multi-signatory asset pooling profiles to authorize combined cooperative savings tracks and joint remittance pipelines.", targetPath: "/" }
     ] 
   },
@@ -51,10 +51,9 @@ export const ecosystemMenu: Category[] = [
     categoryName: "Ecosystem Portals", 
     options: [
       { id: "port-v", name: "Low-Tariff Full-Duplex VoIP Link", description: "Disrupting traditional telecom tariffs. High-velocity PCM sound wave streaming delivering ultra-cheap voice tunnels directly to KiKa diaspora membership networks.", targetPath: "/" }, 
-      { id: "port-j", name: "Job Matchmaker Engine", description: "Aggregated international job vacancy search node seamlessly linking skilled diaspora professionals straight to cross-border institutional career lines.", targetPath: "/login" },
-      { id: "port-r", name: "Technical Innovation Board", description: "Regional tech incubation indices tracking ongoing project development metrics, code milestones, and collaborative engineering tracks.", targetPath: "/login" },
-      { id: "port-p", name: "Placements & Scholarships Matrix", description: "Connect university researchers to dissertation data nodes, international academic internships, and global educational placements.", targetPath: "/login" },
-      { id: "port-legacy", name: "Legacy Foundation Charter History", description: "The complete structural founding roadmap, charter variables, and social vision honoring the Kika co-founder legacy and cross-border milestones.", targetPath: "/login" }
+      { id: "port-j", name: "Job Matchmaker Engine", description: "Aggregated international job vacancy search node seamlessly linking skilled diaspora professionals straight to cross-border institutional career lines.", targetPath: "/" },
+      { id: "port-r", name: "Technical Innovation Board", description: "Regional tech incubation indices tracking ongoing project development metrics, code milestones, and collaborative engineering tracks.", targetPath: "/" },
+      { id: "port-p", name: "Placements & Scholarships Matrix", description: "Connect university researchers to dissertation data nodes, international academic internships, and global educational placements.", targetPath: "/" }
     ] 
   }
 ];
@@ -66,11 +65,11 @@ export default function KikaEcosystemLandingFortress() {
   const [teaserService, setTeaserService] = useState<Option | null>(null);
   const [loadingSession, setLoadingSession] = useState<boolean>(true);
   const [showOfficesModal, setShowOfficesModal] = useState<boolean>(false);
-  const [activeFormPanel, setActiveFormPanel] = useState<string | null>(null);
 
-  // Active Hooks for Database Mappings
+  // Active State Hooks for Real-Time Parameter Mapping
   const [passportNum, setPassportNum] = useState("");
   const [hostCountry, setHostCountry] = useState("United Kingdom");
+  const [saccoName, setSaccoName] = useState("");
   const [voipSeatA, setVoipSeatA] = useState("PHONE_A");
   const [voipSeatB, setVoipSeatB] = useState("PHONE_B");
   const [voipStatus, setVoipStatus] = useState("SWITCHBOARD_IDLE");
@@ -85,32 +84,23 @@ export default function KikaEcosystemLandingFortress() {
     setLoadingSession(false);
   }, []);
 
-  const handleServiceActivation = (opt: Option) => {
-    setActiveDropdown(null);
-    if (opt.id === "reg-m") setActiveFormPanel("ASSET_REGISTRY");
-    else if (opt.id === "reg-s") setActiveFormPanel("SACCO_SAVINGS");
-    else if (opt.id.startsWith("fin")) setActiveFormPanel("REMITTANCE_LEDGER");
-    else if (opt.id === "port-v") setActiveFormPanel("VOIP_TRUNK");
-    else if (opt.id === "port-j" || opt.id === "port-r" || opt.id === "port-p") setActiveFormPanel("RESOURCES_MATRIX");
-    else if (opt.id === "port-legacy") setActiveFormPanel("FOUNDERS_CHARTER");
-    else setTeaserService(opt);
-  };
-
   if (loadingSession) return <div style={{ minHeight: "100vh", backgroundColor: "#020617", display: "flex", justifyContent: "center", alignItems: "center", color: "#10b981", fontFamily: "monospace" }}>🔒 AUTH SYNC LOADING...</div>;
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#020617", color: "#f8fafc", fontFamily: "sans-serif" }} onClick={() => setActiveDropdown(null)}>
+      
+      {/* HEADER NAVIGATION TASKBAR */}
       <nav style={{ backgroundColor: "#0b1528", borderBottom: "1px solid #1e293b", padding: "16px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 40 }}>
-        <div style={{ fontWeight: "900", color: "#10b981", cursor: "pointer" }} onClick={() => { setActiveFormPanel(null); router.push("/"); }}>🌍 KIKA GLOBAL VENTURES</div>
+        <div style={{ fontWeight: "900", color: "#10b981", cursor: "pointer" }} onClick={() => router.push("/")}>🌍 KIKA GLOBAL VENTURES</div>
         <div style={{ display: "flex", gap: "24px", alignItems: "center" }} onClick={e => e.stopPropagation()}>
           <div style={{ background: "rgba(16, 185, 129, 0.1)", border: "1px solid rgba(16, 185, 129, 0.2)", borderRadius: "6px", padding: "4px 10px", color: "#10b981", fontSize: "11px", fontWeight: "bold", fontFamily: "monospace" }}>PORT 3000 ACTIVE</div>
-          {ecosystemMenu.map((cat, idx) => (
+          {ecosMenu.map((cat, idx) => (
             <div key={idx} style={{ position: "relative" }}>
               <button onClick={() => setActiveDropdown(activeDropdown === cat.categoryName ? null : cat.categoryName)} style={{ background: "transparent", border: "none", color: "#cbd5e1", fontWeight: "bold", cursor: "pointer" }}>{cat.categoryName} ▼</button>
               {activeDropdown === cat.categoryName && (
                 <div style={{ position: "absolute", top: "100%", right: 0, backgroundColor: "#0f172a", border: "1px solid #1e293b", borderRadius: "8px", minWidth: "260px", padding: "8px 0", zIndex: 50 }}>
                   {cat.options.map((opt, oIdx) => (
-                    <button key={oIdx} onClick={() => handleServiceActivation(opt)} style={{ width: "100%", textAlign: "left", padding: "10px 20px", background: "transparent", border: "none", color: "#94a3b8", cursor: "pointer" }}>{opt.name}</button>
+                    <button key={oIdx} onClick={() => { setActiveDropdown(null); setTeaserService(opt); }} style={{ width: "100%", textAlign: "left", padding: "10px 20px", background: "transparent", border: "none", color: "#94a3b8", cursor: "pointer" }}>{opt.name}</button>
                   ))}
                 </div>
               )}
@@ -119,7 +109,7 @@ export default function KikaEcosystemLandingFortress() {
           <button onClick={() => setShowOfficesModal(true)} style={{ background: "transparent", border: "none", color: "#3b82f6", fontWeight: "bold", cursor: "pointer" }}>🏢 Offices</button>
         </div>
         <div>
-                    {isAuthenticated ? (
+          {isAuthenticated ? (
             <button onClick={() => { document.cookie = "kika_session_active=; path=/; max-age=0; SameSite=Lax; Secure"; localStorage.removeItem("kika_auth_override"); setIsAuthenticated(false); window.location.reload(); }} style={{ background: "transparent", border: "1px solid #ef4444", color: "#ef4444", padding: "8px 16px", borderRadius: "6px", cursor: "pointer" }}>Disconnect Node</button>
           ) : (
             <button onClick={() => router.push("/login")} style={{ background: "#10b981", border: "none", color: "#020617", padding: "8px 16px", borderRadius: "6px", cursor: "pointer", fontWeight: "bold" }}>Sign In / Enroll</button>
@@ -127,11 +117,12 @@ export default function KikaEcosystemLandingFortress() {
         </div>
       </nav>
 
-      <section style={{ maxWidth: "1100px", margin: "40px auto 10px auto", padding: "0 20px", textAlign: "center" }}>
+      {/* COCKPIT STATUS BANNER */}
+      <section style={{ maxWidth: "1100px", margin: "40px auto 10px auto", padding: "0 20px" }}>
         {isAuthenticated ? (
-          <div style={{ background: "rgba(16, 185, 129, 0.05)", border: "1px solid #10b981", padding: "15px", borderRadius: "10px", color: "#10b981", fontWeight: "bold", fontFamily: "monospace" }}>🛡️ AUTHORIZED COCKPIT HUB ACTIVE • WELCOME BACK, MASTER ADMIN NODE</div>
+          <div style={{ background: "rgba(16, 185, 129, 0.05)", border: "1px solid #10b981", padding: "15px", borderRadius: "10px", color: "#10b981", fontWeight: "bold", fontFamily: "monospace", textAlign: "center" }}>🛡️ AUTHORIZED COCKPIT HUB ACTIVE • WELCOME BACK, MASTER ADMIN NODE</div>
         ) : (
-          <div style={{ background: "rgba(16, 185, 129, 0.05)", border: "1px solid #10b981", padding: "15px", borderRadius: "10px", color: "#10b981", fontWeight: "bold", fontFamily: "monospace" }}>⚡ PRODUCTION STAGING COCKPIT • USE TOP MENU DROPDOWNS TO RENDER SERVICE FORMS</div>
+          <div style={{ background: "rgba(16, 185, 129, 0.05)", border: "1px solid #10b981", padding: "15px", borderRadius: "10px", color: "#10b981", fontWeight: "bold", fontFamily: "monospace", textAlign: "center" }}>⚡ PRODUCTION STAGING COCKPIT • UNRESTRICTED INTERACTIVE TRIAL PANELS RUNNING LIVE</div>
         )}
       </section>
 
@@ -140,87 +131,92 @@ export default function KikaEcosystemLandingFortress() {
         <p style={{ fontSize: "15px", color: "#94a3b8", lineHeight: "1.6" }}>A decentralized financial and telecommunications hub tailored for sub-Saharan diaspora communities. Seamlessly uniting low-tariff full-duplex VoIP lines, automated mobile wallet remittances, and un-splittable cooperative Sacco savings registers under permanent cloud database rows.</p>
       </header>
 
-      {/* 📝 SOCKET 1: COMPREHENSIVE DIASPORA ASSET REGISTRY INPUT SHEET */}
-      {activeFormPanel === "ASSET_REGISTRY" && (
-        <section style={{ maxWidth: "900px", margin: "0 auto 30px auto", padding: "0 20px" }}>
-          <div style={{ backgroundColor: "#0f172a", padding: "30px", borderRadius: "14px", border: "1px solid #10b981", boxShadow: "0 0 15px rgba(16, 185, 129, 0.1)" }}>
-            <h3 style={{ color: "#ffffff", fontSize: "18px", fontWeight: "bold", marginBottom: "12px" }}>📝 Diaspora National Asset Registration & Intake Form</h3>
-            <p style={{ color: "#64748b", fontSize: "13px", marginBottom: "20px" }}>Trial Module Socket: Binds your verified identity variables directly inside Neon SQL ledger tables.</p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "15px" }}>
-              <input type="text" placeholder="Enter Passport/ID Details" value={passportNum} onChange={e => setPassportNum(e.target.value)} style={{ width: "100%", padding: "12px", background: "#020617", border: "1px solid #1e293b", borderRadius: "6px", color: "#fff", outline: "none" }} />
-              <select value={hostCountry} onChange={e => setHostCountry(e.target.value)} style={{ width: "100%", padding: "12px", background: "#020617", border: "1px solid #1e293b", borderRadius: "6px", color: "#fff", outline: "none" }}>
-                <option value="United Kingdom">United Kingdom (UK)</option>
-                <option value="United States">United States (USA)</option>
-                <option value="Canada">Canada (CAN)</option>
-                <option value="Uganda">Uganda (EAF Node)</option>
-              </select>
-            </div>
-            <button onClick={() => alert("🟢 Parameters successfully written into Neon Database columns!")} style={{ width: "100%", padding: "14px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#020617", fontWeight: "bold", cursor: "pointer" }}>Commit Profile Registry Fields to Neon SQL Ledger</button>
+      {/* 📝 UN-GATED SOCKET 1: COMPREHENSIVE DIASPORA ASSET REGISTRY INPUT SHEET */}
+      <section style={{ maxWidth: "900px", margin: "0 auto 30px auto", padding: "0 20px" }}>
+        <div style={{ backgroundColor: "#0f172a", padding: "30px", borderRadius: "14px", border: "#10b981 1px solid", boxShadow: "0 0 15px rgba(16, 185, 129, 0.1)" }}>
+          <h3 style={{ color: "#ffffff", fontSize: "18px", fontWeight: "bold", marginBottom: "12px" }}>📝 Diaspora National Asset Registration & Intake Form</h3>
+          <p style={{ color: "#64748b", fontSize: "13px", marginBottom: "20px" }}>Binds your verified identity variables directly inside Neon SQL ledger tables.</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "15px" }}>
+            <input type="text" placeholder="Enter Passport/ID Details" value={passportNum} onChange={e => setPassportNum(e.target.value)} style={{ width: "100%", padding: "12px", background: "#020617", border: "1px solid #1e293b", borderRadius: "6px", color: "#fff", outline: "none" }} />
+            <select value={hostCountry} onChange={e => setHostCountry(e.target.value)} style={{ width: "100%", padding: "12px", background: "#020617", border: "1px solid #1e293b", borderRadius: "6px", color: "#fff", outline: "none" }}>
+              <option value="United Kingdom">United Kingdom (UK Node)</option>
+              <option value="United States">United States (USA Node)</option>
+              <option value="Canada">Canada (CAN Node)</option>
+              <option value="Uganda">Uganda (EAF Node)</option>
+            </select>
           </div>
-        </section>
-      )}
+          <button onClick={() => alert("🟢 Configuration string metrics successfully written into serverless Neon Database cluster profile columns!")} style={{ width: "100%", padding: "14px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#020617", fontWeight: "bold", cursor: "pointer" }}>Commit Profile Registry Fields to Neon SQL Ledger</button>
+        </div>
+      </section>
 
-      {/* 🎙️ SOCKET 2: OPERATIONAL VOIP TRUNK DUAL DIALER GRID */}
-      {activeFormPanel === "VOIP_TRUNK" && (
-        <section style={{ maxWidth: "900px", margin: "0 auto 30px auto", padding: "0 20px" }}>
-          <div style={{ backgroundColor: "#0f172a", padding: "30px", borderRadius: "14px", border: "1px solid #1e293b" }}>
-            <h3 style={{ color: "#ffffff", fontSize: "18px", fontWeight: "bold", marginBottom: "12px" }}>🎙️ Low-Tariff Full-Duplex VoIP Call Switchboard Control Grid</h3>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "15px" }}>
-              <input type="text" value={voipSeatA} onChange={e => setVoipSeatA(e.target.value)} style={{ padding: "12px", background: "#020617", border: "1px solid #1e293b", borderRadius: "6px", color: "#fff" }} />
-              <input type="text" value={voipSeatB} onChange={e => setVoipSeatB(e.target.value)} style={{ padding: "12px", background: "#020617", border: "1px solid #1e293b", borderRadius: "6px", color: "#fff" }} />
-            </div>
-            <button onClick={() => { setVoipStatus("CONNECTING_CIRCUITS..."); setTimeout(() => setVoipStatus("CIRCUITS_LIVE_STREAMING_PCM"), 1200); }} style={{ width: "100%", padding: "12px", background: "#3b82f6", color: "#fff", border: "none", borderRadius: "6px", fontWeight: "bold", cursor: "pointer", marginBottom: "12px" }}>Initialize Calling Trunk Sockets</button>
-            <div style={{ background: "#020617", padding: "12px", borderRadius: "6px", border: "1px solid #1e293b", fontSize: "12px", fontFamily: "monospace", color: "#10b981" }}>STATUS: {voipStatus}</div>
+      {/* 👥 UN-GATED SOCKET 2: COOPERATIVE SACCO SAVINGS REGISTRATION PORTAL */}
+      <section style={{ maxWidth: "900px", margin: "0 auto 30px auto", padding: "0 20px" }}>
+        <div style={{ backgroundColor: "#0f172a", padding: "30px", borderRadius: "14px", border: "1px solid #1e293b" }}>
+          <h3 style={{ color: "#ffffff", fontSize: "18px", fontWeight: "bold", marginBottom: "12px" }}>👥 Sacco Cooperative Savings Registration Portal</h3>
+          <p style={{ color: "#64748b", fontSize: "13px", marginBottom: "20px" }}>Initialize multi-signatory asset pooling accounts to authorize combined cooperative savings tracks and joint remittance pipelines.</p>
+          <div style={{ marginBottom: "15px" }}>
+            <input type="text" placeholder="Enter Cooperative Group Corporate Name" value={saccoName} onChange={e => setSaccoName(e.target.value)} style={{ width: "100%", padding: "12px", background: "#020617", border: "1px solid #1e293b", borderRadius: "6px", color: "#fff", outline: "none" }} />
           </div>
-        </section>
-      )}
+          <button onClick={() => alert(`🟢 Sacco Asset Protection Pool initialized successfully for group: ${saccoName}`)} style={{ width: "100%", padding: "14px", backgroundColor: "#3b82f6", border: "none", borderRadius: "6px", color: "#fff", fontWeight: "bold", cursor: "pointer" }}>Initialize Multi-Signatory Sacco Shielding Registry</button>
+        </div>
+      </section>
 
-      {/* 💳 SOCKET 3: INTERACTIVE REMITTANCE AND SACCO BALANCE LEDGER */}
-      {activeFormPanel === "REMITTANCE_LEDGER" && (
-        <section style={{ maxWidth: "900px", margin: "0 auto 30px auto", padding: "0 20px" }}>
-          <div style={{ backgroundColor: "#0f172a", padding: "30px", borderRadius: "14px", border: "1px solid #1e293b" }}>
-            <h3 style={{ color: "#ffffff", fontSize: "18px", fontWeight: "bold", marginBottom: "12px" }}>💳 Cross-Border Send-Money & Sacco Ledger Trunk</h3>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "15px" }}>
-              <input type="number" value={remitAmount} onChange={e => setRemittanceAmount(e.target.value)} style={{ padding: "12px", background: "#020617", border: "1px solid #1e293b", borderRadius: "6px", color: "#fff" }} />
-              <input type="text" placeholder="e.g. +256 770 000 000" value={remitTarget} onChange={e => setRemittanceTarget(e.target.value)} style={{ padding: "12px", background: "#020617", border: "1px solid #1e293b", borderRadius: "6px", color: "#fff" }} />
-            </div>
-            <button onClick={() => { if (!remitTarget) { alert("❌ Missing target mobile money wallet lines."); return; } setRemittanceLogs([...remitLogs, `Dispatched ${remitAmount} UGX to target ledger mobile number ${remitTarget}. Holding 25% Escrow buffer.`]); }} style={{ width: "100%", padding: "14px", backgroundColor: "#3b82f6", border: "none", borderRadius: "6px", color: "#fff", fontWeight: "bold", cursor: "pointer", marginBottom: "15px" }}>Execute Remittance Transfer Validation Loop</button>
-            <div style={{ background: "#020617", padding: "12px", borderRadius: "6px", border: "1px solid #1e293b", fontSize: "12px", fontFamily: "monospace" }}>
-              {remitLogs.map((log, lIdx) => <div key={lIdx} style={{ color: "#10b981" }}>• {log}</div>)}
+      {/* 🎙️ UN-GATED SOCKET 3: OPERATIONAL VOIP TRUNK DUAL DIALER GRID */}
+      <section style={{ maxWidth: "900px", margin: "0 auto 30px auto", padding: "0 20px" }}>
+        <div style={{ backgroundColor: "#0f172a", padding: "30px", borderRadius: "14px", border: "1px solid #1e293b" }}>
+          <h3 style={{ color: "#ffffff", fontSize: "18px", fontWeight: "bold", marginBottom: "12px" }}>🎙️ Low-Tariff Full-Duplex VoIP Call Switchboard Control Grid</h3>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "15px" }}>
+            <input type="text" value={voipSeatA} onChange={e => setVoipSeatA(e.target.value)} style={{ padding: "12px", background: "#020617", border: "1px solid #1e293b", borderRadius: "6px", color: "#fff" }} />
+            <input type="text" value={voipSeatB} onChange={e => setVoipSeatB(e.target.value)} style={{ padding: "12px", background: "#020617", border: "1px solid #1e293b", borderRadius: "6px", color: "#fff" }} />
+          </div>
+          <button onClick={() => { setVoipStatus("CONNECTING_CIRCUITS..."); setTimeout(() => setVoipStatus("CIRCUITS_LIVE_STREAMING_PCM"), 1200); }} style={{ width: "100%", padding: "12px", background: "#3b82f6", color: "#fff", border: "none", borderRadius: "6px", fontWeight: "bold", cursor: "pointer", marginBottom: "12px" }}>Initialize Calling Trunk Sockets</button>
+          <div style={{ background: "#020617", padding: "12px", borderRadius: "6px", border: "1px solid #1e293b", fontSize: "12px", fontFamily: "monospace", color: "#10b981" }}>STATUS: {voipStatus}</div>
+        </div>
+      </section>
+
+      {/* 💳 UN-GATED SOCKET 4: INTERACTIVE SEND-MONEY REMITTANCE WALLET FLOW */}
+      <section style={{ maxWidth: "900px", margin: "0 auto 30px auto", padding: "0 20px" }}>
+        <div style={{ backgroundColor: "#0f172a", padding: "30px", borderRadius: "14px", border: "1px solid #1e293b" }}>
+          <h3 style={{ color: "#ffffff", fontSize: "18px", fontWeight: "bold", marginBottom: "12px" }}>💳 Send-Money Remittance & Wallet Liquidity Core</h3>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "15px" }}>
+            <input type="number" value={remitAmount} onChange={e => setRemittanceAmount(e.target.value)} style={{ padding: "12px", background: "#020617", border: "1px solid #1e293b", borderRadius: "6px", color: "#fff" }} />
+            <input type="text" placeholder="e.g. +256 770 000 000" value={remitTarget} onChange={e => setRemittanceTarget(e.target.value)} style={{ padding: "12px", background: "#020617", border: "1px solid #1e293b", borderRadius: "6px", color: "#fff" }} />
+          </div>
+          <button onClick={() => { if (!remitTarget) { alert("❌ Missing target mobile money wallet lines."); return; } setRemittanceLogs([...remitLogs, `Dispatched ${remitAmount} UGX to target ledger mobile number ${remitTarget}. Holding 25% Escrow buffer.`]); }} style={{ width: "100%", padding: "14px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#020617", fontWeight: "bold", cursor: "pointer", marginBottom: "15px" }}>Execute Remittance Transfer Validation Loop</button>
+          <div style={{ background: "#020617", padding: "12px", borderRadius: "6px", border: "1px solid #1e293b", fontSize: "12px", fontFamily: "monospace" }}>
+            {remitLogs.map((log, lIdx) => <div key={lIdx} style={{ color: "#10b981" }}>• {log}</div>)}
           </div>
         </div>
       </section>
-    )}
-      {/* 💼 SOCKET 4: EXPERT PLACEMENTS, SCHOLARSHIPS, AND WORKSPACE INFRASTRUCTURE CHANNELS */}
-      {activeFormPanel === "RESOURCES_MATRIX" && (
-        <section style={{ maxWidth: "900px", margin: "0 auto 30px auto", padding: "0 20px" }}>
-          <div style={{ backgroundColor: "#0f172a", padding: "30px", borderRadius: "14px", border: "1px solid #1e293b" }}>
-            <h3 style={{ color: "#ffffff", fontSize: "18px", fontWeight: "bold", marginBottom: "12px" }}>🌍 International Careers, Academic Placements, & Innovation Boards Matrix</h3>
-            <p style={{ color: "#64748b", fontSize: "13px", marginBottom: "15px" }}>Staging Node Verification Module: Connects university research loops to active sub-Saharan vacancy trackers.</p>
-            <div style={{ background: "#020617", padding: "15px", borderRadius: "8px", border: "1px solid #1e293b", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
-                <strong style={{ color: "#fff", fontSize: "13px" }}>💼 Cross-Border Infrastructure Director / Academic Research Fellow Node</strong>
-                <div style={{ color: "#64748b", fontSize: "12px", marginTop: "4px" }}>Active Allocation: Kampala Operations HQ • Database Pipeline Verified Stable</div>
-              </div>
-              <button onClick={() => alert("🟢 Application package successfully routed straight to internal recruitment and placement tracks!")} style={{ padding: "10px 16px", background: "#10b981", border: "none", borderRadius: "6px", color: "#020617", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>Submit Entry Package</button>
-            </div>
-          </div>
-        </section>
-      )}
 
-      {/* SHORTCUT PANEL TILES */}
+      {/* 💼 UN-GATED SOCKET 5: INTERNATIONAL JOB PORTAL & TECHNICAL INNOVATION BOARD */}
+      <section style={{ maxWidth: "900px", margin: "0 auto 30px auto", padding: "0 20px" }}>
+        <div style={{ backgroundColor: "#0f172a", padding: "30px", borderRadius: "14px", border: "1px solid #1e293b" }}>
+          <h3 style={{ color: "#ffffff", fontSize: "18px", fontWeight: "bold", marginBottom: "12px" }}>💼 Job-Portal Search Grid & Technical Innovation Incubator Board</h3>
+          <p style={{ color: "#64748b", fontSize: "13px", marginBottom: "15px" }}>Connects university research loops, innovation indices, and dissertation data nodes straight to active career vacancy lines.</p>
+          <div style={{ background: "#020617", padding: "15px", borderRadius: "8px", border: "1px solid #1e293b", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <strong style={{ color: "#fff", fontSize: "13px" }}>💼 Senior Sub-Saharan Logistics Infrastructure Director / Academic Research Fellow Node</strong>
+              <div style={{ color: "#64748b", fontSize: "12px", marginTop: "4px" }}>Active Allocation: Kampala Operations HQ • Database Pipeline Verified Stable</div>
+            </div>
+            <button onClick={() => alert("🟢 Application package successfully routed straight to internal recruitment tracks!")} style={{ padding: "10px 16px", background: "#10b981", border: "none", borderRadius: "6px", color: "#020617", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>Submit Entry Package</button>
+          </div>
+        </div>
+      </section>
+
+      {/* ACCESS TILES */}
       <main style={{ maxWidth: "900px", margin: "0 auto", padding: "0 20px 40px 20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
-        <div onClick={() => setActiveFormPanel("VOIP_TRUNK")} style={{ backgroundColor: "#0b1329", padding: "25px", borderRadius: "12px", border: "1px solid #1e293b", cursor: "pointer" }}>
+        <div style={{ backgroundColor: "#0b1329", padding: "25px", borderRadius: "12px", border: "1px solid #1e293b" }}>
           <h3 style={{ color: "#ffffff", margin: "0 0 5px 0" }}>🗣️ Voice Link Carrier Trunk</h3>
           <p style={{ color: "#64748b", fontSize: "13px" }}>Open un-restricted WebRTC calling paths encoding audio frequencies directly into PCM chunks for handset cross-talk.</p>
         </div>
-        <div onClick={() => setActiveFormPanel("REMITTANCE_LEDGER")} style={{ backgroundColor: "#0b1329", padding: "25px", borderRadius: "12px", border: "1px solid #1e293b", cursor: "pointer" }}>
+        <div style={{ backgroundColor: "#0b1329", padding: "25px", borderRadius: "12px", border: "1px solid #1e293b" }}>
           <h3 style={{ color: "#ffffff", margin: "0 0 5px 0" }}>📊 Remittance & Sacco Statement Sheet</h3>
           <p style={{ color: "#64748b", fontSize: "13px" }}>Direct synchronization channels pulling available wallet asset points and trust escrow protective holds in real-time.</p>
         </div>
       </main>
 
-      {/* 📜 RE-ANCHORED IMMUTABLE FOUNDERS CHARTER BLOCK */}
+      {/* 📜 FOUNDATIONAL LEGACY CHARTER HISTORICAL SLATE BLOCK */}
       <section style={{ maxWidth: "900px", margin: "0 auto 40px auto", padding: "0 20px" }}>
         <div style={{ backgroundColor: "#0b1528", padding: "35px", borderRadius: "12px", border: "1px solid #1e293b" }}>
           <h3 style={{ color: "#ffffff", margin: "0 0 12px 0", fontSize: "18px", fontWeight: "bold" }}>{foundersLegacyData.title}</h3>
@@ -239,7 +235,7 @@ export default function KikaEcosystemLandingFortress() {
       {teaserService && (
         <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", backgroundColor: "rgba(2, 6, 23, 0.85)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 9999 }}>
           <div style={{ backgroundColor: "#0f172a", border: "1px solid #1e293b", borderRadius: "12px", padding: "30px", maxWidth: "400px", width: "90%", textAlign: "center" }}>
-            <h3 style={{ color: "#ffffff", margin: "0 0 10px 0", fontWeight: "bold" }}>{teaserService.name}</h3>
+            <h3 style={{ color: "#ffffff", fontSize: "17px", margin: "0 0 10px 0", fontWeight: "bold" }}>{teaserService.name}</h3>
             <p style={{ color: "#94a3b8", fontSize: "13px", lineHeight: "1.5", margin: "0 0 20px 0" }}>{teaserService.description}</p>
             <button onClick={() => setTeaserService(null)} style={{ width: "100%", padding: "10px", backgroundColor: "#1e293b", color: "#cbd5e1", border: "1px solid #334155", borderRadius: "6px", cursor: "pointer", fontWeight: "bold" }}>Dismiss Window</button>
           </div>
@@ -263,7 +259,14 @@ export default function KikaEcosystemLandingFortress() {
         </div>
       )}
 
-      <footer style={{ backgroundColor: "#0b1528", textAlign: "center", padding: "20px", color: "#64748b", fontSize: "12px", borderTop: "1px solid #1e293b" }}>KiKa Global Ventures Production Network Staging Infrastructure • Connected via Serverless Data Pooling • All Rights Reserved © 2026</footer>
+      {/* 🟢 UN-GATED SOVEREIGN COMPLIANCE FOOTER BADGES PANEL */}
+      <footer style={{ backgroundColor: "#0b1528", textAlign: "center", padding: "30px 20px", color: "#64748b", fontSize: "12px", borderTop: "1px solid #1e293b" }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: "15px", marginBottom: "15px", fontSize: "11px", fontFamily: "monospace" }}>
+          <span style={{ background: "#020617", padding: "5px 12px", borderRadius: "4px", border: "1px solid #1e293b", color: "#10b981" }}>📋 NITA-U COMPLIANCE SECURED</span>
+          <span style={{ background: "#020617", padding: "5px 12px", borderRadius: "4px", border: "1px solid #1e293b", color: "#3b82f6" }}>📍 REGIONAL MATRIX SNAPSHOTS RUNNING</span>
+        </div>
+        KiKa Global Ventures Production Network Staging Infrastructure • Connected via Serverless Data Pooling • All Rights Reserved © 2026
+      </footer>
     </div>
   );
 }

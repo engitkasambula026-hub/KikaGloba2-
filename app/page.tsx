@@ -3,18 +3,18 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-// 🌍 1. MUTABLE SCHEMA INTERFACE DEFINITIONS
-interface Office { id: string; flag: string; region: string; address: string; support: string; }
-interface Option { id: string; name: string; description: string; targetPath: string; }
-interface Category { categoryName: string; options: Option[]; }
+// 🟢 INTEGRATED TYPE DEFINITIONS
+export interface Office { id: string; flag: string; region: string; address: string; support: string; }
+export interface Option { id: string; name: string; description: string; targetPath: string; }
+export interface Category { categoryName: string; options: Option[]; }
 
-// 🌍 2. UNIFIED COCKPIT DICTIONARY REPOSITORY
-const kikaGlobalOffices: Office[] = [
+// 🟢 MONOLITHIC STRUCTURAL DATA (ZERO CROSS-FILE IMPORT LINK FAULTS)
+export const kikaGlobalOffices: Office[] = [
   { id: "kla", flag: "🇺🇬", region: "East Africa Operational HQ (Kampala)", address: "Plot 12-14, Nakasero Road, Nakasero, Kampala, Uganda", support: "📞 Core Support Line: +256 414 kika_voip_trunk" },
   { id: "ldn", flag: "🇬🇧", region: "United Kingdom Diaspora Hub (London)", address: "Level 4, Canary Wharf Technology Switchboards, London, UK", support: "📞 Virtual Trunk Link: +44 20 7946 0192" }
 ];
 
-const foundersLegacyData = {
+export const foundersLegacyData = {
   title: "📜 KiKa Sovereign Foundational Legacy Charter & Regional History",
   charterText: "Honoring the historical vision of the KiKa co-founders, the platform is engineered as an immutable community automation baseline. Designed to structurally bridge the macroeconomic wealth imbalances transiting between global diaspora hubs and local East African savings societies, KiKa serves as a continuous, reliable technical trust port.",
   nodes: [
@@ -24,11 +24,11 @@ const foundersLegacyData = {
   ]
 };
 
-const ecosystemMenu: Category[] = [
+export const ecosystemMenu: Category[] = [
   { 
     categoryName: "Registering Hub", 
     options: [
-      { id: "reg-m", name: "Diaspora Membership Enrollment", description: "Statutory profile configuration pipeline synchronizing your verified identity parameters directly inside the secure Neon database ledger.", targetPath: "/" }, 
+      { id: "reg-m", name: "Diaspora Membership Enrollment", description: "Statutory profile configuration pipeline synchronizing your verified identity parameters straight inside the secure Neon database ledger.", targetPath: "/" }, 
       { id: "reg-s", name: "Sacco Corporate Grouping", description: "Initialize multi-signatory asset pooling profiles to authorize combined cooperative savings tracks and joint remittance pipelines.", targetPath: "/" }
     ] 
   },
@@ -66,7 +66,7 @@ export default function KikaEcosystemLandingFortress() {
   const [loadingSession, setLoadingSession] = useState<boolean>(true);
   const [showOfficesModal, setShowOfficesModal] = useState<boolean>(false);
 
-  // Active State Hooks for Real-Time Parameter Mapping
+  // 📝 Active State Holders for Sockets Parameters
   const [passportNum, setPassportNum] = useState("");
   const [hostCountry, setHostCountry] = useState("United Kingdom");
   const [saccoName, setSaccoName] = useState("");
@@ -88,13 +88,11 @@ export default function KikaEcosystemLandingFortress() {
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#020617", color: "#f8fafc", fontFamily: "sans-serif" }} onClick={() => setActiveDropdown(null)}>
-      
-      {/* HEADER NAVIGATION TASKBAR */}
       <nav style={{ backgroundColor: "#0b1528", borderBottom: "1px solid #1e293b", padding: "16px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 40 }}>
         <div style={{ fontWeight: "900", color: "#10b981", cursor: "pointer" }} onClick={() => router.push("/")}>🌍 KIKA GLOBAL VENTURES</div>
         <div style={{ display: "flex", gap: "24px", alignItems: "center" }} onClick={e => e.stopPropagation()}>
           <div style={{ background: "rgba(16, 185, 129, 0.1)", border: "1px solid rgba(16, 185, 129, 0.2)", borderRadius: "6px", padding: "4px 10px", color: "#10b981", fontSize: "11px", fontWeight: "bold", fontFamily: "monospace" }}>PORT 3000 ACTIVE</div>
-          {ecosMenu.map((cat, idx) => (
+          {ecosystemMenu.map((cat, idx) => (
             <div key={idx} style={{ position: "relative" }}>
               <button onClick={() => setActiveDropdown(activeDropdown === cat.categoryName ? null : cat.categoryName)} style={{ background: "transparent", border: "none", color: "#cbd5e1", fontWeight: "bold", cursor: "pointer" }}>{cat.categoryName} ▼</button>
               {activeDropdown === cat.categoryName && (
@@ -116,13 +114,11 @@ export default function KikaEcosystemLandingFortress() {
           )}
         </div>
       </nav>
-
-      {/* COCKPIT STATUS BANNER */}
-      <section style={{ maxWidth: "1100px", margin: "40px auto 10px auto", padding: "0 20px" }}>
+      <section style={{ maxWidth: "1100px", margin: "40px auto 10px auto", padding: "0 20px", textAlign: "center" }}>
         {isAuthenticated ? (
-          <div style={{ background: "rgba(16, 185, 129, 0.05)", border: "1px solid #10b981", padding: "15px", borderRadius: "10px", color: "#10b981", fontWeight: "bold", fontFamily: "monospace", textAlign: "center" }}>🛡️ AUTHORIZED COCKPIT HUB ACTIVE • WELCOME BACK, MASTER ADMIN NODE</div>
+          <div style={{ background: "rgba(16, 185, 129, 0.05)", border: "1px solid #10b981", padding: "15px", borderRadius: "10px", color: "#10b981", fontWeight: "bold", fontFamily: "monospace" }}>🛡️ AUTHORIZED COCKPIT HUB ACTIVE • WELCOME BACK, MASTER ADMIN NODE</div>
         ) : (
-          <div style={{ background: "rgba(16, 185, 129, 0.05)", border: "1px solid #10b981", padding: "15px", borderRadius: "10px", color: "#10b981", fontWeight: "bold", fontFamily: "monospace", textAlign: "center" }}>⚡ PRODUCTION STAGING COCKPIT • UNRESTRICTED INTERACTIVE TRIAL PANELS RUNNING LIVE</div>
+          <div style={{ background: "rgba(16, 185, 129, 0.05)", border: "1px solid #10b981", padding: "15px", borderRadius: "10px", color: "#10b981", fontWeight: "bold", fontFamily: "monospace" }}>⚡ PRODUCTION STAGING COCKPIT • UNRESTRICTED INTERACTIVE TRIAL PANELS RUNNING LIVE</div>
         )}
       </section>
 
@@ -131,7 +127,7 @@ export default function KikaEcosystemLandingFortress() {
         <p style={{ fontSize: "15px", color: "#94a3b8", lineHeight: "1.6" }}>A decentralized financial and telecommunications hub tailored for sub-Saharan diaspora communities. Seamlessly uniting low-tariff full-duplex VoIP lines, automated mobile wallet remittances, and un-splittable cooperative Sacco savings registers under permanent cloud database rows.</p>
       </header>
 
-      {/* 📝 UN-GATED SOCKET 1: COMPREHENSIVE DIASPORA ASSET REGISTRY INPUT SHEET */}
+      {/* 📝 SOCKET 1: COMPREHENSIVE DIASPORA ASSET REGISTRY INPUT SHEET */}
       <section style={{ maxWidth: "900px", margin: "0 auto 30px auto", padding: "0 20px" }}>
         <div style={{ backgroundColor: "#0f172a", padding: "30px", borderRadius: "14px", border: "#10b981 1px solid", boxShadow: "0 0 15px rgba(16, 185, 129, 0.1)" }}>
           <h3 style={{ color: "#ffffff", fontSize: "18px", fontWeight: "bold", marginBottom: "12px" }}>📝 Diaspora National Asset Registration & Intake Form</h3>
@@ -149,7 +145,7 @@ export default function KikaEcosystemLandingFortress() {
         </div>
       </section>
 
-      {/* 👥 UN-GATED SOCKET 2: COOPERATIVE SACCO SAVINGS REGISTRATION PORTAL */}
+      {/* 👥 SOCKET 2: COOPERATIVE SACCO SAVINGS REGISTRATION PORTAL */}
       <section style={{ maxWidth: "900px", margin: "0 auto 30px auto", padding: "0 20px" }}>
         <div style={{ backgroundColor: "#0f172a", padding: "30px", borderRadius: "14px", border: "1px solid #1e293b" }}>
           <h3 style={{ color: "#ffffff", fontSize: "18px", fontWeight: "bold", marginBottom: "12px" }}>👥 Sacco Cooperative Savings Registration Portal</h3>
@@ -161,7 +157,7 @@ export default function KikaEcosystemLandingFortress() {
         </div>
       </section>
 
-      {/* 🎙️ UN-GATED SOCKET 3: OPERATIONAL VOIP TRUNK DUAL DIALER GRID */}
+      {/* 🎙️ SOCKET 3: OPERATIONAL VOIP TRUNK DUAL DIALER GRID */}
       <section style={{ maxWidth: "900px", margin: "0 auto 30px auto", padding: "0 20px" }}>
         <div style={{ backgroundColor: "#0f172a", padding: "30px", borderRadius: "14px", border: "1px solid #1e293b" }}>
           <h3 style={{ color: "#ffffff", fontSize: "18px", fontWeight: "bold", marginBottom: "12px" }}>🎙️ Low-Tariff Full-Duplex VoIP Call Switchboard Control Grid</h3>
@@ -174,7 +170,7 @@ export default function KikaEcosystemLandingFortress() {
         </div>
       </section>
 
-      {/* 💳 UN-GATED SOCKET 4: INTERACTIVE SEND-MONEY REMITTANCE WALLET FLOW */}
+      {/* 💳 SOCKET 4: INTERACTIVE SEND-MONEY REMITTANCE WALLET FLOW */}
       <section style={{ maxWidth: "900px", margin: "0 auto 30px auto", padding: "0 20px" }}>
         <div style={{ backgroundColor: "#0f172a", padding: "30px", borderRadius: "14px", border: "1px solid #1e293b" }}>
           <h3 style={{ color: "#ffffff", fontSize: "18px", fontWeight: "bold", marginBottom: "12px" }}>💳 Send-Money Remittance & Wallet Liquidity Core</h3>
@@ -189,7 +185,7 @@ export default function KikaEcosystemLandingFortress() {
         </div>
       </section>
 
-      {/* 💼 UN-GATED SOCKET 5: INTERNATIONAL JOB PORTAL & TECHNICAL INNOVATION BOARD */}
+      {/* 💼 SOCKET 5: INTERNATIONAL JOB PORTAL & TECHNICAL INNOVATION BOARD */}
       <section style={{ maxWidth: "900px", margin: "0 auto 30px auto", padding: "0 20px" }}>
         <div style={{ backgroundColor: "#0f172a", padding: "30px", borderRadius: "14px", border: "1px solid #1e293b" }}>
           <h3 style={{ color: "#ffffff", fontSize: "18px", fontWeight: "bold", marginBottom: "12px" }}>💼 Job-Portal Search Grid & Technical Innovation Incubator Board</h3>

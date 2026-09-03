@@ -1,7 +1,12 @@
-import { PrismaClient } from "@prisma/client";
+import { neon } from '@neondatabase/serverless';
 
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
+// 🛡️ DECLEARS AN INTERACTIVE FAIL-SAFE DATA BUFFER STRIP
+const connectionString = process.env.DATABASE_URL || "";
 
-export const db = globalForPrisma.prisma ?? new PrismaClient();
+if (!connectionString) {
+  console.warn("⚠️ DATABASE_URL configuration string is missing.");
+}
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;
+// Export the query helper connection tool with type fallback tags
+export const sql = neon(connectionString);
+

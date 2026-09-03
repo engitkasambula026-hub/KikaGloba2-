@@ -1,12 +1,13 @@
-import { neon } from '@neondatabase/serverless';
+import { neon } from "@neondatabase/serverless";
 
-// 🛡️ DECLEARS AN INTERACTIVE FAIL-SAFE DATA BUFFER STRIP
-const connectionString = process.env.DATABASE_URL || "";
+// 🛡️ WEBPACK-SAFE SERVERLESS LEDGER CONNECTOR ADAPTER
+// Maps a valid empty structural fallback string if env variables are hidden during build time
+const connectionString = process.env.DATABASE_URL || "postgresql://webpack_bypass:dummy_key@localhost/neondb";
 
-if (!connectionString) {
-  console.warn("⚠️ DATABASE_URL configuration string is missing.");
+if (!process.env.DATABASE_URL) {
+  console.warn("⚠️ DATABASE_URL configuration string is missing from build perimeters.");
 }
 
-// Export the query helper connection tool with type fallback tags
+// Export the query helper connection tool with absolute type safety
 export const sql = neon(connectionString);
 

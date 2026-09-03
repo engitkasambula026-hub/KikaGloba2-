@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
     "@prisma/client": "^6.19.3",
     "@twilio/voice-sdk": "^2.18.3",
     "bcryptjs": "^2.4.3",

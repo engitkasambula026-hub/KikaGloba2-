@@ -1,52 +1,48 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db"; 
-
-export const dynamic = "force-dynamic";
+import { neon } from "@neondatabase/serverless";
+import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
   try {
-    const rawBody = await req.json();
-    const { name, email, password } = rawBody;
+    const { fullName, email, password, hostCountry, idType, idNumber, saccoId } = await req.json();
 
-    if (!email || !password) {
-      return NextResponse.json({ error: "Validation Rejected: Incomplete profile credentials." }, { status: 400 });
+    if (!email || !password || !fullName || !idNumber) {
+      return NextResponse.json({ error: "Missing required identity or account credentials." }, { status: 400 });
     }
 
-    const targetEmail = email.toLowerCase().trim();
+    const sql = neon(process.env.DATABASE_URL!);
 
-    // 🟢 SECURE DELEGATE RESOLVER: Safely tracks the User model schema
-    const userDelegate = (db as any).user || (db as any).profiles || (db as any).member;
-    
-    if (!userDelegate) {
-      return NextResponse.json({ error: "Database mapping core connection node un-initialized." }, { status: 500 });
+    const existingUser = await sql`SELECT id FROM users WHERE email = ${email}`;
+    if (existingUser.length > 0) {
+      return NextResponse.json({ error: "An account with this email already exists." }, { status: 409 });
     }
 
-    // 1. Audit check the database tables safely for an existing user identity
-    const existingUser = await userDelegate.findFirst({
-      where: { email: targetEmail }
-    });
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    if (existingUser) {
-      return NextResponse.json({ error: "Sovereign Identity Blocked: This email address is already registered." }, { status: 400 });
-    }
-
-    // 2. Commit the member record using ONLY the exact parameters matching your database columns
-    await userDelegate.create({
-      data: {
-        name: name || "Diaspora Member",
-        email: targetEmail,
-        password: password.trim()
-        // 🟢 REMOVED the 'role' argument to completely satisfy your schema constraints
-      }
-    });
+    const newUser = await sql`
+      INSERT INTO users (
+        full_name, email, password_hash, host_country, id_type, id_number, sacco_member_id, kyc_status
+      )
+      VALUES (
+        ${fullName}, 
+        ${email}, 
+        ${hashedPassword}, 
+        ${hostCountry}, 
+        ${idType}, 
+        ${idNumber}, 
+        ${saccoId || null},
+        'PENDING_VERIFICATION'
+      )
+      RETURNING id, full_name, email, host_country, id_type, id_number, kyc_status, created_at;
+    `;
 
     return NextResponse.json({
-      success: true,
-      message: "Statutory profile successfully synchronized inside Neon database ledger."
+      message: "Ecosystem account created under regional KYC compliance rules.",
+      user: newUser[0],
     }, { status: 201 });
 
-  } catch (error: any) {
-    console.error("[REGISTRATION CORE ENGINE FAULT]:", error);
-    return NextResponse.json({ error: `Identity ledger processing failure: ${error.message}` }, { status: 500 });
+  } catch (error) {
+    console.error("KYC Registration Error:", error);
+    return NextResponse.json({ error: "Failed to process legal registration." }, { status: 500 });
   }
 }

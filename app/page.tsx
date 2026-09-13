@@ -6,6 +6,7 @@ import CentralDropdown from "./components/CentralDropdown";
 
 export default function KikaStagingMatrixHub() {
   const [mounted, setMounted] = useState(false);
+  const [isContactOpen, setIsContactOpen] = useState(false);
 
   // State dictionary managing expanded drawers for all 6 core service teaser windows
   const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({
@@ -36,36 +37,110 @@ export default function KikaStagingMatrixHub() {
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#020617", color: "#f8fafc", fontFamily: "sans-serif" }}>
       
-      {/* 🌍 1. COMPACT NAVBAR */}
-      <nav style={{ 
-        backgroundColor: "#0b1528", 
-        borderBottom: "1px solid #1e293b", 
-        padding: "10px 24px", 
-        display: "flex", 
-        justifyContent: "space-between", 
-        alignItems: "center", 
-        maxWidth: "1200px",
-        margin: "0 auto",
-        boxSizing: "border-box"
+     {/* 🌍 1. COMPACT NAVBAR */}
+<nav style={{ 
+  backgroundColor: "#0b1528", 
+  borderBottom: "1px solid #1e293b", 
+  padding: "10px 20px", 
+  display: "flex",
+  flexWrap: "wrap" , 
+  justifyContent: "space-between",
+ alignItems: "center", 
+  maxWidth: "1400px", 
+  margin: "0 auto",
+  boxSizing: "border-box",
+  width: "100%"
+}}>
+  {/* Brand Name */}
+  <Link href="/" style={{ textDecoration: "none" }}>
+    <div style={{ fontWeight: "900", color: "#10b981", cursor: "pointer", fontSize: "13px", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>
+      🌍 KIKA GLOBAL VENTURES
+    </div>
+  </Link>
+
+  {/* Dropdowns + Action Buttons */}
+  <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "nowrap" }}>
+    <CentralDropdown />
+
+    {/* Contact Us Dropdown Container */}
+    <div style={{ position: "relative" }}>
+      <button 
+        onClick={() => setIsContactOpen(!isContactOpen)}
+        style={{
+          backgroundColor: "transparent",
+          color: "#ffffff",
+          border: "1px solid rgba(255, 255, 255, 0.2)",
+          padding: "5px 10px",
+          borderRadius: "4px",
+          fontSize: "12px",
+          fontWeight: "600",
+          cursor: "pointer",
+          whiteSpace: "normail"
+        }}
+      >
+        Contact Us
+      </button>
+
+      {/* Dropdown Window */}
+      {isContactOpen && (
+        <div style={{
+          position: "absolute",
+          top: "100%",
+          right: 0,
+          marginTop: "8px",
+          width: "260px",
+          backgroundColor: "#0b1528",
+          border: "1px solid #1e293b",
+          borderRadius: "8px",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.5)",
+          padding: "15px",
+          zIndex: 50,
+          color: "#cbd5e1",
+          fontSize: "13px",
+          textAlign: "left",
+          cursor: "default"
+        }}>
+          <h4 style={{ color: "#ffffff", margin: "0 0 10px 0", borderBottom: "1px solid #1e293b", paddingBottom: "8px", fontWeight: "bold" }}>
+            Global Offices
+          </h4>
+          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "10px" }}>
+            <li><strong style={{color: "#10b981"}}>New York, USA:</strong><br/>Kika Global Ventures</li>
+            <li><strong style={{color: "#10b981"}}>London, UK:</strong><br/>Kika Global Ventures</li>
+            <li><strong style={{color: "#10b981"}}>Stockholm, Sweden:</strong><br/>Kika Global Ventures</li>
+            <li><strong style={{color: "#10b981"}}>Cape Town, SA:</strong><br/>Kika Global Ventures</li>
+            <li><strong style={{color: "#10b981"}}>Dubai, UAE:</strong><br/>Kika Global Ventures</li>
+            <li><strong style={{color: "#10b981"}}>Beijing, China:</strong><br/>Kika Global Ventures</li>
+          </ul>
+        </div>
+      )}
+    </div>
+
+    {/* Login / Enroll Button */}
+    <Link href="#login" style={{ textDecoration: "none" }}>
+      <button style={{
+        backgroundColor: "#10b981",
+        color: "#0b1528",
+        border: "none",
+        padding: "5px 12px",
+        borderRadius: "4px",
+        fontSize: "12px",
+        fontWeight: "bold",
+        cursor: "pointer",
+        whiteSpace: "normal"
       }}>
-        <Link href="/" style={{ textDecoration: "none" }}>
-          <div style={{ fontWeight: "900", color: "#10b981", cursor: "pointer", fontSize: "16px", letterSpacing: "0.5px" }}>
-            🌍 KIKA GLOBAL
-          </div>
-        </Link>
+        Login / Enroll  
+      </button>
+    </Link>
+  </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <CentralDropdown />
-        </div>
-
-        <div style={{ color: "#10b981", fontSize: "10px", fontWeight: "bold", fontFamily: "monospace", background: "rgba(16, 185, 129, 0.1)", padding: "4px 10px", borderRadius: "4px", border: "1px solid rgba(16, 185, 129, 0.2)" }}>
-          ACTIVE
-        </div>
-      </nav>
-
-      {/* 📖 2. HERO HEADLINE */}
+  {/* Status Badge */}
+  <div style={{ color: "#10b981", fontSize: "10px", fontWeight: "bold", fontFamily: "monospace", background: "rgba(16, 185, 129, 0.1)", padding: "4px 8px", borderRadius: "4px", border: "1px solid rgba(16, 185, 129, 0.2)", whiteSpace: "nowrap" }}>
+    ACTIVE
+  </div>
+</nav>
+     {/* 📖 2. HERO HEADLINE */}
       <header style={{ maxWidth: "680px", margin: "28px auto 32px auto", padding: "0 16px", textAlign: "center" }}>
-        <h1 style={{ fontSize: "30px", fontWeight: "800", color: "#ffffff", letterSpacing: "-0.5px", marginBottom: "10px" }}>
+        <h1 style={{ fontSize: "26px", fontWeight: "800", color: "#ffffff", letterSpacing: "-0.5px", marginBottom: "10px" }}>
           Cross-Border Diaspora Ecosystem
         </h1>
         <p style={{ fontSize: "14px", color: "#94a3b8", lineHeight: "1.6", margin: "0 auto", maxWidth: "600px" }}>
@@ -344,10 +419,9 @@ export default function KikaStagingMatrixHub() {
       </main>
 
       {/* 📞 4. FOOTER DIRECTORY */}
-      <footer style={{ backgroundColor: "#0b1528", padding: "20px 16px", borderTop: "1px solid #1e293b" }}>
-        <div style={{ maxWidth: "1150px", margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "16px", color: "#cbd5e1", fontSize: "13px" }}>
-            <span>🇺🇬 Kampala: +256 700 000 000</span>
+      <footer style={{ backgroundColor: "#0b1528", padding: "20px 16px", borderTop: "1px solid #1e293b", width: "100%", boxSizing: "border-box" }}>
+  <div style={{ maxWidth: "1150px", margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", gap: "10px", width: "100%", boxSizing: "border-box" }}>
+    <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "16px", color: "#cbd5e1", fontSize: "13px", width: "100%", textAlign: "center" }}> <span>🇺🇬 Kampala: +256 700 000 000</span>
             <span style={{ color: "#334155" }}>|</span>
             <span>🇬🇧 London: +44 20 7000 0000</span>
             <span style={{ color: "#334155" }}>|</span>

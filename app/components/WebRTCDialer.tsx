@@ -57,16 +57,47 @@ export default function WebRTCDialer() {
     }
     setCallStatus(`Status: Dialing ${dialedNumber}...`);
     try {
-      // 🛠️ PERMANENT RELATIVE PATH FIX: Automatically maps to your active running server port with zero collisions!
+// 1. Read Metered TURN Credentials from Environment Variables
+      const turnUsername = process.env.NEXT_PUBLIC_TURN_USERNAME;
+      const turnCredential = process.env.NEXT_PUBLIC_TURN_CREDENTIAL;
+
+      const iceServers = [
+        { urls: "stun:stun.relay.metered.ca:80" },
+        {
+          urls: "turn:global.relay.metered.ca:80",
+          username: turnUsername,
+          credential: turnCredential,
+        },
+        {
+          urls: "turn:global.relay.metered.ca:80?transport=tcp",
+          username: turnUsername,
+          credential: turnCredential,
+        },
+        {
+          urls: "turn:global.relay.metered.ca:443",
+          username: turnUsername,
+          credential: turnCredential,
+        },
+        {
+          urls: "turns:global.relay.metered.ca:443?transport=tcp",
+          username: turnUsername,
+          credential: turnCredential,
+        },
+      ];
+
+      // 2. Single fetch call containing all parameters + iceServers
       const response = await fetch("/api/voip/call", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fromNumber: activeNumberToken || "+256784868667",
           toNumber: dialedNumber,
+          seatId: "IPHONE_A",
+          targetNode: "SUMSUNG_B",
+          iceServers: iceServers,
         }),
       });
-      
+    
       const data = await response.json();
       
       if (data.success) {

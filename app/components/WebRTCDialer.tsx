@@ -92,8 +92,8 @@ export default function WebRTCDialer() {
         body: JSON.stringify({
           fromNumber: activeNumberToken || "+256784868667",
           toNumber: dialedNumber,
-          seatId: "IPHONE_A",
-          targetNode: "SUMSUNG_B",
+          seatId: "PHONE_A",
+          targetNode: "PHONE_B",
           iceServers: iceServers,
         }),
       });

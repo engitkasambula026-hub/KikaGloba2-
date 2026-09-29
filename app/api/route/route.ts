@@ -36,22 +36,52 @@ export async function POST(request: Request) {
       }, { status: 200 });
     }
 
-    // 📋 SUB-SYSTEM B: RECOVERED STATUTORY INTAKE REGISTRY RECORDING CORE
+     // 📋 SUB-SYSTEM B: UPGRADED 12-FIELD DIASPORA ENROLLMENT REGISTRY CORE
+  if (action === "REGISTER_MEMBER") {
+    const { name, email, password, sex, dateOfBirth, placeOfBirth, maritalStatus, hostCountry, domicileStatus, passportNumber, gpsLocation, profession, saccoName } = body;
+
     if (!email) {
       return NextResponse.json({ error: "Missing identity credentials" }, { status: 400 });
     }
 
-    await sql`
-      INSERT INTO kika_diaspora_ledger (name, email, passport, country, sacco_name, created_at)
-      VALUES (${name || "Staging User"}, ${email}, ${passport || ""}, ${hostCountry || "Global"}, ${saccoName || ""}, NOW())
-      ON CONFLICT (email) DO UPDATE SET created_at = NOW();
-    `;
+    try {
+      // 🛡️ COMPREHENSIVE PRODUCTION LEDGER WRITE PIPELINE (NEON SERVERLESS ROWS)
+      await sql`
+        INSERT INTO kika_diaspora_ledger (
+          name, email, password, sex, date_of_birth, place_of_birth, marital_status, country, domicile_status, passport, gps_location, profession, sacco_name, created_at
+        ) VALUES (
+          ${name || 'Staging User'}, 
+          ${email}, 
+          ${password || 'key'}, 
+          ${sex || 'MALE'}, 
+          ${dateOfBirth || ''}, 
+          ${placeOfBirth || ''}, 
+          ${maritalStatus || 'SINGLE'}, 
+          ${hostCountry || 'Sweden'}, 
+          ${domicileStatus || 'TEMPORARY'}, 
+          ${passportNumber || ''}, 
+          ${gpsLocation || '0,0'}, 
+          ${profession || ''}, 
+          ${saccoName || ''}, 
+          NOW()
+        )
+        ON CONFLICT (email) DO UPDATE SET created_at = NOW();
+      `;
 
-    return NextResponse.json({ 
-      success: true, 
-      status: "NEON_DB_SECURITY_LOCK_DECOUPLED_GREEN",
-      message: "Credentials successfully synchronized directly inside serverless rows." 
-    }, { status: 200 });
+      return NextResponse.json({ 
+        success: true, 
+        status: "NEON_DB_SECURITY_LOCK_DECOUPLED_GREEN",
+        message: "Credentials successfully synchronized directly inside serverless rows." 
+      }, { status: 200 });
+
+    } catch (dbErr: any) {
+      console.error("Neon Core Write Exception:", dbErr);
+      return NextResponse.json({ success: false, error: dbErr.message }, { status: 500 });
+    }
+  }
+
+  // Catch-all response path if no explicit incoming action string maps correctly
+  return NextResponse.json({ error: "Action socket unmapped" }, { status: 400 });
 
   } catch (error: any) {
     console.error("Ecosystem API Gateway Exception Intercepted: ", error);

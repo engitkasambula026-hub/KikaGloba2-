@@ -1,16 +1,19 @@
-import React from 'react';
-import './globals.css'; // 🚀 FORCES LINK: Connects Tailwind directly to the app tree root
+import "./globals.css";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: 'Kika Global Outreach Platform',
-  description: 'Diaspora infrastructure ecosystem networks',
+export const metadata: Metadata = {
+  title: "Kika Global Ventures Hub",
+  description: "Cross-Border Diaspora Ecosystem",
 };
 
-// 🟢 ORIGINAL RESTORATION: Removed all rigid maximumScale and overflow-X restrictions
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en">
-      <body className="bg-slate-950 min-h-screen text-white font-sans m-0 p-0">
+    <html lang="en" style={{ backgroundColor: "#ffffff" }}>
+      <body style={{ margin: 0, backgroundColor: "#ffffff", color: "#0f172a" }}>
         {children}
       </body>
     </html>

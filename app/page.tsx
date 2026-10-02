@@ -140,39 +140,42 @@ return (
               Certify your demographic node within the global network for asset shielding and SACCO pooling.
             </p>
 
-            {expanded.assetRegistry && (
-              <div style={{ borderTop: "1px solid #1e293b", paddingTop: "10px", marginTop: "10px" }}>
-                <p style={{ color: "#cbd5e1", fontSize: "12px", lineHeight: "1.5", margin: 0 }}>
-                  Integrates Neon SQL database infrastructure with multi-national passport validation to ensure secure property registration and group investment capabilities.
-                </p>
-              </div>
-            )}
-          </div>
+           {/* EXPANDABLE CORRIDOR DETAILS */}
+{expanded.assetRegistry && (
+  <div style={{ borderTop: "1px solid #1e293b", paddingTop: "10px", marginTop: "10px" }}>
+    <p style={{ color: "#cbd5e1", fontSize: "12px", lineHeight: "1.5", margin: 0 }}>
+      Integrates cloud relational infrastructure with multi-national identity validation to secure shared pooling tracks natively inside secure data columns.
+    </p>
+  </div>
+)}
+</div>
 
-          <div style={{ marginTop: "15px" }}>
-            {!expanded.assetRegistry ? (
-              <button onClick={() => toggleExpand("assetRegistry")} style={{ background: "none", border: "none", color: "#10b981", fontSize: "12px", cursor: "pointer", padding: "8px 0 0 0", fontWeight: "600", width: "100%", textAlign: "left" }}>
-                ▼ Read More Details
-              </button>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <Link href="/login" style={{ flex: 1, textDecoration: "none" }}>
-                    <button style={{ width: "100%", padding: "10px", backgroundColor: "#3b82f6", border: "none", borderRadius: "6px", color: "#ffffff", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-                      🔐 Account Login
-                    </button>
-                  </Link>
-                  <Link href="/signup" style={{ flex: 1, textDecoration: "none" }}>
-                    <button style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#0b1528", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-                      📝 New Enrollment
-                    </button>
-                  </Link>
-                </div>
-                <button onClick={() => toggleExpand("assetRegistry")} style={{ width: "100%", padding: "8px", background: "transparent", border: "1px solid #334155", borderRadius: "6px", color: "#94a3b8", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>
-                  Dismiss Overview Panel
-                </button>
-              </div>
-            )}
+{/* TERMINAL CONTROLS */}
+<div style={{ marginTop: "15px" }}>
+{!expanded.assetRegistry ? (
+  <button onClick={() => toggleExpand("assetRegistry")} style={{ background: "none", border: "none", color: "#10b981", fontSize: "12px", cursor: "pointer", padding: "8px 0 0 0", fontWeight: "600", width: "100%", textAlign: "left" }}>
+    ▼ Read More Details
+  </button>
+) : (
+  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+    <div style={{ display: "flex", gap: "8px" }}>
+      <Link href="/login" style={{ flex: 1, textDecoration: "none" }}>
+        <button style={{ width: "100%", padding: "10px", backgroundColor: "#3b82f6", border: "none", borderRadius: "6px", color: "#ffffff", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
+          🔐 Account Login
+        </button>
+      </Link>
+      <Link href="/signup" style={{ flex: 1, textDecoration: "none" }}>
+        <button style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#0b1528", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
+          📝 New Enrollment
+        </button>
+      </Link>
+    </div>
+    <button onClick={() => toggleExpand("assetRegistry")} style={{ width: "100%", padding: "8px", background: "transparent", border: "1px solid #334155", borderRadius: "6px", color: "#94a3b8", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>
+      Dismiss Overview Panel
+    </button>
+  </div>
+)}
+
           </div>
         </section>
 
@@ -185,43 +188,42 @@ return (
               Execute low-cost mobile wallet remittance streams protected by dynamic compliance buffers.
             </p>
 
-            {expanded.remittance && (
-              <div style={{ borderTop: "1px solid #1e293b", paddingTop: "10px", marginTop: "10px" }}>
-                <p style={{ color: "#cbd5e1", fontSize: "12px", lineHeight: "1.5", marginBottom: "10px" }}>
-                  Low-cost automated wallet transfers connecting international banking corridors directly to local MTN MoMo and Airtel Money accounts.
-                </p>
-                <div style={{ backgroundColor: "rgba(59, 130, 246, 0.08)", border: "1px solid rgba(59, 130, 246, 0.2)", padding: "10px", borderRadius: "6px", color: "#3b82f6", fontFamily: "monospace", fontSize: "11px", margin: 0, lineHeight: "1.4" }}>
-                  🔌 REMITTANCE LIQUIDITY HOOK:<br/>
-                  • Target: MTN MoMo Open API / Airtel Money Rails
-                </div>
-              </div>
-            )}
-          </div>
+           {/* EXPANDABLE CORRIDOR DETAILS */}
+{expanded.remittance && (
+  <div style={{ borderTop: "1px solid #1e293b", paddingTop: "10px", marginTop: "10px" }}>
+    <p style={{ color: "#cbd5e1", fontSize: "12px", lineHeight: "1.5", marginBottom: "10px" }}>
+      Low-cost automated wallet transfers connecting international banking corridors directly to local MTN MoMo and Airtel Money accounts.
+    </p>
+  </div>
+)}
+</div>
 
-          <div style={{ marginTop: "15px" }}>
-            {!expanded.remittance ? (
-              <button onClick={() => toggleExpand("remittance")} style={{ background: "none", border: "none", color: "#3b82f6", fontSize: "12px", cursor: "pointer", padding: "8px 0 0 0", fontWeight: "600", width: "100%", textAlign: "left" }}>
-                ▼ Read More Details
-              </button>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <Link href="/login" style={{ flex: 1, textDecoration: "none" }}>
-                    <button style={{ width: "100%", padding: "10px", backgroundColor: "#3b82f6", border: "none", borderRadius: "6px", color: "#ffffff", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-                      🔐 Account Login
-                    </button>
-                  </Link>
-                  <Link href="/signup" style={{ flex: 1, textDecoration: "none" }}>
-                    <button style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#0b1528", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-                      📝 New Enrollment
-                    </button>
-                  </Link>
-                </div>
-                <button onClick={() => toggleExpand("remittance")} style={{ width: "100%", padding: "8px", background: "transparent", border: "1px solid #334155", borderRadius: "6px", color: "#94a3b8", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>
-                  Dismiss Overview Panel
-                </button>
-              </div>
-            )}
+{/* TERMINAL CONTROLS */}
+<div style={{ marginTop: "15px" }}>
+{!expanded.remittance ? (
+  <button onClick={() => toggleExpand("remittance")} style={{ background: "none", border: "none", color: "#3b82f6", fontSize: "12px", cursor: "pointer", padding: "8px 0 0 0", fontWeight: "600", width: "100%", textAlign: "left" }}>
+    ▼ Read More Details
+  </button>
+) : (
+  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+    <div style={{ display: "flex", gap: "8px" }}>
+      <Link href="/login" style={{ flex: 1, textDecoration: "none" }}>
+        <button style={{ width: "100%", padding: "10px", backgroundColor: "#3b82f6", border: "none", borderRadius: "6px", color: "#ffffff", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
+          🔐 Account Login
+        </button>
+      </Link>
+      <Link href="/signup" style={{ flex: 1, textDecoration: "none" }}>
+        <button style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#0b1528", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
+          📝 New Enrollment
+        </button>
+      </Link>
+    </div>
+    <button onClick={() => toggleExpand("remittance")} style={{ width: "100%", padding: "8px", background: "transparent", border: "1px solid #334155", borderRadius: "6px", color: "#94a3b8", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>
+      Dismiss Overview Panel
+    </button>
+  </div>
+)}
+
           </div>
         </section>
 
@@ -234,43 +236,42 @@ return (
               Full-duplex voice circuits engineered to bypass high international tariffs over WebRTC lines.
             </p>
 
-            {expanded.voip && (
-              <div style={{ borderTop: "1px solid #1e293b", paddingTop: "10px", marginTop: "10px" }}>
-                <p style={{ color: "#cbd5e1", fontSize: "12px", lineHeight: "1.5", marginBottom: "10px" }}>
-                  Direct voice channels optimized for crystal-clear audio quality even over low-bandwidth cellular corridors across rural and urban centers.
-                </p>
-                <div style={{ backgroundColor: "rgba(245, 158, 11, 0.08)", border: "1px solid rgba(245, 158, 11, 0.2)", padding: "10px", borderRadius: "6px", color: "#f59e0b", fontFamily: "monospace", fontSize: "11px", margin: 0, lineHeight: "1.4" }}>
-                  🔌 CARRIER SWITCHBOARD HOOK:<br/>
-                  • Circuit Frame Logic: WebRTC Peer Connection API
-                </div>
-              </div>
-            )}
-          </div>
+            {/* EXPANDABLE CORRIDOR DETAILS */}
+{expanded.voip && (
+  <div style={{ borderTop: "1px solid #1e293b", paddingTop: "10px", marginTop: "10px" }}>
+    <p style={{ color: "#cbd5e1", fontSize: "12px", lineHeight: "1.5", marginBottom: "10px" }}>
+      Direct voice channels optimized for crystal-clear audio quality even over low-bandwidth cellular corridors across rural and urban centers.
+    </p>
+  </div>
+)}
+</div>
 
-          <div style={{ marginTop: "15px" }}>
-            {!expanded.voip ? (
-              <button onClick={() => toggleExpand("voip")} style={{ background: "none", border: "none", color: "#f59e0b", fontSize: "12px", cursor: "pointer", padding: "8px 0 0 0", fontWeight: "600", width: "100%", textAlign: "left" }}>
-                ▼ Read More Details
-              </button>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <Link href="/login" style={{ flex: 1, textDecoration: "none" }}>
-                    <button style={{ width: "100%", padding: "10px", backgroundColor: "#3b82f6", border: "none", borderRadius: "6px", color: "#ffffff", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-                      🔐 Account Login
-                    </button>
-                  </Link>
-                  <Link href="/signup" style={{ flex: 1, textDecoration: "none" }}>
-                    <button style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#0b1528", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-                      📝 New Enrollment
-                    </button>
-                  </Link>
-                </div>
-                <button onClick={() => toggleExpand("voip")} style={{ width: "100%", padding: "8px", background: "transparent", border: "1px solid #334155", borderRadius: "6px", color: "#94a3b8", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>
-                  Dismiss Overview Panel
-                </button>
-              </div>
-            )}
+{/* TERMINAL CONTROLS */}
+<div style={{ marginTop: "15px" }}>
+{!expanded.voip ? (
+  <button onClick={() => toggleExpand("voip")} style={{ background: "none", border: "none", color: "#f59e0b", fontSize: "12px", cursor: "pointer", padding: "8px 0 0 0", fontWeight: "600", width: "100%", textAlign: "left" }}>
+    ▼ Read More Details
+  </button>
+) : (
+  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+    <div style={{ display: "flex", gap: "8px" }}>
+      <Link href="/login" style={{ flex: 1, textDecoration: "none" }}>
+        <button style={{ width: "100%", padding: "10px", backgroundColor: "#3b82f6", border: "none", borderRadius: "6px", color: "#ffffff", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
+          🔐 Account Login
+        </button>
+      </Link>
+      <Link href="/signup" style={{ flex: 1, textDecoration: "none" }}>
+        <button style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#0b1528", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
+          📝 New Enrollment
+        </button>
+      </Link>
+    </div>
+    <button onClick={() => toggleExpand("voip")} style={{ width: "100%", padding: "8px", background: "transparent", border: "1px solid #334155", borderRadius: "6px", color: "#94a3b8", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>
+      Dismiss Overview Panel
+    </button>
+  </div>
+)}
+
           </div>
         </section>
         {/* TEASER 04: PORTFOLIO & INVESTMENT HUB */}
@@ -282,43 +283,42 @@ return (
               Track multi-asset yields, cooperative treasury bonds, and group liquidity milestones in real-time.
             </p>
 
-            {expanded.portfolio && (
-              <div style={{ borderTop: "1px solid #1e293b", paddingTop: "10px", marginTop: "10px" }}>
-                <p style={{ color: "#cbd5e1", fontSize: "12px", lineHeight: "1.5", marginBottom: "10px" }}>
-                  Automated performance metrics tracking pooled capital distributions and individual cooperative dividend allocations securely.
-                </p>
-                <div style={{ backgroundColor: "rgba(168, 85, 247, 0.08)", border: "1px solid rgba(168, 85, 247, 0.2)", padding: "10px", borderRadius: "6px", color: "#a855f7", fontFamily: "monospace", fontSize: "11px", margin: 0, lineHeight: "1.4" }}>
-                  🔌 TREASURY SYNC HOOK:<br/>
-                  • Ledger State: Active Node Verification
-                </div>
-              </div>
-            )}
-          </div>
+            {/* EXPANDABLE CORRIDOR DETAILS */}
+{expanded.portfolio && (
+  <div style={{ borderTop: "1px solid #1e293b", paddingTop: "10px", marginTop: "10px" }}>
+    <p style={{ color: "#cbd5e1", fontSize: "12px", lineHeight: "1.5", margin: 0 }}>
+      Automated performance metrics tracking pooled capital distributions and individual cooperative dividend allocations securely.
+    </p>
+  </div>
+)}
+</div>
 
-          <div style={{ marginTop: "15px" }}>
-            {!expanded.portfolio ? (
-              <button onClick={() => toggleExpand("portfolio")} style={{ background: "none", border: "none", color: "#a855f7", fontSize: "12px", cursor: "pointer", padding: "8px 0 0 0", fontWeight: "600", width: "100%", textAlign: "left" }}>
-                ▼ Read More Details
-              </button>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <Link href="/login" style={{ flex: 1, textDecoration: "none" }}>
-                    <button style={{ width: "100%", padding: "10px", backgroundColor: "#3b82f6", border: "none", borderRadius: "6px", color: "#ffffff", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-                      🔐 Account Login
-                    </button>
-                  </Link>
-                  <Link href="/signup" style={{ flex: 1, textDecoration: "none" }}>
-                    <button style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#0b1528", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-                      📝 New Enrollment
-                    </button>
-                  </Link>
-                </div>
-                <button onClick={() => toggleExpand("portfolio")} style={{ width: "100%", padding: "8px", background: "transparent", border: "1px solid #334155", borderRadius: "6px", color: "#94a3b8", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>
-                  Dismiss Overview Panel
-                </button>
-              </div>
-            )}
+{/* TERMINAL CONTROLS */}
+<div style={{ marginTop: "15px" }}>
+{!expanded.portfolio ? (
+  <button onClick={() => toggleExpand("portfolio")} style={{ background: "none", border: "none", color: "#a855f7", fontSize: "12px", cursor: "pointer", padding: "8px 0 0 0", fontWeight: "600", width: "100%", textAlign: "left" }}>
+    ▼ Read More Details
+  </button>
+) : (
+  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+    <div style={{ display: "flex", gap: "8px" }}>
+      <Link href="/login" style={{ flex: 1, textDecoration: "none" }}>
+        <button style={{ width: "100%", padding: "10px", backgroundColor: "#3b82f6", border: "none", borderRadius: "6px", color: "#ffffff", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
+          🔐 Account Login
+        </button>
+      </Link>
+      <Link href="/signup" style={{ flex: 1, textDecoration: "none" }}>
+        <button style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#0b1528", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
+          📝 New Enrollment
+        </button>
+      </Link>
+    </div>
+    <button onClick={() => toggleExpand("portfolio")} style={{ width: "100%", padding: "8px", background: "transparent", border: "1px solid #334155", borderRadius: "6px", color: "#94a3b8", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>
+      Dismiss Overview Panel
+    </button>
+  </div>
+)}
+
           </div>
         </section>
 
@@ -331,43 +331,42 @@ return (
               Map global dispersion metrics, host-country domicile distributions, and regional cooperative density.
             </p>
 
-            {expanded.demographics && (
-              <div style={{ borderTop: "1px solid #1e293b", paddingTop: "10px", marginTop: "10px" }}>
-                <p style={{ color: "#cbd5e1", fontSize: "12px", lineHeight: "1.5", marginBottom: "10px" }}>
-                  Real-time geographic coordinate plotting and population tracking to optimize strategic resource distribution across international chapters.
-                </p>
-                <div style={{ backgroundColor: "rgba(6, 182, 212, 0.08)", border: "1px solid rgba(6, 182, 212, 0.2)", padding: "10px", borderRadius: "6px", color: "#06b6d4", fontFamily: "monospace", fontSize: "11px", margin: 0, lineHeight: "1.4" }}>
-                  🔌 MAPPING ENGINE HOOK:<br/>
-                  • Vector Stream: GPS Coordinate Arrays
-                </div>
-              </div>
-            )}
-          </div>
+           {/* EXPANDABLE CORRIDOR DETAILS */}
+{expanded.demographics && (
+  <div style={{ borderTop: "1px solid #1e293b", paddingTop: "10px", marginTop: "10px" }}>
+    <p style={{ color: "#cbd5e1", fontSize: "12px", lineHeight: "1.5", margin: 0 }}>
+      Real-time geographic coordinate plotting and population tracking to optimize strategic resource distribution across international chapters.
+    </p>
+  </div>
+)}
+</div>
 
-          <div style={{ marginTop: "15px" }}>
-            {!expanded.demographics ? (
-              <button onClick={() => toggleExpand("demographics")} style={{ background: "none", border: "none", color: "#06b6d4", fontSize: "12px", cursor: "pointer", padding: "8px 0 0 0", fontWeight: "600", width: "100%", textAlign: "left" }}>
-                ▼ Read More Details
-              </button>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <Link href="/login" style={{ flex: 1, textDecoration: "none" }}>
-                    <button style={{ width: "100%", padding: "10px", backgroundColor: "#3b82f6", border: "none", borderRadius: "6px", color: "#ffffff", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-                      🔐 Account Login
-                    </button>
-                  </Link>
-                  <Link href="/signup" style={{ flex: 1, textDecoration: "none" }}>
-                    <button style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#0b1528", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-                      📝 New Enrollment
-                    </button>
-                  </Link>
-                </div>
-                <button onClick={() => toggleExpand("demographics")} style={{ width: "100%", padding: "8px", background: "transparent", border: "1px solid #334155", borderRadius: "6px", color: "#94a3b8", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>
-                  Dismiss Overview Panel
-                </button>
-              </div>
-            )}
+{/* TERMINAL CONTROLS */}
+<div style={{ marginTop: "15px" }}>
+{!expanded.demographics ? (
+  <button onClick={() => toggleExpand("demographics")} style={{ background: "none", border: "none", color: "#06b6d4", fontSize: "12px", cursor: "pointer", padding: "8px 0 0 0", fontWeight: "600", width: "100%", textAlign: "left" }}>
+    ▼ Read More Details
+  </button>
+) : (
+  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+    <div style={{ display: "flex", gap: "8px" }}>
+      <Link href="/login" style={{ flex: 1, textDecoration: "none" }}>
+        <button style={{ width: "100%", padding: "10px", backgroundColor: "#3b82f6", border: "none", borderRadius: "6px", color: "#ffffff", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
+          🔐 Account Login
+        </button>
+      </Link>
+      <Link href="/signup" style={{ flex: 1, textDecoration: "none" }}>
+        <button style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#0b1528", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
+          📝 New Enrollment
+        </button>
+      </Link>
+    </div>
+    <button onClick={() => toggleExpand("demographics")} style={{ width: "100%", padding: "8px", background: "transparent", border: "1px solid #334155", borderRadius: "6px", color: "#94a3b8", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>
+      Dismiss Overview Panel
+    </button>
+  </div>
+)}
+
           </div>
         </section>
 
@@ -380,50 +379,49 @@ return (
               Connect professional diaspora skillsets with domestic enterprise requirements and advisory roles.
             </p>
 
-            {expanded.jobMatchmaker && (
-              <div style={{ borderTop: "1px solid #1e293b", paddingTop: "10px", marginTop: "10px" }}>
-                <p style={{ color: "#cbd5e1", fontSize: "12px", lineHeight: "1.5", marginBottom: "10px" }}>
-                  Specialized matching protocol evaluating professional qualifications, certifications, and availability for remote or localized execution.
-                </p>
-                <div style={{ backgroundColor: "rgba(236, 72, 153, 0.08)", border: "1px solid rgba(236, 72, 153, 0.2)", padding: "10px", borderRadius: "6px", color: "#ec4899", fontFamily: "monospace", fontSize: "11px", margin: 0, lineHeight: "1.4" }}>
-                  🔌 TALENT CORRIDOR HOOK:<br/>
-                  • Protocol Matrix: Professional Registry Sync
-                </div>
-              </div>
-            )}
-          </div>
+           {/* EXPANDABLE CORRIDOR DETAILS */}
+{expanded.jobMatchmaker && (
+  <div style={{ borderTop: "1px solid #1e293b", paddingTop: "10px", marginTop: "10px" }}>
+    <p style={{ color: "#cbd5e1", fontSize: "12px", lineHeight: "1.5", margin: 0 }}>
+      Specialized matching protocol evaluating professional qualifications, certifications, and availability for remote or localized execution.
+    </p>
+  </div>
+)}
+</div>
 
-          <div style={{ marginTop: "15px" }}>
-            {!expanded.jobMatchmaker ? (
-              <button onClick={() => toggleExpand("jobMatchmaker")} style={{ background: "none", border: "none", color: "#ec4899", fontSize: "12px", cursor: "pointer", padding: "8px 0 0 0", fontWeight: "600", width: "100%", textAlign: "left" }}>
-                ▼ Read More Details
-              </button>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <Link href="/login" style={{ flex: 1, textDecoration: "none" }}>
-                    <button style={{ width: "100%", padding: "10px", backgroundColor: "#3b82f6", border: "none", borderRadius: "6px", color: "#ffffff", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-                      🔐 Account Login
-                    </button>
-                  </Link>
-                  <Link href="/signup" style={{ flex: 1, textDecoration: "none" }}>
-                    <button style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#0b1528", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-                      📝 New Enrollment
-                    </button>
-                  </Link>
-                </div>
-                <button onClick={() => toggleExpand("jobMatchmaker")} style={{ width: "100%", padding: "8px", background: "transparent", border: "1px solid #334155", borderRadius: "6px", color: "#94a3b8", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>
-                  Dismiss Overview Panel
-                </button>
-              </div>
-            )}
+{/* TERMINAL CONTROLS */}
+<div style={{ marginTop: "15px" }}>
+{!expanded.jobMatchmaker ? (
+  <button onClick={() => toggleExpand("jobMatchmaker")} style={{ background: "none", border: "none", color: "#ec4899", fontSize: "12px", cursor: "pointer", padding: "8px 0 0 0", fontWeight: "600", width: "100%", textAlign: "left" }}>
+    ▼ Read More Details
+  </button>
+) : (
+  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+    <div style={{ display: "flex", gap: "8px" }}>
+      <Link href="/login" style={{ flex: 1, textDecoration: "none" }}>
+        <button style={{ width: "100%", padding: "10px", backgroundColor: "#3b82f6", border: "none", borderRadius: "6px", color: "#ffffff", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
+          🔐 Account Login
+        </button>
+      </Link>
+      <Link href="/signup" style={{ flex: 1, textDecoration: "none" }}>
+        <button style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#0b1528", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
+          📝 New Enrollment
+        </button>
+      </Link>
+    </div>
+    <button onClick={() => toggleExpand("jobMatchmaker")} style={{ width: "100%", padding: "8px", background: "transparent", border: "1px solid #334155", borderRadius: "6px", color: "#94a3b8", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>
+      Dismiss Overview Panel
+    </button>
+  </div>
+)}
+
           </div>
         </section>
 
       </main>
 
       <footer style={{ backgroundColor: "#0b1528", textAlign: "center", padding: "20px", color: "#64748b", fontSize: "12px", borderTop: "1px solid #1e293b", maxWidth: "1400px", margin: "40px auto 0 auto" }}>
-        KiKa Global Ventures Staging Infrastructure • NITA-U Secured Framework Compliance © 2026
+        KiKa Global Ventures SE 127 31 Stockholm Staging Infrastructure• NITA-U Secured Framework Compliance © 2026
       </footer>
     </div>
   );

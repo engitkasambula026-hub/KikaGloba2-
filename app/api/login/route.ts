@@ -1,62 +1,44 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { sql } from "@/lib/db"; // 🟢 CORRECT FIX: Imports 'sql' natively matching your library configuration
 
-export const dynamic = "force-dynamic";
-
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const rawBody = await req.json();
-    const { emailAddress, accessPassword, email, password } = rawBody;
+    const body = await request.json();
+    const { email, password } = body;
 
-    // Backward compatibility mapper: handles variable property variations across old/new frontend view forms
-    const auditEmail = (emailAddress || email || "").toLowerCase().trim();
-    const auditPassword = accessPassword || password || "";
-
-    if (!auditEmail || !auditPassword) {
-      return NextResponse.json({ error: "Missing credential inputs vectors." }, { status: 400 });
+    if (!email || !password) {
+      return NextResponse.json({ success: false, error: "Credentials missing" }, { status: 400 });
     }
 
-    // 🟢 SECURE DELEGATE BYPASS ROUTINE: Bypasses strict schema limitations to prevent prisma findFirst crashes
-    const userDelegate = (db as any).user || (db as any).profiles || (db as any).member;
-    
-    if (!userDelegate) {
-      return NextResponse.json({ error: "Database mapping core connection node un-initialized." }, { status: 500 });
+    // 🛡️ DIRECT SECURE NEON SQL CREDENTIAL VERIFICATION LOOKUP LOOP
+    const users = await sql`
+      SELECT * FROM kika_diaspora_ledger WHERE email = ${email} LIMIT 1;
+    `;
+
+    if (!users || users.length === 0) {
+      return NextResponse.json({ success: false, error: "Invalid identity credentials logged." }, { status: 200 });
     }
 
-    // 1. Scan your serverless database rows safely for an authenticated user profile match
-    const verifiedUserRecord = await userDelegate.findFirst({
-      where: { email: auditEmail }
-    });
+    const user = users[0];
 
-    // 2. Fallback Sandbox Bypass (Guarantees zero developer lockouts during staging trials)
-    if (!verifiedUserRecord && auditEmail.endsWith("@kikaglobal.com")) {
-      const response = NextResponse.json({
-        success: true,
-        message: "Staging sandbox credentials verified. Security access token allocated.",
-        user: { name: "Trial Representative", email: auditEmail }
-      });
-      
-      response.cookies.set("kika_session_active", "true", { path: "/", maxAge: 60 * 60 * 24, sameSite: "strict", secure: true });
-      return response;
+    // 🔑 BASIC PASS AUTHENTICATOR (HOOKED UP STABLE TO YOUR REGISTER SCHEMA)
+    if (user.password !== password) {
+      return NextResponse.json({ success: false, error: "Invalid identity credentials logged." }, { status: 200 });
     }
 
-    // 3. Enforce strict password validation match loops
-    if (!verifiedUserRecord || verifiedUserRecord.password !== auditPassword) {
-      return NextResponse.json({ error: "Access Refused: Invalid statutory key combinations." }, { status: 401 });
-    }
-
-    const successResponse = NextResponse.json({
+    return NextResponse.json({
       success: true,
-      message: "Sovereign session verified successfully. Entry permissions approved.",
-      user: { name: verifiedUserRecord.name, email: verifiedUserRecord.email }
-    });
-
-    // 🟢 LOCK COOKIE PASS: Issues an official production-grade session cookie straight to the phone browser
-    successResponse.cookies.set("kika_session_active", "true", { path: "/", maxAge: 60 * 60 * 24 * 7, sameSite: "strict", secure: true });
-    return successResponse;
+      message: "Authorization node session verified successfully.",
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        country: user.country
+      }
+    }, { status: 200 });
 
   } catch (error: any) {
-    console.error("[LOGIN ENGINE CRITICAL FAULT]:", error);
-    return NextResponse.json({ error: `Authentication validation drop: ${error.message}` }, { status: 500 });
+    console.error("Login API Exception Intercepted: ", error);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

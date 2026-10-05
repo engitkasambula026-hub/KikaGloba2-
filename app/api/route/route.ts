@@ -36,49 +36,44 @@ export async function POST(request: Request) {
       }, { status: 200 });
     }
 
-     // 📋 SUB-SYSTEM B: UPGRADED 12-FIELD DIASPORA ENROLLMENT REGISTRY CORE
-  if (action === "REGISTER_MEMBER") {
-    const { name, email, password, sex, dateOfBirth, placeOfBirth, maritalStatus, hostCountry, domicileStatus, passportNumber, gpsLocation, profession, saccoName } = body;
+      // 📋 SUB-SYSTEM B: UPGRADED 16-FIELD DIASPORA ENROLLMENT REGISTRY CORE
+    if (action === "REGISTER_MEMBER") {
+      const { 
+        name, email, password, sex, dateOfBirth, placeOfBirth, 
+        maritalStatus, hostCountry, domicileStatus, passportNumber, 
+        gpsLocation, profession, saccoName,
+        phoneNumber, countryCode, physicalAddress, postalCode // 🟢 NEW COLUMNS INCLUDED
+      } = body;
 
-    if (!email) {
-      return NextResponse.json({ error: "Missing identity credentials" }, { status: 400 });
+      // 🛡️ RE-CALIBRATED PRODUCTION VALIDATION MATRIX
+      if (!email || !password) {
+        return NextResponse.json({ success: false, error: "Missing required identity or account credentials validation parameters." }, { status: 400 });
+      }
+
+      try {
+        // Asynchronous insert routing parameters natively to your updated Neon table slots
+        await sql`
+          INSERT INTO kika_diaspora_ledger (
+            name, email, password, sex, date_of_birth, place_of_birth, marital_status, country, domicile_status, passport, gps_location, profession, sacco_name,
+            phone_number, country_code, physical_address, postal_code, created_at
+          ) VALUES (
+            ${name || 'Anonymous'}, ${email}, ${password}, ${sex || 'MALE'}, ${dateOfBirth || ''}, ${placeOfBirth || ''}, ${maritalStatus || 'SINGLE'}, ${hostCountry || 'Uganda'}, ${domicileStatus || 'TEMPORARY'}, ${passportNumber || ''}, ${gpsLocation || '0,0'}, ${profession || ''}, ${saccoName || ''},
+            ${phoneNumber || ''}, ${countryCode || ''}, ${physicalAddress || ''}, ${postalCode || ''}, NOW()
+          )
+          ON CONFLICT (email) DO UPDATE SET created_at = NOW();
+        `;
+
+        return NextResponse.json({ 
+          success: true, 
+          message: "Ecosystem portal credentials successfully synchronized directly inside Neon serverless rows." 
+        }, { status: 200 });
+
+      } catch (dbErr: any) {
+        console.error("Neon Core Ingestion Exception:", dbErr);
+        return NextResponse.json({ success: false, error: dbErr.message }, { status: 500 });
+      }
     }
 
-    try {
-      // 🛡️ COMPREHENSIVE PRODUCTION LEDGER WRITE PIPELINE (NEON SERVERLESS ROWS)
-      await sql`
-        INSERT INTO kika_diaspora_ledger (
-          name, email, password, sex, date_of_birth, place_of_birth, marital_status, country, domicile_status, passport, gps_location, profession, sacco_name, created_at
-        ) VALUES (
-          ${name || 'Staging User'}, 
-          ${email}, 
-          ${password || 'key'}, 
-          ${sex || 'MALE'}, 
-          ${dateOfBirth || ''}, 
-          ${placeOfBirth || ''}, 
-          ${maritalStatus || 'SINGLE'}, 
-          ${hostCountry || 'Sweden'}, 
-          ${domicileStatus || 'TEMPORARY'}, 
-          ${passportNumber || ''}, 
-          ${gpsLocation || '0,0'}, 
-          ${profession || ''}, 
-          ${saccoName || ''}, 
-          NOW()
-        )
-        ON CONFLICT (email) DO UPDATE SET created_at = NOW();
-      `;
-
-      return NextResponse.json({ 
-        success: true, 
-        status: "NEON_DB_SECURITY_LOCK_DECOUPLED_GREEN",
-        message: "Credentials successfully synchronized directly inside serverless rows." 
-      }, { status: 200 });
-
-    } catch (dbErr: any) {
-      console.error("Neon Core Write Exception:", dbErr);
-      return NextResponse.json({ success: false, error: dbErr.message }, { status: 500 });
-    }
-  }
 
   // Catch-all response path if no explicit incoming action string maps correctly
   return NextResponse.json({ error: "Action socket unmapped" }, { status: 400 });

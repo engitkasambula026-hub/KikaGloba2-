@@ -5,16 +5,20 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function SignupPage() {
+  // 🟢 CORRECT ALIGNMENT: Added missing originCountry property placeholder slot to the master object array
   const [form, setForm] = useState({
     name: "", email: "", password: "", sex: "MALE", dateOfBirth: "",
-    placeOfBirth: "", maritalStatus: "SINGLE", hostCountry: "Sweden",
-    domicileStatus: "TEMPORARY", passportNumber: "", gpsLocation: "0,0", profession: ""
+    placeOfBirth: "", originCountry: "", maritalStatus: "SINGLE", hostCountry: "Sweden",
+    domicileStatus: "TEMPORARY", passportNumber: "", gpsLocation: "0,0", 
+    profession: "", saccoName: "",
+    phoneNumber: "", countryCode: "+256", physicalAddress: "", postalCode: ""
   });
+
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const syncGps = () => {
+const syncGps = () => {
     if (typeof window !== "undefined" && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((pos) => {
         const coords = `${pos.coords.latitude},${pos.coords.longitude}`;
@@ -29,21 +33,45 @@ export default function SignupPage() {
     setError("");
     setLoading(true);
 
-    try {
-      const res = await fetch("/api/register", {
+        try {
+      setLoading(true);
+      setError("");
+
+      // 🟢 CORRECT TARGET PASS: Re-routes network traffic directly to your active unified endpoint route
+      const res = await fetch("/api/route", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          action: "REGISTER_MEMBER", // 🛡️ CRITICAL TOKEN: Instructs your route handler to trigger the 16-field Neon insert code
+          name: form.name,
+          email: form.email.toLowerCase().trim(),
+          password: form.password,
+          sex: form.sex,
+          dateOfBirth: form.dateOfBirth,
+          placeOfBirth: form.placeOfBirth,
+          maritalStatus: form.maritalStatus,
+          hostCountry: form.hostCountry,
+          domicileStatus: form.domicileStatus,
+          passportNumber: form.passportNumber,
+          gpsLocation: form.gpsLocation,
+          profession: form.profession,
+          saccoName: form.saccoName || "",
+          phoneNumber: form.phoneNumber,
+          countryCode: form.countryCode,
+          physicalAddress: form.physicalAddress,
+          postalCode: form.postalCode
+        }),
       });
 
       const data = await res.json();
+
       if (!res.ok) {
-        setError(data.error || "Onboarding transaction rejected.");
-        setLoading(false);
-        return;
+        setError(data.error || "Enrollment transaction validation drop.");
+      } else {
+        alert("🟢 Diaspora Asset Profile written directly to secure Neon PostgreSQL ledger rows!");
+        router.push("/login"); // Redirects member to your streamlined authentication portal path
       }
 
-      router.push("/login");
     } catch (err) {
       setError("Ecosystem pipeline offline. Connection failed.");
       setLoading(false);
@@ -116,6 +144,30 @@ export default function SignupPage() {
           <div style={hdrStyle}>3. Core Account Access Protocol</div>
           <div style={{ margin: "14px 0" }}><label style={lblStyle}>Secure Password</label><input type="password" placeholder="••••••••" required onChange={e => setForm({...form, password: e.target.value})} style={iptStyle} /></div>
           
+                    {/* 📞 TELECOMMUNICATION TRACKER MODULE (INJECTED ALIGNMENT) */}
+          <div style={{ display: "flex", gap: "12px", marginTop: "12px" }}>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={{ color: "#cbd5e1", fontSize: "11px", fontWeight: "bold", textTransform: "uppercase" }}>Country Code</label>
+              <input type="text" placeholder="+256" value={form.countryCode} onChange={e => setForm({ ...form, countryCode: e.target.value })} required style={{ padding: "12px", background: "#020617", border: "1px solid #1e293b", borderRadius: "6px", color: "#fff", fontSize: "13px", outline: "none", width: "100%", boxSizing: "border-box" }} />
+            </div>
+            <div style={{ flex: 3, display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={{ color: "#cbd5e1", fontSize: "11px", fontWeight: "bold", textTransform: "uppercase" }}>Primary Phone Number</label>
+              <input type="tel" placeholder="712345678" value={form.phoneNumber} onChange={e => setForm({ ...form, phoneNumber: e.target.value })} required style={{ padding: "12px", background: "#020617", border: "1px solid #1e293b", borderRadius: "6px", color: "#fff", fontSize: "13px", outline: "none", width: "100%", boxSizing: "border-box" }} />
+            </div>
+          </div>
+
+          {/* 🏠 GEOGRAPHIC DWELLING INDEX MODULE */}
+          <div style={{ display: "flex", gap: "12px", marginTop: "12px" }}>
+            <div style={{ flex: 3, display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={{ color: "#cbd5e1", fontSize: "11px", fontWeight: "bold", textTransform: "uppercase" }}>Physical Domicile Address</label>
+              <input type="text" placeholder="Plot 4 Kampala Rd" value={form.physicalAddress} onChange={e => setForm({ ...form, physicalAddress: e.target.value })} required style={{ padding: "12px", background: "#020617", border: "1px solid #1e293b", borderRadius: "6px", color: "#fff", fontSize: "13px", outline: "none", width: "100%", boxSizing: "border-box" }} />
+            </div>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={{ color: "#cbd5e1", fontSize: "11px", fontWeight: "bold", textTransform: "uppercase" }}>Postal Code</label>
+              <input type="text" placeholder="10101" value={form.postalCode} onChange={e => setForm({ ...form, postalCode: e.target.value })} required style={{ padding: "12px", background: "#020617", border: "1px solid #1e293b", borderRadius: "6px", color: "#fff", fontSize: "13px", outline: "none", width: "100%", boxSizing: "border-box" }} />
+            </div>
+          </div>
+
           <button type="submit" disabled={loading} style={{ width: "100%", padding: "16px", background: "#34d399", color: "#0f172a", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold", fontSize: "15px", marginTop: "14px", boxShadow: "0 4px 14px rgba(52, 211, 153, 0.3)" }}>
             {loading ? "Synchronizing Matrix Parameters..." : "Commit Secure Registration Entry"}
           </button>

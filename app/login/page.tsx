@@ -28,6 +28,17 @@ export default function KikaUnifiedAuthPage() {
 
       if (data.success) {
         setMessage("🟢 Session authorized successfully! Redirecting...");
+                // 🔒 SMART ENVIRONMENT COOKIE CORRIDOR: Auto-detects local laptop vs live cloud servers
+        const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+        
+        if (isLocalhost) {
+          // 💻 Laptop Mode: Clean, un-restricted cookie path for smooth local testing
+          document.cookie = "kika_session_active=true; path=/; max-age=604800; SameSite=Lax";
+        } else {
+          // 🌍 Production Mode: Hardened, encrypted security cookie for your live Vercel domain link
+          document.cookie = "kika_session_active=true; path=/; max-age=604800; SameSite=Lax; Secure";
+        }
+
         // 🛡️ Redirects your validated user straight into your core cockpit dashboard path
         setTimeout(() => {
           router.push("/dashboard"); 

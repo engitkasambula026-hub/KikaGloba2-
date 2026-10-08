@@ -1,6 +1,7 @@
 "use client";
+// 🟢 FIXED CALIBRATION: Included useRef right next to your useState and useEffect parameters
+import React, { useState, useEffect, useRef } from "react";
 
-import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import CentralDropdown from "./components/CentralDropdown";
 
@@ -16,6 +17,10 @@ export default function KikaStagingMatrixHub() {
   const [saccoName, setSaccoName] = useState("");
   const [dbStatusText, setDbStatusText] = useState("⚡ STANDALONE STAGING COCKPIT ACTIVE");
 
+  // 🟢 PASTE HERE: Your 2 new security session state tracking variables injected cleanly
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // State dictionary managing expanded drawers for all 6 core service teaser windows
   const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({
     assetRegistry: false,
@@ -25,11 +30,6 @@ export default function KikaStagingMatrixHub() {
     demographics: false,
     jobMatchmaker: false,
   });
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   // 🔌 LIVE ASYNCHRONOUS NEON DATABASE INTAKE PIPELINE
   const executeNeonRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,22 +65,91 @@ export default function KikaStagingMatrixHub() {
     }
   };
 
+    // (Your existing toggle function sits right here)
   const toggleExpand = (key: string) => {
     setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  if (!mounted) {
-    return (
-      <div style={{ minHeight: "100vh", backgroundColor: "#020617", color: "#10b981", display: "flex", justifyContent: "center", alignItems: "center", fontFamily: "monospace" }}>
-        🔒 INITIALIZING KIKA VAULT...
-      </div>
-    );
-  }
+  // 🟢 PASTE HERE: Drop the entire session clear and 15-minute inactivity security lock right here!
+  // ❌ EXPLICIT SESSION CLEAR ACTION GATE
+  const handleGlobalSignOut = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    document.cookie = "kika_session_active=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie = "kika_session_active=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax; Secure";
+    setIsLoggedIn(false);
+    window.location.reload(); 
+  };
+
+    // 🟢 THREAD 1: Pure client hydration tracker pass
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+   // ⏱️ THREAD 2: UPGRADED DUAL-STAGE SECURITY LOCK (15 Min Total, Warning at Final 10 Seconds)
+  useEffect(() => {
+    if (!mounted) return;
+
+    const hasActiveSession = document.cookie.includes("kika_session_active=true");
+    setIsLoggedIn(hasActiveSession);
+
+    if (!hasActiveSession) return;
+
+    // 📊 Core Countdown Intervals
+    const TOTAL_LIMIT = 15 * 60 * 1000; // 15 Minutes total session lifespan
+    const WARNING_BUFFER = 10 * 1000;   // 10 Seconds warning window duration
+    const TIME_BEFORE_WARNING = TOTAL_LIMIT - WARNING_BUFFER; // 14 Minutes, 50 Seconds
+
+    const triggerHardLockdown = () => {
+      alert("🔒 Security Lock: Your session has ended due to 15 minutes of inactivity.");
+      handleGlobalSignOut();
+    };
+
+    const runSecurityLifecycle = () => {
+      // 1️⃣ Clear any active running memory loops
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+      // 2️⃣ Stage Stage A: Wait 14 minutes and 50 seconds, then throw your 10-second warning prompt
+      timeoutRef.current = setTimeout(() => {
+        
+        // Displays a browser confirmation window box layer checking if the user is still there
+        const keepsSessionAlive = window.confirm("⚠️ Inactivity Alert: Your session will expire in 10 seconds. Do you want to stay logged in?");
+        
+        if (keepsSessionAlive) {
+          // User clicked "OK" -> Restart the 15-minute clock fresh from zero!
+          runSecurityLifecycle();
+        } else {
+          // User clicked "Cancel" or ignored -> Execute immediate hard lock down pass
+          triggerHardLockdown();
+        }
+      }, TIME_BEFORE_WARNING);
+    };
+
+    // Human Interaction Listeners that automatically reset the clock when movement is detected
+    const resetOnUserMovement = () => {
+      runSecurityLifecycle();
+    };
+
+    const interactionEvents = ["mousedown", "mousemove", "keypress", "scroll", "touchstart"];
+    
+    // Launch the master tracking loop instantly on mount
+    runSecurityLifecycle();
+
+    interactionEvents.forEach(evt => document.addEventListener(evt, resetOnUserMovement));
+    
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      interactionEvents.forEach(evt => document.removeEventListener(evt, resetOnUserMovement));
+    };
+  }, [mounted]);
+
+
+
   // 🟢 PATCH: Update your absolute outermost parent container div properties to this bright palette configuration
 return (
   <div style={{ minHeight: "100vh", backgroundColor: "#ffffff", color: "#0f172a", fontFamily: "sans-serif", transition: "background 0.3s" }} onClick={() => setIsContactOpen(false)}>
 
       {/* 🌍 1. COMPACT NAVBAR */}
+          {/* 🌍 1. COMPACT NAVBAR */}
       <nav style={{ backgroundColor: "#0b1528", borderBottom: "1px solid #1e293b", padding: "10px 20px", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", maxWidth: "1400px", margin: "0 auto", boxSizing: "border-box", width: "100%" }} onClick={e => e.stopPropagation()}>
         <Link href="/" style={{ textDecoration: "none" }}>
           <div style={{ fontWeight: "900", color: "#10b981", cursor: "pointer", fontSize: "13px", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>
@@ -108,15 +177,35 @@ return (
             )}
           </div>
 
-          <button onClick={() => toggleExpand("assetRegistry")} style={{ backgroundColor: "#10b981", color: "#0b1528", border: "none", padding: "5px 12px", borderRadius: "4px", fontSize: "12px", fontWeight: "bold", cursor: "pointer" }}>
-            Login / Enroll  
-          </button>
+          {/* 🚪 ADAPTIVE CONTROLS: Renders cockpit links and logout triggers when logged in */}
+          {isLoggedIn ? (
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <Link href="/dashboard" style={{ textDecoration: "none" }}>
+                <button style={{ backgroundColor: "#3b82f6", color: "#ffffff", border: "none", padding: "5px 12px", borderRadius: "4px", fontSize: "12px", fontWeight: "bold", cursor: "pointer" }}>
+                  🎛️ My Cockpit
+                </button>
+              </Link>
+              <button 
+                onClick={handleGlobalSignOut} 
+                style={{ background: "transparent", border: "1px solid #ef4444", color: "#ef4444", padding: "4px 10px", borderRadius: "4px", fontSize: "12px", fontWeight: "bold", cursor: "pointer", transition: "all 0.2s" }}
+              >
+                🚪 Sign Out
+              </button>
+            </div>
+          ) : (
+            <Link href="/login" style={{ textDecoration: "none" }}>
+              <button style={{ backgroundColor: "#10b981", color: "#0b1528", border: "none", padding: "5px 12px", borderRadius: "4px", fontSize: "12px", fontWeight: "bold", cursor: "pointer" }}>
+                🔐 Sign In / Enroll
+              </button>
+            </Link>
+          )}
         </div>
 
         <div style={{ color: "#10b981", fontSize: "10px", fontWeight: "bold", fontFamily: "monospace", background: "rgba(16, 185, 129, 0.1)", padding: "4px 8px", borderRadius: "4px", border: "1px solid rgba(16, 185, 129, 0.2)" }}>
           PRODUCTION READY
         </div>
       </nav>
+
 
       {/* 📖 2. HERO HEADLINE */}
       <header style={{ maxWidth: "680px", margin: "28px auto 32px auto", padding: "0 16px", textAlign: "center" }}>

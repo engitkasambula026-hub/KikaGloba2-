@@ -1,5 +1,6 @@
 'use client';
 import React, { useState } from 'react';
+import Link from 'next/link';
 
 export default function DashboardPage() {
   // Balance State Management
@@ -36,71 +37,106 @@ export default function DashboardPage() {
     setAmount('');
   };
 
-  return (
-    <div className="max-w-7xl mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Workspace Dashboard</h1>
-        <p className="text-sm text-gray-500">Central command interface for jobs and financial flows.</p>
-      </div>
+  // ❌ Explicit Session Clear Gate
+  const handleSignOutClear = () => {
+    document.cookie = "kika_session_active=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    window.location.href = "/";
+  };
 
-      {/* Main Grid Layout layout panels */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* Left Side: Financial Vault Controls */}
-        <div className="lg:col-span-2 space-y-6">
+  return (
+    <div className="min-h-screen bg-gray-50 text-gray-900">
+      
+      {/* 🌏 TAILWIND-OPTIMIZED NAVIGATION HEADER */}
+      <nav className="bg-slate-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
+        <div className="flex items-center gap-6">
+          <div className="font-black text-emerald-400 text-sm tracking-wider uppercase">
+            🌍 KIKA MEMBER COCKPIT
+          </div>
           
-          {/* Card Module 1: Live Balances */}
-          <div className="bg-gradient-to-br from-indigo-700 to-blue-600 text-white p-6 rounded-2xl shadow">
-            <p className="text-indigo-200 text-xs font-semibold tracking-wider uppercase">Available Liquidity Vault</p>
-            <h2 className="text-4xl font-extrabold mt-1">UGX {balance.toLocaleString()}</h2>
-            <div className="mt-4 flex gap-4 text-xs text-indigo-100">
-              <div>📈 Daily Limit: Max Base</div>
-              <div>🔒 Encrypted Node Secure</div>
+          {/* 🟢 THE RETURN PATHWAY CORRIDOR LINK */}
+          <Link 
+            href="/" 
+            className="text-xs font-semibold text-slate-300 hover:text-blue-400 transition-colors duration-200"
+          >
+            🏠 Back to Landing Page
+          </Link>
+        </div>
+
+        {/* 🚪 LOG OUT INTERFACE LINK BUTTON */}
+        <button 
+          onClick={handleSignOutClear} 
+          className="bg-transparent border border-red-500 text-red-500 text-xs font-bold px-3 py-1.5 rounded-md hover:bg-red-500 hover:text-white transition-all duration-200"
+        >
+          🚪 Secure Log Out
+        </button>
+      </nav>
+
+      {/* Main Container Layout */}
+      <div className="max-w-7xl mx-auto p-6">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Workspace Dashboard</h1>
+          <p className="text-sm text-gray-500">Central command interface for jobs and financial flows.</p>
+        </div>
+
+        {/* Main Grid Layout layout panels */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* Left Side: Financial Vault Controls */}
+          <div className="lg:col-span-2 space-y-6">
+            
+            {/* Card Module 1: Live Balances */}
+            <div className="bg-gradient-to-br from-indigo-700 to-blue-600 text-white p-6 rounded-2xl shadow">
+              <p className="text-indigo-200 text-xs font-semibold tracking-wider uppercase">Available Liquidity Vault</p>
+              <h2 className="text-4xl font-extrabold mt-1">UGX {balance.toLocaleString()}</h2>
+              <div className="mt-4 flex gap-4 text-xs text-indigo-100">
+                <div>📈 Daily Limit: Max Base</div>
+                <div>🔒 Encrypted Node Secure</div>
+              </div>
+            </div>
+
+            {/* Card Module 2: Send Money Execution Engine */}
+            <div className="bg-white p-6 rounded-2xl border shadow-sm">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Execute Kika Rapid Remittance</h3>
+              <form onSubmit={handleTransfer} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Recipient Name / Account Node</label>
+                  <input required type="text" value={recipient} onChange={e => setRecipient(e.target.value)} className="w-full border p-2 rounded-md" placeholder="e.g. John Doe" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Amount (UGX)</label>
+                  <input required type="number" value={amount} onChange={e => setAmount(e.target.value)} className="w-full border p-2 rounded-md" placeholder="Amount value" />
+                </div>
+                <button type="submit" className="md:col-span-2 bg-gray-900 text-white font-medium py-2 rounded-md hover:bg-black transition text-sm">
+                  Authorize Immediate Liquidity Release
+                </button>
+              </form>
             </div>
           </div>
 
-          {/* Card Module 2: Send Money Execution Engine */}
-          <div className="bg-white p-6 rounded-2xl border shadow-sm">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Execute Kika Rapid Remittance</h3>
-            <form onSubmit={handleTransfer} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Recipient Name / Account Node</label>
-                <input required type="text" value={recipient} onChange={e => setRecipient(e.target.value)} className="w-full border p-2 rounded-md" placeholder="e.g. John Doe" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Amount (UGX)</label>
-                <input required type="number" value={amount} onChange={e => setAmount(e.target.value)} className="w-full border p-2 rounded-md" placeholder="Amount value" />
-              </div>
-              <button type="submit" className="md:col-span-2 bg-gray-900 text-white font-medium py-2 rounded-md hover:bg-black transition text-sm">
-                Authorize Immediate Liquidity Release
-              </button>
-            </form>
-          </div>
-        </div>
-
-        {/* Right Side: Operational Tracking Ledger Panels */}
-        <div className="bg-white p-6 rounded-2xl border shadow-sm h-fit">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Live Transaction Ledger</h3>
-          <div className="space-y-4">
-            {transactions.map((txn) => (
-              <div key={txn.id} className="flex justify-between items-center pb-3 border-b last:border-0 last:pb-0">
-                <div>
-                  <p className="text-sm font-semibold text-gray-800">{txn.target}</p>
-                  <p className="text-xs text-gray-400">{txn.id} • {txn.date}</p>
+          {/* Right Side: Operational Tracking Ledger Panels */}
+          <div className="bg-white p-6 rounded-2xl border shadow-sm h-fit">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Live Transaction Ledger</h3>
+            <div className="space-y-4">
+              {transactions.map((txn) => (
+                <div key={txn.id} className="flex justify-between items-center pb-3 border-b last:border-0 last:pb-0">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">{txn.target}</p>
+                    <p className="text-xs text-gray-400">{txn.id} • {txn.date}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className={`text-sm font-bold ${txn.amount.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
+                      {txn.amount}
+                    </p>
+                    <span className="inline-block text-[10px] font-medium bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full mt-0.5">
+                      {txn.status}
+                    </span>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className={`text-sm font-bold ${txn.amount.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
-                    {txn.amount}
-                  </p>
-                  <span className="inline-block text-[10px] font-medium bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full mt-0.5">
-                    {txn.status}
-                  </span>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
 
+        </div>
       </div>
     </div>
   );

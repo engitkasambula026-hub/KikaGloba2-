@@ -35,6 +35,65 @@ export async function POST(request: Request) {
         ]
       }, { status: 200 });
     }
+    // 💸 CORRIDOR 1: INTERNAL SEND-MONEY ACCOUNT TRUNK
+    if (action === "INTERNAL_SEND_MONEY") {
+      const { senderEmail, recipientEmail, amount } = body;
+      const numAmount = parseFloat(amount);
+
+      if (!senderEmail || !recipientEmail || isNaN(numAmount) || numAmount <= 0) {
+        return NextResponse.json({ success: false, error: "Validation Drop: Invalid financial entry parameters." }, { status: 400 });
+      }
+
+      try {
+        // 1. Verify sender possesses sufficient liquidity capital reserves
+        const senderRow = await sql`SELECT balance FROM kika_diaspora_ledger WHERE email = ${senderEmail}`;
+        if (senderRow.length === 0 || parseFloat(senderRow[0].balance) < numAmount) {
+          return NextResponse.json({ success: false, error: "Insufficient capital reserves to clear transfer corridors." }, { status: 400 });
+        }
+
+        // 2. Check if the target beneficiary account node exists inside your registry ledger rows
+        const recipientRow = await sql`SELECT id FROM kika_diaspora_ledger WHERE email = ${recipientEmail}`;
+        if (recipientRow.length === 0) {
+          return NextResponse.json({ success: false, error: "Beneficiary account destination node not found in registry." }, { status: 404 });
+        }
+
+        // 3. Execute Atomically balanced atomic financial debit/credit changes
+        await sql`UPDATE kika_diaspora_ledger SET balance = balance - ${numAmount} WHERE email = ${senderEmail}`;
+        await sql`UPDATE kika_diaspora_ledger SET balance = balance + ${numAmount} WHERE email = ${recipientEmail}`;
+        
+        // 4. Log transaction history trace row dynamically
+        await sql`INSERT INTO kika_internal_transactions (sender_email, recipient_email, amount, corridor_type) VALUES (${senderEmail}, ${recipientEmail}, ${numAmount}, 'SEND_MONEY')`;
+
+        return NextResponse.json({ success: true, message: `UGX ${numAmount.toLocaleString()} safely cleared and routed down internal trunks.` }, { status: 200 });
+      } catch (err: any) {
+        return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+      }
+    }
+
+    // 🤝 CORRIDOR 2: COOPERATIVE SACCO SAVINGS CONSOLE POOLING
+    if (action === "SACCO_POOL_DEPOSIT") {
+      const { email, amount } = body;
+      const numAmount = parseFloat(amount);
+
+      if (!email || isNaN(numAmount) || numAmount <= 0) {
+        return NextResponse.json({ success: false, error: "Invalid allocation parameters." }, { status: 400 });
+      }
+
+      try {
+        const userRow = await sql`SELECT balance FROM kika_diaspora_ledger WHERE email = ${email}`;
+        if (userRow.length === 0 || parseFloat(userRow[0].balance) < numAmount) {
+          return NextResponse.json({ success: false, error: "Insufficient personal liquidity reserves to lock into SACCO." }, { status: 400 });
+        }
+
+        // Move liquidity from personal cash pool into cooperative capital row storage cells
+        await sql`UPDATE kika_diaspora_ledger SET balance = balance - ${numAmount}, sacco_balance = sacco_balance + ${numAmount} WHERE email = ${email}`;
+        await sql`INSERT INTO kika_internal_transactions (sender_email, recipient_email, amount, corridor_type) VALUES (${email}, 'COOP_SACCO_VAULT', ${numAmount}, 'SACCO_DEPOSIT')`;
+
+        return NextResponse.json({ success: true, message: "Capital successfully pooled into multi-signatory group fund lines." }, { status: 200 });
+      } catch (err: any) {
+        return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+      }
+    }
 
       // 📋 SUB-SYSTEM B: UPGRADED 16-FIELD DIASPORA ENROLLMENT REGISTRY CORE
     if (action === "REGISTER_MEMBER") {

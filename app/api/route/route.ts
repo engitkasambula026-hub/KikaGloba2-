@@ -94,6 +94,56 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: false, error: err.message }, { status: 500 });
       }
     }
+    // 📈 FRACTIONAL INVESTMENT SYSTEM PLUG SWITCH GATE
+    if (action === "INVEST_FRACTIONAL_STOCK") {
+      const { email, ticker, usdAmount } = body;
+      const numUsdAmount = parseFloat(usdAmount);
+
+      // Simple internal currency conversion check: assuming 1 USD = 3,700 UGX for trial balance synchronization
+      const costInUgx = numUsdAmount * 3700;
+
+      if (!email || !ticker || isNaN(numUsdAmount) || numUsdAmount < 1) {
+        return NextResponse.json({ success: false, error: "Validation Drop: Minimum investment size is \$1 USD." }, { status: 400 });
+      }
+
+      try {
+        // 1. Verify user holds sufficient cash reserves inside their Neon table cell row
+        const userRow = await sql`SELECT balance FROM kika_diaspora_ledger WHERE email = ${email}`;
+        if (userRow.length === 0 || parseFloat(userRow[0].balance) < costInUgx) {
+          return NextResponse.json({ success: false, error: "Insufficient liquid capital reserves to execute asset buy-in." }, { status: 400 });
+        }
+
+        // 2. Insert or map out fractional asset holdings inside your Neon storage cells
+        // Fallback validation price index mappings matching your static asset catalog arrays
+        let stockPrice = 100;
+        if (ticker === "STK-US-TECH-01") stockPrice = 350;
+        if (ticker === "STK-JP-ELEC-02") stockPrice = 180;
+        if (ticker === "STK-IN-SOFT-03") stockPrice = 95;
+        if (ticker === "STK-EU-IND-04") stockPrice = 520;
+        if (ticker === "STK-ME-CRU-05") stockPrice = 850;
+        if (ticker === "COM-UG-VAN-06") stockPrice = 250;
+
+        // 🧮 FRACTIONAL EQUITY MATH: Calculates exact asset slice down to 6 decimal points
+        const fractionalShareSlice = numUsdAmount / stockPrice;
+
+        // 3. Execute balanced database balance deductions and commit share slice to ownership row storage blocks
+        await sql`UPDATE kika_diaspora_ledger SET balance = balance - ${costInUgx} WHERE email = ${email}`;
+        
+        // Writes fractional investment metrics natively down into your active user stocks table array row
+        await sql`INSERT INTO kika_user_stocks (user_email, stock_ticker, invested_amount, purchased_price, owned_shares) VALUES (${email}, ${ticker}, ${numUsdAmount}, ${stockPrice}, ${fractionalShareSlice})`;
+
+        // Append execution trace parameters straight into your transaction history ledger logs table
+        await sql`INSERT INTO kika_internal_transactions (sender_email, recipient_email, amount, corridor_type) VALUES (${email}, ${ticker}, ${costInUgx}, 'FRACTIONAL_INVESTMENT')`;
+
+        return NextResponse.json({ 
+          success: true, 
+          message: `Successfully locked $${numUsdAmount} (${fractionalShareSlice.toFixed(6)} shares of ${ticker}) straight into your portfolio registry row!` 
+        }, { status: 200 });
+
+      } catch (err: any) {
+        return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+      }
+    }
 
       // 📋 SUB-SYSTEM B: UPGRADED 16-FIELD DIASPORA ENROLLMENT REGISTRY CORE
     if (action === "REGISTER_MEMBER") {

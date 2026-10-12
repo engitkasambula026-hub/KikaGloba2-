@@ -7,10 +7,10 @@ import Link from "next/link";
 interface CommodityStock {
   id: string;
   name: string;
-  category: "AGRICULTURE" | "MINERALS" | "HORTICULTURE" | "OIL_GAS";
+  category: "AGRICULTURE" | "MINERALS" | "HORTICULTURE" | "OIL_GAS" | "TECHNOLOGY" | "ELECTRONICS" | "INDUSTRIAL";
   countryOfOrigin: string;
   producingDistrict: string;
-  unitPriceUSD: number; // Base full-share asset unit index cost
+  unitPriceUSD: number; // Base full-share unit index cost
   projectedAnnualYield: string;
   availableVolumeFraction: string;
   riskRating: "LOW" | "MEDIUM" | "HIGH";
@@ -47,89 +47,105 @@ export default function CommodityShowcasePage() {
     }
   }, []);
 
-  // 🌟 DYNAMIC DATA MATRIX: Inbound National Resources Portfolio with AI Arbitrage Signals
+  // 🌟 GLOBAL EXPANDED DATA MATRIX: Preserves East Africa and appends the 5 requested world corridors
   const commodityLedger: CommodityStock[] = [
     {
-      id: "COM-UG-VAN-01",
+      id: "STK-US-TECH-01",
+      name: "Silicon Valley AI Cluster Equity",
+      category: "TECHNOLOGY",
+      countryOfOrigin: "USA",
+      producingDistrict: "California (San Jose)",
+      unitPriceUSD: 350,
+      projectedAnnualYield: "24.5% ROI",
+      availableVolumeFraction: "61% Shares Remaining",
+      riskRating: "HIGH",
+      status: "OPEN_FOR_INVESTMENT",
+      aiSignal: "BUY_SIGNAL",
+      currentBuyUSD: 342.20,
+      currentSellUSD: 358.90
+    },
+    {
+      id: "STK-JP-ELEC-02",
+      name: "Automotive Robotics & Next-Gen Components",
+      category: "ELECTRONICS",
+      countryOfOrigin: "Japan",
+      producingDistrict: "Tokyo & Nagoya",
+      unitPriceUSD: 180,
+      projectedAnnualYield: "12.8% ROI",
+      availableVolumeFraction: "39% Shares Remaining",
+      riskRating: "LOW",
+      status: "OPEN_FOR_INVESTMENT",
+      aiSignal: "HOLD",
+      currentBuyUSD: 177.00,
+      currentSellUSD: 182.40
+    },
+    {
+      id: "STK-IN-SOFT-03",
+      name: "Enterprise Software Clearinghouse Units",
+      category: "TECHNOLOGY",
+      countryOfOrigin: "India",
+      producingDistrict: "Bangalore & Hyderabad",
+      unitPriceUSD: 95,
+      projectedAnnualYield: "18.2% ROI",
+      availableVolumeFraction: "72% Shares Remaining",
+      riskRating: "MEDIUM",
+      status: "OPEN_FOR_INVESTMENT",
+      aiSignal: "BUY_SIGNAL",
+      currentBuyUSD: 91.50,
+      currentSellUSD: 97.10
+    },
+    {
+      id: "STK-EU-IND-04",
+      name: "Automated Heavy Machinery & Clean Industrial",
+      category: "INDUSTRIAL",
+      countryOfOrigin: "Europe",
+      producingDistrict: "Germany (Stuttgart / Bavaria)",
+      unitPriceUSD: 520,
+      projectedAnnualYield: "10.4% ROI",
+      availableVolumeFraction: "14% Shares Remaining",
+      riskRating: "LOW",
+      status: "OPEN_FOR_INVESTMENT",
+      aiSignal: "HOLD",
+      currentBuyUSD: 512.00,
+      currentSellUSD: 525.00
+    },
+    {
+      id: "STK-ME-CRU-05",
+      name: "Strategic Downstream Petroleum Vaults",
+      category: "OIL_GAS",
+      countryOfOrigin: "Middle East",
+      producingDistrict: "UAE (Abu Dhabi / Dubai)",
+      unitPriceUSD: 850,
+      projectedAnnualYield: "21.3% ROI",
+      availableVolumeFraction: "48% Shares Remaining",
+      riskRating: "MEDIUM",
+      status: "OPEN_FOR_INVESTMENT",
+      aiSignal: "SELL_HIGH",
+      currentBuyUSD: 840.00,
+      currentSellUSD: 865.00
+    },
+    {
+      id: "COM-UG-VAN-06",
       name: "Premium Organic Vanilla Yield Nodes",
       category: "AGRICULTURE",
       countryOfOrigin: "Uganda",
       producingDistrict: "Kasese & Mukono",
       unitPriceUSD: 250,
       projectedAnnualYield: "14.2% ROI",
-      availableVolumeFraction: "42% Shares Remaining",
+      availableVolumeFraction: "12% Sold Out",
       riskRating: "MEDIUM",
       status: "OPEN_FOR_INVESTMENT",
       aiSignal: "BUY_SIGNAL",
       currentBuyUSD: 245.00,
       currentSellUSD: 255.50
-    },
-    {
-      id: "COM-UG-COF-02",
-      name: "AAA Grade Drugar Arabica Coffee Blocks",
-      category: "AGRICULTURE",
-      countryOfOrigin: "Uganda",
-      producingDistrict: "Mount Elgon Region (Mbale)",
-      unitPriceUSD: 150,
-      projectedAnnualYield: "11.8% ROI",
-      availableVolumeFraction: "18% Shares Remaining",
-      riskRating: "LOW",
-      status: "OPEN_FOR_INVESTMENT",
-      aiSignal: "HOLD",
-      currentBuyUSD: 148.50,
-      currentSellUSD: 152.00
-    },
-    {
-      id: "COM-TZ-GLD-03",
-      name: "Artisanal Gold Refining Allocation Units",
-      category: "MINERALS",
-      countryOfOrigin: "Tanzania",
-      producingDistrict: "Geita Gold Mining Zone",
-      unitPriceUSD: 1200,
-      projectedAnnualYield: "19.5% ROI",
-      availableVolumeFraction: "65% Shares Remaining",
-      riskRating: "HIGH",
-      status: "OPEN_FOR_INVESTMENT",
-      aiSignal: "BUY_SIGNAL",
-      currentBuyUSD: 1190.00,
-      currentSellUSD: 1215.00
-    },
-    {
-      id: "COM-UG-OIL-04",
-      name: "Albertine Graben Crude Storage Portfolios",
-      category: "OIL_GAS",
-      countryOfOrigin: "Uganda",
-      producingDistrict: "Hoima Oil Basin",
-      unitPriceUSD: 500,
-      projectedAnnualYield: "15.7% ROI",
-      availableVolumeFraction: "0% Sold Out",
-      riskRating: "MEDIUM",
-      status: "FULLY_FUNDED",
-      aiSignal: "SELL_HIGH",
-      currentBuyUSD: 510.00,
-      currentSellUSD: 540.00
-    },
-    {
-      id: "COM-KE-AVO-05",
-      name: "Hass Avocado Volcanic Soil Plantations",
-      category: "HORTICULTURE",
-      countryOfOrigin: "Kenya",
-      producingDistrict: "Murang'a County",
-      unitPriceUSD: 100,
-      projectedAnnualYield: "13.1% ROI",
-      availableVolumeFraction: "29% Shares Remaining",
-      riskRating: "LOW",
-      status: "OPEN_FOR_INVESTMENT",
-      aiSignal: "BUY_SIGNAL",
-      currentBuyUSD: 98.20,
-      currentSellUSD: 104.10
     }
   ];
 
   // Dynamic search and multi-filtering logic matrix components
   const filteredStocks = commodityLedger.filter((stock) => {
     const matchesSearch = stock.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          stock.producingDistrict.toLowerCase().includes(searchQuery.toLowerCase());
+                          stock.producingDistrict.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          stock.countryOfOrigin.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === "ALL" || stock.category === selectedCategory;
     const matchesCountry = selectedCountry === "ALL" || stock.countryOfOrigin === selectedCountry;
     return matchesSearch && matchesCategory && matchesCountry;
@@ -151,7 +167,7 @@ export default function CommodityShowcasePage() {
     }
 
     setIsPending(true);
-    setTxMessage(`⏳ Transiting $${usdValue} trade request to Neon SQL Ledger...`);
+    setTxMessage(`⏳ Transiting $${usdValue} global order request to Neon SQL Ledger...`);
 
     try {
       const res = await fetch("/api/route", {
@@ -167,7 +183,7 @@ export default function CommodityShowcasePage() {
 
       const data = await res.json();
       if (res.ok) {
-        setTxMessage(`✅ Trade Settled! ${data.message}`);
+        setTxMessage(`✅ Order Settled! ${data.message}`);
         setTradeAmount(prev => ({ ...prev, [stock.id]: "" }));
         alert(`🎉 Success! Fractional equity position created for ${stock.name}.`);
       } else {
@@ -186,7 +202,7 @@ export default function CommodityShowcasePage() {
       
       {/* HEADER CONTROLS NAVIGATION LINK HUB */}
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "15px 30px", borderBottom: "1px solid #1e293b", background: "#1e293b", zIndex: 10 }}>
-        <span style={{ fontSize: "18px", fontWeight: "900", color: "#34d399", letterSpacing: "1px" }}>📊 KIKA INBOUND ASSET PORTFOLIOS</span>
+        <span style={{ fontSize: "18px", fontWeight: "900", color: "#34d399", letterSpacing: "1px" }}>📊 KIKA GLOBAL EXCHANGE CORRIDORS</span>
         <button 
           onClick={(e) => { e.preventDefault(); router.push("/"); }}
           style={{ background: "transparent", border: "1px solid #34d399", color: "#34d399", padding: "8px 16px", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "bold", outline: "none" }}
@@ -195,23 +211,23 @@ export default function CommodityShowcasePage() {
         </button>
       </header>
 
-      {/* 🚀 LIVE COMMODITY TRANSACTIONAL TICKER TAPE BAR */}
+      {/* 🚀 LIVE INTERNATIONAL TRANSACTIONAL TICKER TAPE BAR */}
       <div style={{ background: "#020617", borderBottom: "1px solid #334155", padding: "10px 20px", display: "flex", overflow: "hidden", gap: "40px", whiteSpace: "nowrap" }}>
         <div style={{ display: "flex", gap: "30px", color: "#94a3b8", fontSize: "11px", fontWeight: "bold", fontFamily: "monospace" }}>
-          <span>🔥 LIVE CORRIDOR STATS:</span>
-          <span>☕ COFFEE (UGX/KG): 11,400 <span style={{ color: "#34d399" }}>▲ +1.2%</span></span>
-          <span>🍦 VANILLA (USD/KG): 245 <span style={{ color: "#ef4444" }}>▼ -0.4%</span></span>
-          <span>🟡 GOLD (USD/OZ): 2,340 <span style={{ color: "#34d399" }}>▲ +2.8%</span></span>
-          <span>🛢️ CRUDE OIL (BBL): \$74.20 <span style={{ color: "#94a3b8" }}>◀ 0.0%</span></span>
+          <span>🔥 LIVE WORLD MARGINS:</span>
+          <span>🇺🇸 TECH (NASDAQ): 19,420 <span style={{ color: "#34d399" }}>▲ +1.6%</span></span>
+          <span>🇯🇵 NIKKEI (TYO): 38,900 <span style={{ color: "#ef4444" }}>▼ -0.3%</span></span>
+          <span>🇮🇳 NIFTY (NSE): 24,150 <span style={{ color: "#34d399" }}>▲ +2.1%</span></span>
+          <span>🛢️ BRENT CRUDE (MIDEAST): \$76.80 <span style={{ color: "#34d399" }}>▲ +0.9%</span></span>
         </div>
       </div>
       {/* MAIN CONTAINER WORKSPACE SECTION */}
       <div style={{ maxWidth: "1200px", width: "100%", margin: "0 auto", padding: "40px 20px", flex: 1 }}>
         
         <div style={{ textAlign: "center", marginBottom: "40px" }}>
-          <h1 style={{ color: "#ffffff", fontSize: "32px", fontWeight: "800", marginBottom: "8px" }}>Inbound National Stock Showcase</h1>
-          <p style={{ color: "#94a3b8", fontSize: "15px", maxWidth: "700px", margin: "0 auto", lineHeight: "1.5" }}>
-            Directly secure verified real-economy production units across East Africa. Route diaspora investment capital straight into agricultural yields, oil pipelines, and raw mineral processing syndicates down to **\$1 USD fractional allocations** [1.5].
+          <h1 style={{ color: "#ffffff", fontSize: "32px", fontWeight: "800", marginBottom: "8px" }}>Global Production Stock Showcase</h1>
+          <p style={{ color: "#94a3b8", fontSize: "15px", maxWidth: "800px", margin: "0 auto", lineHeight: "1.5" }}>
+            Directly secure verified real-economy production units across leading global markets [1.5]. Route diaspora investment capital straight into Silicon Valley software clusters, Japanese robotics, Indian tech centers, European heavy industry, and Middle Eastern petroleum basins down to **$1 USD fractional allocations** [1.5].
           </p>
         </div>
 
@@ -226,7 +242,7 @@ export default function CommodityShowcasePage() {
         <div style={{ background: "#1e293b", padding: "20px", borderRadius: "12px", border: "1px solid #334155", display: "flex", flexWrap: "wrap", gap: "16px", marginBottom: "30px", alignItems: "center" }}>
           <input 
             type="text" 
-            placeholder="🔍 Search commodities, assets, regions or producing districts..." 
+            placeholder="🔍 Search stocks, assets, global corporations or regions..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{ flex: 2, minWidth: "260px", padding: "12px", background: "#0f172a", border: "1px solid #334155", borderRadius: "8px", color: "#ffffff", fontSize: "14px", outline: "none" }}
@@ -238,10 +254,11 @@ export default function CommodityShowcasePage() {
             style={{ flex: 1, minWidth: "160px", padding: "12px", background: "#0f172a", border: "1px solid #334155", borderRadius: "8px", color: "#ffffff", fontSize: "14px", outline: "none", cursor: "pointer" }}
           >
             <option value="ALL">All Asset Categories</option>
+            <option value="TECHNOLOGY">💻 Technology Sockets</option>
+            <option value="ELECTRONICS">📟 Advanced Electronics</option>
+            <option value="INDUSTRIAL">⚙️ Heavy Manufacturing</option>
+            <option value="OIL_GAS">🛢️ Oil & Energy Vaults</option>
             <option value="AGRICULTURE">🌾 Agriculture Yields</option>
-            <option value="MINERALS">💎 Mineral Allocations</option>
-            <option value="OIL_GAS">🛢️ Oil & Gas Assets</option>
-            <option value="HORTICULTURE">🌹 Horticultural Yields</option>
           </select>
 
           <select 
@@ -250,9 +267,12 @@ export default function CommodityShowcasePage() {
             style={{ flex: 1, minWidth: "160px", padding: "12px", background: "#0f172a", border: "1px solid #334155", borderRadius: "8px", color: "#ffffff", fontSize: "14px", outline: "none", cursor: "pointer" }}
           >
             <option value="ALL">All Countries of Origin</option>
+            <option value="USA">United States (USA)</option>
+            <option value="Japan">Japan</option>
+            <option value="India">India</option>
+            <option value="Europe">Europe (EU)</option>
+            <option value="Middle East">Middle East</option>
             <option value="Uganda">Uganda</option>
-            <option value="Tanzania">Tanzania</option>
-            <option value="Kenya">Kenya</option>
           </select>
         </div>
 
@@ -265,47 +285,47 @@ export default function CommodityShowcasePage() {
               <div key={stock.id} style={{ backgroundColor: "#1e293b", border: "1px solid #334155", borderRadius: "12px", padding: "24px", display: "flex", flexDirection: "column", justifyContent: "space-between", position: "relative" }}>
                 
                 {/* 🤖 AUTOMATED AI MONITOR TRACK BADGE */}
-                <div style={{ position: "absolute", top: "16px", right: "16px", padding: "4px 8px", backgroundColor: "rgba(15,23,42,0.6)", border: `1px solid ${signalColor}`, color: signalColor, borderRadius: "4px", fontSize: "10px", fontWeight: "bold", fontFamily: "monospace" }}>
-                  🤖 AI: {stock.aiSignal}
+                <div style={{ position: "absolute", top: "16px", right: "16px", padding: "4px 8px", backgroundColor: "rgba(15,23,42,0.6)", border: `1px solid ${signalColor}`, color: signalColor, borderRadius: "4px", fontSize: "10px", fontWeight: "bold", fontFamily: "monospace", zIndex: 5 }}>
+                  🤖 AI: {stock.aiSignal.replace("_", " ")}
                 </div>
 
                 <div>
                   <span style={{ fontSize: "10px", color: "#34d399", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "1px" }}>{stock.category} • {stock.countryOfOrigin}</span>
-                  <h3 style={{ color: "#ffffff", fontSize: "18px", fontWeight: "bold", margin: "6px 0 12px 0" }}>{stock.name}</h3>
+                  <h3 style={{ color: "#ffffff", fontSize: "17px", fontWeight: "bold", margin: "6px 0 12px 0", lineHeight: "1.3" }}>{stock.name}</h3>
                   
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px", borderTop: "1px solid #334155", borderBottom: "1px solid #334155", padding: "12px 0", margin: "12px 0" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12.5px" }}>
-                      <span style={{ color: "#94a3b8" }}>📍 Producing Hub:</span>
+                      <span style={{ color: "#94a3b8" }}>📍 Industrial Hub:</span>
                       <span style={{ color: "#cbd5e1", fontWeight: "600" }}>{stock.producingDistrict}</span>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12.5px" }}>
-                      <span style={{ color: "#94a3b8" }}>💵 Index Full Price:</span>
-                      <span style={{ color: "#ffffff", fontWeight: "bold" }}>\${stock.unitPriceUSD} USD</span>
+                      <span style={{ color: "#94a3b8" }}>💵 Fraction Price:</span>
+                      <span style={{ color: "#ffffff", fontWeight: "bold" }}>\${stock.unitPriceUSD} / Share</span>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12.5px" }}>
                       <span style={{ color: "#94a3b8" }}>📈 Target Yield Rate:</span>
                       <span style={{ color: "#10b981", fontWeight: "bold" }}>{stock.projectedAnnualYield}</span>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12.5px" }}>
-                      <span style={{ color: "#94a3b8" }}>📊 Inventory Volume:</span>
+                      <span style={{ color: "#94a3b8" }}>📊 Volume Remaining:</span>
                       <span style={{ color: "#94a3b8" }}>{stock.availableVolumeFraction}</span>
                     </div>
                     
                     {/* Live Arbitrage Price Spreads */}
-                    <div style={{ display: "flex", gap: "10px", marginTop: "6px", backgroundColor: "#0f172a", padding: "8px", borderRadius: "6px" }}>
+                    <div style={{ display: "flex", gap: "10px", marginTop: "8px", backgroundColor: "#020617", padding: "10px", borderRadius: "8px", border: "1px solid #1e293b" }}>
                       <div style={{ flex: 1, textAlign: "center" }}>
-                        <div style={{ fontSize: "10px", color: "#64748b" }}>BID (BUY)</div>
-                        <div style={{ fontSize: "12px", color: "#10b981", fontWeight: "bold" }}>\${stock.currentBuyUSD}</div>
+                        <div style={{ fontSize: "9px", color: "#64748b", fontWeight: "bold" }}>BID (BUY)</div>
+                        <div style={{ fontSize: "13px", color: "#10b981", fontWeight: "black", fontFamily: "monospace" }}>\${stock.currentBuyUSD.toFixed(2)}</div>
                       </div>
                       <div style={{ flex: 1, textAlign: "center", borderLeft: "1px solid #1e293b" }}>
-                        <div style={{ fontSize: "10px", color: "#64748b" }}>ASK (SELL)</div>
-                        <div style={{ fontSize: "12px", color: "#f59e0b", fontWeight: "bold" }}>\${stock.currentSellUSD}</div>
+                        <div style={{ fontSize: "9px", color: "#64748b", fontWeight: "bold" }}>ASK (SELL)</div>
+                        <div style={{ fontSize: "13px", color: "#f59e0b", fontWeight: "black", fontFamily: "monospace" }}>\${stock.currentSellUSD.toFixed(2)}</div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* 💳 ACTION PANEL CORRIDOR: Fractional Order Ingestion Room */}
+                {/* 💳 ACTION PANEL CORRIDOR: Fractional Order Input Field Row */}
                 <div style={{ marginTop: "12px" }}>
                   {stock.status === "OPEN_FOR_INVESTMENT" ? (
                     <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -315,7 +335,7 @@ export default function CommodityShowcasePage() {
                           <input 
                             type="number" 
                             min="1" 
-                            placeholder="Amount (Min \$1)" 
+                            placeholder="Buy slice (Min \$1)" 
                             value={tradeAmount[stock.id] || ""} 
                             onChange={(e) => setTradeAmount({ ...tradeAmount, [stock.id]: e.target.value })}
                             style={{ width: "100%", padding: "10px 10px 10px 24px", background: "#0f172a", border: "1px solid #334155", borderRadius: "6px", color: "#ffffff", fontSize: "13px", outline: "none", boxSizing: "border-box" }}
@@ -324,7 +344,7 @@ export default function CommodityShowcasePage() {
                         <button 
                           onClick={() => executeFractionalTrade(stock)}
                           disabled={isPending}
-                          style={{ padding: "10px 16px", backgroundColor: "#34d399", color: "#0f172a", border: "none", borderRadius: "6px", fontWeight: "bold", fontSize: "13px", cursor: isPending ? "not-allowed" : "pointer" }}
+                          style={{ padding: "10px 16px", backgroundColor: "#34d399", color: "#0f172a", border: "none", borderRadius: "6px", fontWeight: "bold", fontSize: "13px", cursor: isPending ? "not-allowed" : "pointer", outline: "none" }}
                         >
                           Buy Equity
                         </button>
@@ -340,10 +360,19 @@ export default function CommodityShowcasePage() {
 
               </div>
             );
-          })}
+                  })}
         </div>
+
+        {/* 📟 FEEDBACK BANNER CONSOLE CONTAINER RENDER ROW */}
+        {txMessage && (
+          <div style={{ marginTop: "24px", padding: "16px", borderRadius: "12px", textAlign: "center", fontWeight: "bold", fontSize: "14px", backgroundColor: "#020617", color: "#34d399", border: "1px solid #334155", boxShadow: "inset 0 2px 4px rgba(0,0,0,0.3)", fontFamily: "monospace" }}>
+            {txMessage}
+          </div>
+        )}
 
       </div>
     </div>
-  );
-}
+  ); // 🟢 FIXED: Wrapped parent layout block correctly
+}    // 🟢 FIXED: Closed main CommodityShowcasePage function block safely
+
+

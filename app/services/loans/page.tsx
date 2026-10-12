@@ -40,7 +40,7 @@ const sandboxMockLoans: LoanProduct[] = [
     maxAmountUGX: 75000000,
     minSaccoShares: 20000000,
     repaymentTermMonths: 60,
-    description: "Long-term infrastructural credit pools leveraging verified diaspora group savings records to finance commercial housing construction directly inside Uganda, fully audited by KiKa Global Services."
+    description: "Long-term infrastructural credit pools leveraging verified diaspora group savings records to finance commercial housing construction directly inside Uganda, fully audited by KiKa Global Ventures."
   }
 ];
 

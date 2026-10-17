@@ -13,8 +13,8 @@ export interface NavigationSection {
 
 // 🌟 THE ULTIMATE KIKA ECOSYSTEM COMPLIANCE MATRIX
 export const navigationTraffic: NavigationSection[] = [
-  {
-    name: "📋 Registering Hub",
+   {
+    name: "📋 Registering Hub", // 🟢 ALIGNED: Uses your declaration key 'name'
     submenus: [
       { 
         name: "1. Login for Registered Users", 
@@ -23,16 +23,23 @@ export const navigationTraffic: NavigationSection[] = [
       },
       { 
         name: "2. Register for New Users", 
-        path: "/signup", // 🟢 FIXED: Linked directly to your conflict-free app/signup path
+        path: "/signup", 
         desc: "Create a basic ecosystem portal node to access services." 
       },
-      { 
+           { 
         name: "3. Diaspora Demographical Registry", 
-        path: "/registry", // 🟢 FIXED: Linked directly to your root demographic dashboard directory
-        desc: "Enroll as a certified national asset in the global directory." 
-      }
+        path: "/asset-registry", // 🟢 UPGRADED: Points to your new detailed asset inventory canvas
+        desc: "Enroll as a certified national asset in the global directory to manage active profile parameters." 
+      },
+
+      { 
+        name: "4. 3-Tier Supply Chain Compliance", 
+        path: "/supply-chain", 
+        desc: "Validate multi-check phyto-sanitary grades, moisture metrics, and export bills of lading for East African production clusters natively." 
+      } // 🟢 ALIGNED ADDITION: Perfectly fits your custom type parameters with absolute zero redlines
     ]
   },
+
   {
     name: "Financial Hub Services",
     submenus: [

@@ -144,6 +144,86 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: false, error: err.message }, { status: 500 });
       }
     }
+    // 🏗️ SUPPLY CHAIN: 3-TIER COMPLIANCE INGESTION CORRIDOR
+    if (action === "SUBMIT_SUPPLY_CHAIN_COMPLIANCE") {
+      const {
+        email, batchId, productName, collectionCenter, productClass,
+        moistureCheck, moldCheck, traceCheck, storageCheck, customsCheck, bolCheck, notes
+      } = body;
+
+      if (!email || !batchId || !productName) {
+        return NextResponse.json({ success: false, error: "Validation Drop: Missing required core batch identifiers." }, { status: 400 });
+      }
+
+      try {
+        await sql`
+          INSERT INTO kika_supply_chain_compliance (
+            user_email, batch_id, product_name, collection_center, product_grade,
+            moisture_verified, mold_free_certified, traceable_to_farm, 
+            bonded_storage_secured, customs_cleared, bill_of_lading_signed, additional_notes
+          ) VALUES (
+            ${email}, ${batchId.trim()}, ${productName}, ${collectionCenter}, ${productClass},
+            ${moistureCheck}, ${moldCheck}, ${traceCheck}, 
+            ${storageCheck}, ${customsCheck}, ${bolCheck}, ${notes || ""}
+          )
+          ON CONFLICT (batch_id) DO UPDATE SET
+            product_grade = EXCLUDED.product_grade,
+            moisture_verified = EXCLUDED.moisture_verified,
+            mold_free_certified = EXCLUDED.mold_free_certified,
+            traceable_to_farm = EXCLUDED.traceable_to_farm,
+            bonded_storage_secured = EXCLUDED.bonded_storage_secured,
+            customs_cleared = EXCLUDED.customs_cleared,
+            bill_of_lading_signed = EXCLUDED.bill_of_lading_signed,
+            additional_notes = EXCLUDED.additional_notes;
+        `;
+
+        return NextResponse.json({ success: true, message: `Batch ${batchId} safely certified onto the global supply chain ledger!` }, { status: 200 });
+      } catch (err: any) {
+        return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+      }
+    }
+    // 🏠 ASSET REGISTRY: PROPERTY ASSETIZATION INGESTION SWAP GATE
+    if (action === "REGISTER_DIASPORA_ASSET") {
+      const { email, assetTitle, assetType, district, valuation, titleNumber } = body;
+      const numValuation = parseFloat(valuation);
+
+      if (!email || !assetTitle || isNaN(numValuation) || numValuation <= 0) {
+        return NextResponse.json({ success: false, error: "Validation Drop: Missing required core asset identification data parameters." }, { status: 400 });
+      }
+
+      try {
+        await sql`
+          INSERT INTO kika_national_asset_registry (
+            user_email, asset_title, asset_type, location_district, estimated_valuation_usd, land_title_number
+          ) VALUES (
+            ${email}, ${assetTitle}, ${assetType}, ${district}, ${numValuation}, ${titleNumber || "N/A"}
+          );
+        `;
+
+        return NextResponse.json({ success: true, message: `Asset "${assetTitle}" successfully logged onto the national validation ledger matrix!` }, { status: 200 });
+      } catch (err: any) {
+        return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+      }
+    }
+    // 📈 INTERCOM 03: LIVE MARKET TICKER SIMULATION CIRCUIT
+    if (action === "FETCH_LIVE_MARKET_TICKERS") {
+      try {
+        // Automatically injects a mild randomized fluctuation parameter to mimic real-world open auction tracking
+        const variance = () => (Math.random() - 0.5) * 2; // Returns values between -1.0 and +1.0
+
+        const liveTickers = [
+          { ticker: "COM-UG-VAN-06", currentBuyUSD: (245.00 + variance()).toFixed(2), currentSellUSD: (255.50 + variance()).toFixed(2), trend: variance() > 0 ? "▲" : "▼" },
+          { ticker: "COM-UG-COF-02", currentBuyUSD: (148.50 + variance() * 0.5).toFixed(2), currentSellUSD: (152.00 + variance() * 0.5).toFixed(2), trend: variance() > 0 ? "▲" : "▼" },
+          { ticker: "STK-US-TECH-01", currentBuyUSD: (342.20 + variance() * 3).toFixed(2), currentSellUSD: (358.90 + variance() * 3).toFixed(2), trend: variance() > 0 ? "▲" : "▼" },
+          { ticker: "STK-JP-ELEC-02", currentBuyUSD: (177.00 + variance()).toFixed(2), currentSellUSD: (182.40 + variance()).toFixed(2), trend: variance() > 0 ? "▲" : "▼" },
+          { ticker: "STK-ME-CRU-05", currentBuyUSD: (840.00 + variance() * 5).toFixed(2), currentSellUSD: (865.00 + variance() * 5).toFixed(2), trend: variance() > 0 ? "▲" : "▼" }
+        ];
+
+        return NextResponse.json({ success: true, tickers: liveTickers }, { status: 200 });
+      } catch (err: any) {
+        return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+      }
+    }
 
       // 📋 SUB-SYSTEM B: UPGRADED 16-FIELD DIASPORA ENROLLMENT REGISTRY CORE
     if (action === "REGISTER_MEMBER") {

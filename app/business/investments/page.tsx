@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+// Add this import right next to your standard React modules
+import LiveMarketTicker from "../../components/LiveMarketTicker";
+
 
 interface CommodityStock {
   id: string;
@@ -197,7 +200,7 @@ export default function CommodityShowcasePage() {
     }
   };
 
-  return (
+     return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: "#0f172a", fontFamily: "Arial, sans-serif" }}>
       
       {/* HEADER CONTROLS NAVIGATION LINK HUB */}
@@ -212,15 +215,8 @@ export default function CommodityShowcasePage() {
       </header>
 
       {/* 🚀 LIVE INTERNATIONAL TRANSACTIONAL TICKER TAPE BAR */}
-      <div style={{ background: "#020617", borderBottom: "1px solid #334155", padding: "10px 20px", display: "flex", overflow: "hidden", gap: "40px", whiteSpace: "nowrap" }}>
-        <div style={{ display: "flex", gap: "30px", color: "#94a3b8", fontSize: "11px", fontWeight: "bold", fontFamily: "monospace" }}>
-          <span>🔥 LIVE WORLD MARGINS:</span>
-          <span>🇺🇸 TECH (NASDAQ): 19,420 <span style={{ color: "#34d399" }}>▲ +1.6%</span></span>
-          <span>🇯🇵 NIKKEI (TYO): 38,900 <span style={{ color: "#ef4444" }}>▼ -0.3%</span></span>
-          <span>🇮🇳 NIFTY (NSE): 24,150 <span style={{ color: "#34d399" }}>▲ +2.1%</span></span>
-          <span>🛢️ BRENT CRUDE (MIDEAST): \$76.80 <span style={{ color: "#34d399" }}>▲ +0.9%</span></span>
-        </div>
-      </div>
+      <LiveMarketTicker />
+
       {/* MAIN CONTAINER WORKSPACE SECTION */}
       <div style={{ maxWidth: "1200px", width: "100%", margin: "0 auto", padding: "40px 20px", flex: 1 }}>
         
@@ -303,7 +299,6 @@ export default function CommodityShowcasePage() {
                       <span style={{ color: "#ffffff", fontWeight: "bold" }}>\${stock.unitPriceUSD} / Share</span>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12.5px" }}>
-                      <span style={{ color: "#94a3b8" }}>📈 Target Yield Rate:</span>
                       <span style={{ color: "#10b981", fontWeight: "bold" }}>{stock.projectedAnnualYield}</span>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12.5px" }}>
@@ -343,7 +338,7 @@ export default function CommodityShowcasePage() {
                         </div>
                         <button 
                           onClick={() => executeFractionalTrade(stock)}
-                          disabled={isPending}
+                                                    disabled={isPending}
                           style={{ padding: "10px 16px", backgroundColor: "#34d399", color: "#0f172a", border: "none", borderRadius: "6px", fontWeight: "bold", fontSize: "13px", cursor: isPending ? "not-allowed" : "pointer", outline: "none" }}
                         >
                           Buy Equity
@@ -360,19 +355,11 @@ export default function CommodityShowcasePage() {
 
               </div>
             );
-                  })}
+          })}
         </div>
-
-        {/* 📟 FEEDBACK BANNER CONSOLE CONTAINER RENDER ROW */}
-        {txMessage && (
-          <div style={{ marginTop: "24px", padding: "16px", borderRadius: "12px", textAlign: "center", fontWeight: "bold", fontSize: "14px", backgroundColor: "#020617", color: "#34d399", border: "1px solid #334155", boxShadow: "inset 0 2px 4px rgba(0,0,0,0.3)", fontFamily: "monospace" }}>
-            {txMessage}
-          </div>
-        )}
 
       </div>
     </div>
-  ); // 🟢 FIXED: Wrapped parent layout block correctly
-}    // 🟢 FIXED: Closed main CommodityShowcasePage function block safely
-
+  ); // 🟢 SEALED: Root layout element closed properly
+}    // 🟢 SEALED: Main CommodityShowcasePage function completely closed
 

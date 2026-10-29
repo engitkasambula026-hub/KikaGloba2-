@@ -48,6 +48,11 @@ export const navigationTraffic: NavigationSection[] = [
         path: "/services/send-money", 
         desc: "Tunnel capital securely back to mobile wallets or bank accounts." 
       },
+            { 
+        name: "forex_market", 
+        path: "/business/currency", // 🟢 CONNECTED: Maps your new world currency market corridor perfectly
+        desc: "Trade international foreign exchange currency pairs down to $1 fractional slots." 
+      },
       { 
         name: "🏛️ Cooperative SACCO Savings", 
         path: "/services/savings", 
@@ -69,6 +74,8 @@ export const navigationTraffic: NavigationSection[] = [
         desc: "Explore synchronized country-by-country resource commodity assets." 
       },
       
+    
+
       {
         name: "🌾 OWC & PDM Agribusiness Cooperatives",
         path: "/business-hub/registry?category=agribusiness", // Updated to point directly to your folder

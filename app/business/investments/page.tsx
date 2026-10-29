@@ -214,8 +214,9 @@ export default function CommodityShowcasePage() {
         </button>
       </header>
 
-      {/* 🚀 LIVE INTERNATIONAL TRANSACTIONAL TICKER TAPE BAR */}
-      <LiveMarketTicker />
+            {/* 🚀 LIVE INTERNATIONAL TRANSACTIONAL TICKER TAPE BAR (PROP TUNED) */}
+      <LiveMarketTicker selectedCategory={selectedCategory} selectedCountry={selectedCountry} />
+
 
       {/* MAIN CONTAINER WORKSPACE SECTION */}
       <div style={{ maxWidth: "1200px", width: "100%", margin: "0 auto", padding: "40px 20px", flex: 1 }}>

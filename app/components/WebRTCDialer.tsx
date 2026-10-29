@@ -3,44 +3,178 @@
 import React, { useState, useEffect, useRef } from "react";
 
 export default function WebRTCDialer() {
-  const [phoneNumber, setPhoneNumber] = useState<string>("");
-  const [isCalling, setIsCalling] = useState<boolean>(false);
-  const [callStatus, setCallStatus] = useState<string>("Ready to originate voice sessions");
+  const [targetUserEmail, setTargetUserEmail] = useState<string>("");
   const [userEmail, setUserEmail] = useState<string>("");
+  const [isCalling, setIsCalling] = useState<boolean>(false);
+  const [isInCall, setIsInCall] = useState<boolean>(false);
+  const [callStatus, setCallStatus] = useState<string>("Intercom System Armed");
 
-  // WebRTC Native Core References for Browser-to-Browser Audio Data Streams
+  // WebRTC Native Hardware Stream References
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    // Recover active account credentials to identify the caller node lane
+    // 1. Identify signed-in user email node from cookie logs
     const activeCookies = document.cookie.split("; ");
     const emailCookie = activeCookies.find(row => row.startsWith("kika_user_email="));
+    let myEmail = "audit02@kikaglobal.com";
+    
     if (emailCookie && emailCookie.includes("=")) {
-      setUserEmail(decodeURIComponent(emailCookie.split("=")[1]));
-    } else {
-      setUserEmail("audit02@kikaglobal.com");
+      myEmail = decodeURIComponent(emailCookie.split("=")[1]);
     }
+    setUserEmail(myEmail);
+
+    // 2. BACKGROUND SIGNAL POLLING LOOP: Scans your database every 3 seconds for inbound calls
+    const signalingClock = setInterval(async () => {
+      if (isInCall) return; // Lock polling loop down during active voice calls
+      try {
+        const res = await fetch("/api/route", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "POLL_VOIP_SIGNALS", receiverEmail: myEmail })
+        });
+        const data = await res.json();
+        if (data.success && data.signals && data.signals.length > 0) {
+          handleInboundSignals(data.signals);
+        }
+      } catch (err) {
+        console.error("Signaling background sync dropped:", err);
+      }
+    }, 3000);
 
     return () => {
-      // Emergency memory cleanup hook to close active media circuits on unmount
-      terminateMediaCircuits();
+      clearInterval(signalingClock);
+      terminateCallCircuits();
     };
-  }, []);
+  }, [isInCall, userEmail]);
 
-  const handleKeyPress = (digit: string) => {
-    if (isCalling) return; // Lock inputs during active call sessions
-    if (phoneNumber.length < 15) {
-      setPhoneNumber((prev) => prev + digit);
+  // 📡 INBOUND HANDSHAKE PROCESSOR
+  const handleInboundSignals = async (signals: any[]) => {
+    for (const signal of signals) {
+      if (signal.signal_type === "OFFER") {
+        const acceptCall = window.confirm(`📞 Incoming P2P Intercom Voice Call from [${signal.caller_email}]! Accept session?`);
+        if (!acceptCall) {
+          await sendVoipSignal(userEmail, signal.caller_email, "HANGUP", "REJECTED");
+          return;
+        }
+        setTargetUserEmail(signal.caller_email);
+        await executeAnswerHandshake(signal);
+      }
+      if (signal.signal_type === "ANSWER" && peerConnectionRef.current) {
+        setCallStatus("🔊 Peer connected! Full-duplex voice stream active.");
+        setIsInCall(true);
+        const remoteDesc = new RTCSessionDescription(JSON.parse(signal.payload));
+        await peerConnectionRef.current.setRemoteDescription(remoteDesc);
+      }
+      if (signal.signal_type === "ICE_CANDIDATE" && peerConnectionRef.current) {
+        try {
+          await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(JSON.parse(signal.payload)));
+        } catch (e) {
+          console.error("Error adding received ICE candidate", e);
+        }
+      }
+      if (signal.signal_type === "HANGUP") {
+        alert("🔌 The remote peer has disconnected the communication path.");
+        terminateCallCircuits();
+      }
     }
   };
 
-  const handleBackspaceClear = () => {
-    if (isCalling) return;
-    setPhoneNumber((prev) => prev.slice(0, -1));
+  const sendVoipSignal = async (caller: string, receiver: string, type: string, payloadObj: any) => {
+    await fetch("/api/route", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "SEND_VOIP_SIGNAL",
+        callerEmail: caller,
+        receiverEmail: receiver,
+        signalType: type,
+        payload: JSON.stringify(payloadObj)
+      })
+    });
   };
 
-  const terminateMediaCircuits = () => {
+  const initializePeerConnection = (receiver: string) => {
+    const pc = new RTCPeerConnection({ iceServers: [{ urls: "stun:://google.com" }] });
+    peerConnectionRef.current = pc;
+
+    // Distribute network addresses automatically down the signaling pipe
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        sendVoipSignal(userEmail, receiver, "ICE_CANDIDATE", event.candidate);
+      }
+    };
+
+    // Catch incoming remote audio stream and feed it directly into the audio tag
+    pc.ontrack = (event) => {
+      if (remoteAudioRef.current && event.streams) {
+        remoteAudioRef.current.srcObject = event.streams[0];
+      }
+    };
+
+    return pc;
+  };
+
+  // 📞 OUTBOUND LOOP ENTRY: Originate Call Session
+  const initiateVoipCall = async () => {
+    if (!targetUserEmail) {
+      alert("❌ Input Error: Destination subscriber email required.");
+      return;
+    }
+
+    setIsCalling(true);
+    setCallStatus(`⏳ Requesting hardware authorization...`);
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      localStreamRef.current = stream;
+
+      const pc = initializePeerConnection(targetUserEmail);
+      stream.getTracks().forEach(track => pc.addTrack(track, stream));
+
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      
+      setCallStatus(`📡 Ringing [${targetUserEmail}] down database lanes...`);
+      await sendVoipSignal(userEmail, targetUserEmail, "OFFER", offer);
+
+    } catch (err: any) {
+      alert(`❌ Audio Handshake Intercept: Microphone access denied.`);
+      terminateCallCircuits();
+    }
+  };
+
+  // 📥 ANSWER INBOUND CALL LOOP
+  const executeAnswerHandshake = async (offerSignal: any) => {
+    setIsCalling(true);
+    setCallStatus("⏳ Constructing reciprocal audio streams...");
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      localStreamRef.current = stream;
+
+      const pc = initializePeerConnection(offerSignal.caller_email);
+      stream.getTracks().forEach(track => pc.addTrack(track, stream));
+
+      const remoteOffer = new RTCSessionDescription(JSON.parse(offerSignal.payload));
+      await pc.setRemoteDescription(remoteOffer);
+
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+
+      await sendVoipSignal(userEmail, offerSignal.caller_email, "ANSWER", answer);
+      setCallStatus("🔊 Voice link connected live.");
+      setIsInCall(true);
+    } catch (err) {
+      terminateCallCircuits();
+    }
+  };
+
+  const terminateCallCircuits = async () => {
+    if (targetUserEmail) {
+      await sendVoipSignal(userEmail, targetUserEmail, "HANGUP", "DISCONNECTED");
+    }
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(track => track.stop());
       localStreamRef.current = null;
@@ -49,106 +183,54 @@ export default function WebRTCDialer() {
       peerConnectionRef.current.close();
       peerConnectionRef.current = null;
     }
+    setTargetUserEmail("");
     setIsCalling(false);
+    setIsInCall(false);
+    setCallStatus("Intercom System Armed");
   };
-
-  const handleInitiateVoipCall = async () => {
-    if (!phoneNumber) {
-      setCallStatus("❌ Input Error: Destination address empty.");
-      return;
-    }
-
-    if (isCalling) {
-      // 🟥 HANG UP LOGIC: Safely sever peer connections and release microphone hardware
-      terminateMediaCircuits();
-      setCallStatus("🔌 Session terminated by user request");
-      return;
-    }
-
-    // 🟩 INTERCOM CONNECT DIAL LOGIC
-    setCallStatus(`⏳ Aquiring user media micro-sockets for ${phoneNumber}...`);
-    setIsCalling(true);
-
-    try {
-      // 🎙️ Access user's local microphone hardware cleanly using native browser wrappers
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-      localStreamRef.current = stream;
-      setCallStatus("📡 Handshaking peer signaling nodes...");
-
-      // Construct native WebRTC Peer Data Link Socket structure
-      const configuration = { iceServers: [{ urls: "stun:://google.com" }] };
-      const pc = new RTCPeerConnection(configuration);
-      peerConnectionRef.current = pc;
-
-      // Bind local audio tracks right into the outbound pipeline channel
-      stream.getTracks().forEach(track => pc.addTrack(track, stream));
-
-      // Simulate the WebRTC signaling offer exchange pass over serverless circuits
-      setTimeout(() => {
-        setCallStatus(`🔊 Call connected live via P2P web socket channel`);
-      }, 1500);
-
-    } catch (err: any) {
-      console.error("WebRTC hardware access exception:", err);
-      setCallStatus(`❌ Hardware Exception: Microphone authorization denied.`);
-      setIsCalling(false);
-    }
-  };
-
-  const keypadDigits = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "*", "0", "#"];
 
   return (
-    <div style={{ backgroundColor: "#020617", border: "1px solid #1e293b", borderRadius: "12px", padding: "20px", maxWidth: "280px", width: "100%", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: "16px", margin: "10px auto", boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}>
+    <div style={{ backgroundColor: "#020617", border: "1px solid #1e293b", borderRadius: "12px", padding: "20px", maxWidth: "320px", width: "100%", display: "flex", flexDirection: "column", gap: "14px", margin: "20px auto", boxShadow: "0 10px 30px rgba(0,0,0,0.5)" }}>
       
-      {/* 📡 INTERCOM SIGNAL BAR HEADER */}
+      {/* Invisible HTML5 Audio Tag elements that play the peer sound wave streams */}
+      <audio ref={remoteAudioRef} autoPlay style={{ display: "none" }} />
+
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #1e293b", paddingBottom: "10px" }}>
-        <span style={{ color: "#94a3b8", fontSize: "10px", fontWeight: "bold", fontFamily: "monospace" }}>📞 P2P WEB-INTERCOM</span>
-        <span style={{ color: isCalling ? "#10b981" : "#3b82f6", fontSize: "10px", fontWeight: "bold", display: "flex", alignItems: "center", gap: "4px" }}>
-          ● {isCalling ? "STREAM ACTIVE" : "TRUNK LINED"}
+        <span style={{ color: "#94a3b8", fontSize: "10px", fontWeight: "bold", fontFamily: "monospace" }}>📞 P2P GLOBAL TELEPHONY TRUNK</span>
+        <span style={{ color: isInCall ? "#10b981" : "#3b82f6", fontSize: "9px", fontWeight: "bold" }}>
+          ● {isInCall ? "FULL-DUPLEX LIVE" : "TRUNK STANDBY"}
         </span>
       </div>
 
-      {/* 📟 DIGITAL READOUT DISPLAY SCREEN */}
-      <div style={{ backgroundColor: "#0b1528", border: "1px solid #334155", borderRadius: "8px", padding: "14px", display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: "44px", boxSizing: "border-box" }}>
-        <div style={{ color: "#ffffff", fontSize: "20px", fontWeight: "bold", fontFamily: "monospace", letterSpacing: "1px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", width: "85%" }}>
-          {phoneNumber || <span style={{ color: "#475569" }}>Dial member...</span>}
-        </div>
-        {phoneNumber && !isCalling && (
-          <button onClick={handleBackspaceClear} style={{ background: "transparent", border: "none", color: "#ef4444", fontSize: "14px", cursor: "pointer", padding: 0, fontWeight: "bold", outline: "none" }}>
-            ⌫
-          </button>
-        )}
+      <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+        <label style={{ fontSize: "11px", color: "#64748b", fontWeight: "bold" }}>TARGET MEMBER EMAIL ADDRESS</label>
+        <input
+          type="email"
+          placeholder="e.g. engitkasambula026@gmail.com"
+          value={targetUserEmail}
+          onChange={(e) => setTargetUserEmail(e.target.value)}
+          disabled={isCalling || isInCall}
+          style={{ width: "100%", padding: "10px", background: "#0b1528", border: "1px solid #334155", borderRadius: "6px", color: "#ffffff", fontSize: "13px", boxSizing: "border-box", outline: "none" }}
+        />
       </div>
 
-      {/* 🔢 TELEPHONY KEYPAD GRID */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
-        {keypadDigits.map((digit) => (
-          <button
-            key={digit}
-            onClick={() => handleKeyPress(digit)}
-            disabled={isCalling}
-            style={{ padding: "12px 0", backgroundColor: "#0f172a", border: "1px solid #1e293b", borderRadius: "50%", color: "#cbd5e1", fontSize: "16px", fontWeight: "bold", cursor: isCalling ? "not-allowed" : "pointer", outline: "none", transition: "all 0.15s", display: "flex", justifyContent: "center", alignItems: "center", width: "50px", height: "50px", margin: "0 auto" }}
-            onMouseEnter={(e) => { if (!isCalling) e.currentTarget.style.backgroundColor = "#1e293b"; }}
-            onMouseLeave={(e) => { if (!isCalling) e.currentTarget.style.backgroundColor = "#0f172a"; }}
-          >
-            {digit}
-          </button>
-        ))}
-      </div>
+      {/* CALL CONTROL TRIGGERS */}
+      {!isCalling && !isInCall ? (
+        <button onClick={initiateVoipCall} style={{ width: "100%", padding: "12px", backgroundColor: "#10b981", color: "#020617", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "bold", fontSize: "13px", outline: "none" }}>
+          🔊 Establish Voice Intercom
+        </button>
+      ) : (
+        <button onClick={terminateCallCircuits} style={{ width: "100%", padding: "12px", backgroundColor: "#ef4444", color: "#ffffff", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "bold", fontSize: "13px", outline: "none" }}>
+          🛑 Disconnect Communication Path
+        </button>
+      )}
 
-      {/* 🚀 CONNECT TRANSMISSION ACTION BUTTON ROW */}
-      <button
-        onClick={handleInitiateVoipCall}
-        style={{ width: "100%", padding: "12px", backgroundColor: isCalling ? "#ef4444" : "#10b981", color: isCalling ? "#ffffff" : "#020617", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold", fontSize: "13px", display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", transition: "background 0.2s", outline: "none" }}
-      >
-        {isCalling ? "🛑 Sever Communication Path" : "📞 Initiate Intercom Channel"}
-      </button>
-
-      {/* 📜 STATUS OUTPUT METRIC TEXT BOX */}
-      <div style={{ backgroundColor: "#070e1b", border: "1px solid #1e293b", borderRadius: "6px", padding: "8px", fontSize: "10px", color: isCalling ? "#10b981" : "#94a3b8", textAlign: "center", fontFamily: "monospace", minHeight: "26px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+      {/* REAL TIME CONSOLE PRINT MONITOR */}
+      <div style={{ backgroundColor: "#070e1b", border: "1px solid #1e293b", borderRadius: "6px", padding: "10px", fontSize: "10.5px", color: isInCall ? "#10b981" : "#94a3b8", textAlign: "center", fontFamily: "monospace", minHeight: "32px", display: "flex", justifyContent: "center", alignItems: "center", lineHeight: "1.4" }}>
         {callStatus}
       </div>
 
+      <span style={{ fontSize: "9.5px", color: "#475569", textAlign: "center", fontFamily: "sans-serif" }}>Logged as node: <span style={{ color: "#64748b" }}>{userEmail}</span></span>
     </div>
   );
 }

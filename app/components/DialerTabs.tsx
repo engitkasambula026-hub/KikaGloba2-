@@ -1,146 +1,225 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 
-interface TabsProps {
-  activeTab: string;
-  member: any;
-  phoneNumber: string;
-  setPhoneNumber: (val: string | ((prev: string) => string)) => void;
-  callActive: boolean;
-  callStatus: string;
-  timer: number;
-  handleKeypressValue: (digit: string) => void;
-  startCall: () => void;
-  terminateCall: () => void;
-}
+export default function CommercialVoipDialerPage() {
+  const router = useRouter();
+  const [phoneNumber, setPhoneNumber] = useState<string>("");
+  const [isCalling, setIsCalling] = useState<boolean>(false);
+  const [callStatus, setCallStatus] = useState<string>("SIP Trunk Standby");
+  const [userEmail, setUserEmail] = useState<string>("");
+  const [walletBalance, setWalletBalance] = useState<number>(0);
+  const [activeSessionSid, setActiveSessionSid] = useState<string>("");
 
-export default function DialerTabs({
-  activeTab,
-  member,
-  phoneNumber,
-  setPhoneNumber,
-  callActive,
-  callStatus,
-  timer,
-  handleKeypressValue,
-  startCall,
-  terminateCall
-}: TabsProps) {
-  
-  // ==========================================
-  // 1. DIALER KEYPAD LOGIC VIEW PANEL
-  // ==========================================
-  if (activeTab === "dialer") {
-    return (
-      <div>
-        <div style={{ backgroundColor: "#0f172a", padding: "15px", borderRadius: "8px", textAlign: "center", marginBottom: "15px" }}>
-          <div style={{ fontSize: "26px", fontWeight: "bold", minHeight: "32px", color: callActive ? "#4ade80" : "#ffffff", letterSpacing: "1px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {phoneNumber || (callActive ? "CONNECTED" : "Enter Target Vector")}
-          </div>
-          <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px" }}>
-            Status: {callStatus} {callActive && `[${Math.floor(timer / 60)}m ${timer % 60}s]`}
-          </div>
-        </div>
-        
-        {/* Balanced Grid Configuration for Keypad Buttons */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px", margin: "0 auto 15px auto", maxWidth: "220px", justifyItems: "center" }}>
-          {["1", "2", "3", "4", "5", "6", "7", "8", "9", "*", "0", "#"].map((btn) => (
-            <button 
-              key={btn} 
-              type="button" 
-              disabled={callActive} 
-              onClick={() => handleKeypressValue(btn)} 
-              style={{ 
-                width: "50px",
-                height: "50px",
-                lineHeight: "50px",
-                backgroundColor: "#334155", 
-                color: "#ffffff", 
-                borderRadius: "50%", 
-                fontSize: "18px", 
-                fontWeight: "bold", 
-                cursor: callActive ? "not-allowed" : "pointer", 
-                border: "none", 
-                outline: "none",
-                padding: 0,
-                display: "block",
-                textAlign: "center"
-              }}
-            >
-              {btn}
-            </button>
-          ))}
-        </div>
-        
-        {!callActive && phoneNumber && (
-          <button onClick={() => setPhoneNumber(prev => typeof prev === "string" ? prev.slice(0, -1) : "")} style={{ width: "100%", backgroundColor: "transparent", color: "#94a3b8", border: "none", cursor: "pointer", fontSize: "11px", marginBottom: "15px", fontWeight: "bold" }}>⌫ ERASE LAST DIGIT</button>
-        )}
-        
-        {!callActive ? (
-          <button onClick={startCall} disabled={!phoneNumber} style={{ width: "100%", padding: "14px", backgroundColor: phoneNumber ? "#16a34a" : "#475569", color: "#ffffff", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: phoneNumber ? "pointer" : "not-allowed" }}>📞 Initialize Call</button>
-        ) : (
-          <button onClick={terminateCall} style={{ width: "100%", padding: "14px", backgroundColor: "#dc2626", color: "#ffffff", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}>🛑 Hang Up Line</button>
-        )}
-      </div>
-    );
-  }
+  // Live Telephony Metrics
+  const [callTimer, setCallTimer] = useState<number>(0);
+  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [recentCalls, setRecentCalls] = useState<any[]>([]);
 
-  // ==========================================
-  // 2. CONTACTS DIRECTORY LAYOUT VIEW PANEL
-  // ==========================================
-  if (activeTab === "contacts") {
-    const activeContactsList = member?.contacts || [];
+  useEffect(() => {
+     // 🔒 Recover active account credentials to identify the caller node lane securely
+    const activeCookies = document.cookie.split("; ");
+    const emailCookie = activeCookies.find(row => row.startsWith("kika_user_email="));
+    let myEmail = "audit02@kikaglobal.com";
+    if (emailCookie && emailCookie.includes("=")) {
+      // 🟢 FIXED: Added array index lookup [1] to safely extract the string value token
+      myEmail = decodeURIComponent(emailCookie.split("=")[1]);
+    }
+    setUserEmail(myEmail);
+
+
+    // Call your serverless token validator gate to synchronize your device connection line status
+    fetch("/api/voip/call", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "GENERATE_CARRIER_TOKEN", email: myEmail })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setWalletBalance(data.balanceUGX);
+          setCallStatus("🟢 Carrier Device Linked & Authenticated");
+        } else {
+          setCallStatus(`⚠️ Trunk Lockout: ${data.error}`);
+        }
+      })
+      .catch(() => setCallStatus("❌ Critical Connection Failure"));
+  }, [isCalling]);
+
+  const handleKeyPress = (digit: string) => {
+    if (isCalling) return; // Lock inputs during an active phone connection loop
+    if (phoneNumber.length < 15) {
+      setPhoneNumber((prev) => prev + digit);
+    }
+  };
+
+  const handleBackspaceClear = () => {
+    if (isCalling) return;
+    setPhoneNumber((prev) => prev.slice(0, -1));
+  };
+
+  // 📞 PLUG AND PLAY CARRIER OUTBOUND TRIGGER
+  const handleCarrierCallToggle = async () => {
+    if (!phoneNumber) {
+      alert("❌ Input Error: Destination number address required.");
+      return;
+    }
+
+    if (isCalling) {
+      // 🟥 HANG UP LOGIC: Disconnect call path and calculate usage billing parameters
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+      setIsCalling(false);
+      setCallStatus("🔌 Processing transaction billing parameters...");
+
+      try {
+        const res = await fetch("/api/voip", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "PROCESS_CALL_COMPLETION_BILLING",
+            email: userEmail,
+            destinationNumber: phoneNumber,
+            sessionSid: activeSessionSid,
+            durationSeconds: callTimer
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          setCallStatus(`🔌 Call hung up. Billed: UGX ${data.costUGX.toFixed(0)}`);
+          // Prepend record row item to the local summary matrix list
+          setRecentCalls(prev => [{ number: phoneNumber, duration: callTimer, cost: data.costUGX }, ...prev]);
+        }
+      } catch (err) {
+        setCallStatus("🟢 Carrier Device Linked & Authenticated");
+      }
+      
+      setPhoneNumber("");
+      setCallTimer(0);
+      return;
+    }
+
+    // 🟩 DIAL OUT LOGIC: Connect directly to wholesale telecom carrier streams
+    setCallStatus(`⏳ Route authorization query dispatching...`);
     
-    return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "8px", maxHeight: "250px", overflowY: "auto", paddingRight: "4px" }}>
-        {activeContactsList.length === 0 ? (
-          <div style={{ color: "#64748b", textAlign: "center", fontSize: "12px", padding: "20px" }}>No registered platform contacts found.</div>
-        ) : (
-          activeContactsList.map((contact: any, i: number) => (
-            <div key={i} style={{ backgroundColor: "#0f172a", padding: "10px 12px", borderRadius: "6px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
-                <div style={{ fontSize: "13px", fontWeight: "bold", color: "#ffffff" }}>{contact.name}</div>
-                <div style={{ fontSize: "11px", color: "#64748b", fontFamily: "monospace" }}>{contact.phone || contact.phoneNumber}</div>
-              </div>
-              <button onClick={() => setPhoneNumber(contact.phone || contact.phoneNumber)} style={{ backgroundColor: "#334155", color: "#38bdf8", border: "none", borderRadius: "4px", padding: "6px 10px", fontSize: "11px", fontWeight: "bold", cursor: "pointer" }}>
-                📱 {contact.network || "NODE"}
+    try {
+      // Request physical microphone hardware access permissions from the browser engine
+      await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+
+      const res = await fetch("/api/voip", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "ROUTE_OUTBOUND_CALL", destinationNumber: phoneNumber })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setActiveSessionSid(data.sessionSid);
+        setIsCalling(true);
+        setCallStatus("🔊 Line open. Audio wave arrays streaming live...");
+        
+        // Fire Call Timer Clock to monitor talk duration in seconds
+        timerIntervalRef.current = setInterval(() => {
+          setCallTimer(prev => prev + 1);
+        }, 1000);
+      }
+    } catch (err) {
+      alert("❌ Microphone authorization denied by system safeties.");
+      setCallStatus("🟢 Carrier Device Linked & Authenticated");
+    }
+  };
+
+  const formatClockDisplay = (totalSecs: number) => {
+    const mins = Math.floor(totalSecs / 60);
+    const secs = totalSecs % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const keypadDigits = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "*", "0", "#"];
+
+  return (
+    <div style={{ minHeight: "100vh", backgroundColor: "#0f172a", color: "#ffffff", padding: "40px 20px", fontFamily: "Arial, sans-serif", display: "flex", flexDirection: "column", alignItems: "center", gap: "24px" }}>
+      
+      <div style={{ textAlign: "center" }}>
+        <h1 style={{ fontSize: "28px", fontWeight: "900", color: "#34d399", margin: "0 0 6px 0" }}>Carrier-Grade Telecom Dashboard</h1>
+        <p style={{ fontSize: "14px", color: "#94a3b8", maxWidth: "500px", margin: "0 auto", lineHeight: "1.5" }}>Plugs directly into wholesale routing keys to establish real full-duplex connections from browser to mobile phones globally.</p>
+      </div>
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "30px", justifyContent: "center", width: "100%", maxWidth: "800px" }}>
+        
+        {/* 🔢 TELEPHONY WORKSPACE CONTROLLER CARD */}
+        <div style={{ backgroundColor: "#1e293b", border: "1px solid #334155", borderRadius: "12px", padding: "24px", width: "290px", display: "flex", flexDirection: "column", gap: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.3)" }}>
+          
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#94a3b8", fontWeight: "bold", fontFamily: "monospace", borderBottom: "1px solid #334155", paddingBottom: "8px" }}>
+            <span>WHOLESALE CORE TRUNK</span>
+            <span style={{ color: "#34d399" }}>UGX {walletBalance.toLocaleString()}</span>
+          </div>
+
+          {/* DISPLAY SCREEN */}
+          <div style={{ backgroundColor: "#0b1528", border: "1px solid #334155", borderRadius: "8px", padding: "14px", display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: "44px", boxSizing: "border-box" }}>
+            <div style={{ color: "#ffffff", fontSize: "20px", fontWeight: "bold", fontFamily: "monospace", letterSpacing: "1px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", width: "80%" }}>
+              {isCalling ? formatClockDisplay(callTimer) : phoneNumber || <span style={{ color: "#475569" }}>Dial digits...</span>}
+            </div>
+            {phoneNumber && !isCalling && (
+              <button onClick={handleBackspaceClear} style={{ background: "transparent", border: "none", color: "#ef4444", fontSize: "14px", cursor: "pointer", padding: 0, fontWeight: "bold", outline: "none" }}>⌫</button>
+            )}
+          </div>
+
+          {/* KEYPAD GRID BLOCK */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
+            {keypadDigits.map((digit) => (
+              <button
+                key={digit}
+                onClick={() => handleKeyPress(digit)}
+                disabled={isCalling}
+                style={{ padding: "12px 0", backgroundColor: "#0f172a", border: "1px solid #1e293b", borderRadius: "50%", color: "#cbd5e1", fontSize: "16px", fontWeight: "bold", cursor: isCalling ? "not-allowed" : "pointer", outline: "none", display: "flex", justifyContent: "center", alignItems: "center", width: "50px", height: "50px", margin: "0 auto" }}
+              >
+                {digit}
               </button>
-            </div>
-          ))
-        )}
-      </div>
-    );
-  }
+            ))}
+          </div>
 
-  // ==========================================
-  // 3. VOICE HISTORY ACCOUNT LEDGER TRANSACTIONS
-  // ==========================================
-  if (activeTab === "history") {
-    // Hybrid Mapping: Supports both raw mock log layouts and dynamic Prisma relation names (callLogs)
-    const activeHistoryLogs = member?.logs || member?.callLogs || [];
-    
-    return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "8px", maxHeight: "250px", overflowY: "auto", paddingRight: "4px" }}>
-        {activeHistoryLogs.length === 0 ? (
-          <div style={{ color: "#64748b", textAlign: "center", fontSize: "12px", padding: "20px" }}>No historical ledger records found.</div>
-        ) : (
-          activeHistoryLogs.map((log: any, i: number) => (
-            <div key={i} style={{ backgroundColor: "#0f172a", padding: "10px 12px", borderRadius: "6px", fontSize: "12px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", color: "#94a3b8", marginBottom: "4px" }}>
-                <span>{log.date}</span>
-                <span style={{ color: "#ef4444", fontWeight: "bold" }}>-{log.cost}</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", color: "#ffffff" }}>
-                <span style={{ fontFamily: "monospace" }}>{log.destination}</span>
-                <span style={{ color: "#64748b" }}>Duration: {log.duration}</span>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-    );
-  }
+          {/* OUTBOUND CARRIER TOGGLE TRIGGER BUTTON */}
+          <button
+            onClick={handleCarrierCallToggle}
+            style={{ width: "100%", padding: "12px", backgroundColor: isCalling ? "#ef4444" : "#10b981", color: isCalling ? "#ffffff" : "#020617", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold", fontSize: "13px", outline: "none" }}
+          >
+            {isCalling ? "🛑 Terminate Phone Link" : "📞 Outbound Carrier Dial"}
+          </button>
 
-  return null;
-}
+          {/* STATUS MONITOR PRINT SCREEN */}
+          <div style={{ backgroundColor: "#070e1b", border: "1px solid #1e293b", borderRadius: "6px", padding: "8px", fontSize: "10px", color: isCalling ? "#10b981" : "#94a3b8", textAlign: "center", fontFamily: "monospace", minHeight: "28px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+            {callStatus}
+          </div>
+
+        </div>
+
+        {/* 📋 CALL DETAILS RECORDS (CDR) TRANSACTION LOG PANEL BAR */}
+        <div style={{ backgroundColor: "#1e293b", border: "1px solid #334155", borderRadius: "12px", padding: "24px", flex: 1, minWidth: "300px", display: "flex", flexDirection: "column", gap: "14px", boxShadow: "0 10px 30px rgba(0,0,0,0.3)" }}>
+          <h3 style={{ margin: 0, fontSize: "14px", color: "#34d399", fontWeight: "bold", borderBottom: "1px solid #334155", paddingBottom: "8px" }}>📊 Itemized Call Details Logs (Real-Time CDR)</h3>
+          
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", overflowY: "auto", maxHeight: "310px" }}>
+                        {recentCalls.length === 0 ? (
+              <div style={{ color: "#64748b", fontSize: "12px", fontStyle: "italic", textAlign: "center", marginTop: "40px" }}>
+                No telephone calling session records logged inside this active user space node. Dial destinations to test billing loops.
+              </div>
+            ) : (
+              recentCalls.map((call, i) => (
+                <div key={i} style={{ backgroundColor: "#0f172a", border: "1px solid #1e293b", borderRadius: "6px", padding: "12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div>
+                    <div style={{ fontSize: "13px", fontWeight: "bold", color: "#ffffff", fontFamily: "monospace" }}>📞 {call.number}</div>
+                    <div style={{ fontSize: "11px", color: "#64748b", marginTop: "4px" }}>Duration: {call.duration} seconds</div>
+                  </div>
+                  <div style={{ color: "#ef4444", fontSize: "13px", fontWeight: "bold", fontFamily: "monospace" }}>-UGX {call.cost.toFixed(0)}</div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  ); // 🟢 SEALED: Root layout element closed properly
+}    // 🟢 SEALED: Main CommercialVoipDialerPage function completely closed
+

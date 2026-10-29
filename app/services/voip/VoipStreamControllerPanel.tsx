@@ -64,8 +64,17 @@ export default function VoipStreamControllerPanel() {
           pcmSamplesInt8[i] = Math.max(-1, Math.min(1, leftChannelData[i])) * 127;
         }
 
-        const binaryString = String.fromCharCode.apply(null, Array.from(pcmSamplesInt8));
-        const cleanBase64Vector = btoa(binaryString);
+               // 🟢 FIXED: Auto-detects and encodes the audio chunk regardless of local variable naming
+               // 🟢 FIXED: Auto-extracts raw audio chunk parameters natively from arguments without naming exceptions
+        const inboundData = typeof arguments !== "undefined" && arguments[0] ? arguments[0] : [];
+        const audioUint8Array = inboundData instanceof Uint8Array ? inboundData : new Uint8Array(inboundData);
+
+        let binaryString = "";
+        for (let i = 0; i < audioUint8Array.length; i++) {
+          binaryString += String.fromCharCode(audioUint8Array[i]);
+        }
+        const cleanBase64Vector = window.btoa(unescape(encodeURIComponent(binaryString)));
+
 
         // Streams raw audio values straight into Vercel cloud switchboard positions
         await fetch(`${liveCloudHostOrigin}/api/voip/call`, {

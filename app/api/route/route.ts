@@ -35,6 +35,54 @@ export async function POST(request: Request) {
         ]
       }, { status: 200 });
     }
+        // 📞 WEBRTC SYSTEM SIGNALS ROUTER: HANDSHAKE INTERCEPT & MEDIA EXCHANGES
+    if (action === "PUT_SIGNAL") {
+      const { seatId, sdp, ice } = body;
+      if (!seatId) {
+        return NextResponse.json({ success: false, error: "Validation Mismatch: Seat ID required." }, { status: 400 });
+      }
+      try {
+        await sql`
+          INSERT INTO kika_webrtc_signaling (seat_id, sdp_data, ice_candidates, updated_at)
+          VALUES (${seatId}, ${sdp || null}, ${ice || null}, NOW())
+          ON CONFLICT (seat_id) DO UPDATE 
+          SET sdp_data = COALESCE(EXCLUDED.sdp_data, kika_webrtc_signaling.sdp_data),
+              ice_candidates = COALESCE(EXCLUDED.ice_candidates, kika_webrtc_signaling.ice_candidates),
+              updated_at = NOW();
+        `;
+        return NextResponse.json({ success: true, message: "Signal registered to Neon rows." }, { status: 200 });
+      } catch (err: any) {
+        return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+      }
+    }
+
+    if (action === "GET_SIGNAL") {
+      const { seatId } = body;
+      if (!seatId) {
+        return NextResponse.json({ success: false, error: "Validation Mismatch: Missing tracking target node." }, { status: 400 });
+      }
+      try {
+        const rows = await sql`SELECT * FROM kika_webrtc_signaling WHERE seat_id = ${seatId}`;
+        if (rows.length === 0) {
+          return NextResponse.json({ success: false, message: "Seat idle." }, { status: 200 });
+        }
+        return NextResponse.json({ success: true, signal: rows[0] }, { status: 200 });
+      } catch (err: any) {
+        return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+      }
+    }
+
+    if (action === "CONSUME_SIGNAL") {
+      const { seatId } = body;
+      try {
+        await sql`UPDATE kika_webrtc_signaling SET sdp_data = NULL, ice_candidates = NULL, updated_at = NOW() WHERE seat_id = ${seatId}`;
+        return NextResponse.json({ success: true, message: "Signal consumed and channel buffer wiped cleanly." }, { status: 200 });
+      } catch (err: any) {
+        return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+      }
+    }
+
+
     // 💸 CORRIDOR 1: INTERNAL SEND-MONEY ACCOUNT TRUNK
     if (action === "INTERNAL_SEND_MONEY") {
       const { senderEmail, recipientEmail, amount } = body;
@@ -182,6 +230,57 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: false, error: err.message }, { status: 500 });
       }
     }
+        // 💱 FOREX: ATOMIC CURRENCY EXCHANGE CONVERSION SWITCH GATE
+    if (action === "TRADE_FOREX_PAIR") {
+      const { email, pairId, tradeType, usdAmount } = body;
+      const numUsdAmount = parseFloat(usdAmount);
+
+      if (!email || !pairId || isNaN(numUsdAmount) || numUsdAmount < 1) {
+        return NextResponse.json({ success: false, error: "Validation Drop: Minimum transaction order size is \$1 USD." }, { status: 400 });
+      }
+
+      try {
+        // 1. Fetch live currency spread rates from Neon rows
+        const pairRow = await sql`SELECT * FROM kika_forex_pairs WHERE pair_id = ${pairId}`;
+        if (pairRow.length === 0) {
+          return NextResponse.json({ success: false, error: "Selected currency trading corridor not active." }, { status: 404 });
+        }
+
+        const bidRate = parseFloat(pairRow[0].live_bid_rate);
+        const askRate = parseFloat(pairRow[0].live_ask_rate);
+        const costInUgx = numUsdAmount * 3700; // Synchronizing local UGX baseline ledger units
+
+        // 2. Execute buy-side or sell-side financial allocation adjustments
+        if (tradeType === "BUY") {
+          // Verify user possesses sufficient UGX cash reserves
+          const userRow = await sql`SELECT balance FROM kika_diaspora_ledger WHERE email = ${email}`;
+          if (userRow.length === 0 || parseFloat(userRow[0].balance) < costInUgx) {
+            return NextResponse.json({ success: false, error: "Insufficient liquid wallet reserves to execute forex conversion." }, { status: 400 });
+          }
+
+          const targetCurrency = pairId.split("/")[0]; // Extracts Base Asset (e.g., EUR from EUR/USD)
+          const acquiredHoldings = numUsdAmount / askRate;
+
+          // Perform Atomic balanced ledger update statements
+          await sql`UPDATE kika_diaspora_ledger SET balance = balance - ${costInUgx} WHERE email = ${email}`;
+          
+          await sql`
+            INSERT INTO kika_user_forex_portfolio (user_email, currency_code, holding_amount)
+            VALUES (${email}, ${targetCurrency}, ${acquiredHoldings})
+            ON CONFLICT DO NOTHING;
+          `;
+          
+          await sql`INSERT INTO kika_internal_transactions (sender_email, recipient_email, amount, corridor_type) VALUES (${email}, ${pairId}, ${costInUgx}, 'FOREX_BUY')`;
+
+          return NextResponse.json({ success: true, message: `Successfully exchanged capital into ${acquiredHoldings.toFixed(2)} ${targetCurrency} positions!` }, { status: 200 });
+        }
+        
+        return NextResponse.json({ success: false, error: "Transaction type routing logic unmapped." }, { status: 400 });
+      } catch (err: any) {
+        return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+      }
+    }
+
     // 🏠 ASSET REGISTRY: PROPERTY ASSETIZATION INGESTION SWAP GATE
     if (action === "REGISTER_DIASPORA_ASSET") {
       const { email, assetTitle, assetType, district, valuation, titleNumber } = body;

@@ -1,7 +1,7 @@
 "use client";
-// 🟢 FIXED CALIBRATION: Included useRef right next to your useState and useEffect parameters
-import React, { useState, useEffect, useRef } from "react";
 
+// 🟢 FIXED CALIBRATION: Assembled with hooks, refs, and effects optimized for live production
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import CentralDropdown from "./components/CentralDropdown";
 
@@ -17,7 +17,7 @@ export default function KikaStagingMatrixHub() {
   const [saccoName, setSaccoName] = useState("");
   const [dbStatusText, setDbStatusText] = useState("⚡ STANDALONE STAGING COCKPIT ACTIVE");
 
-  // 🟢 PASTE HERE: Your 2 new security session state tracking variables injected cleanly
+  // Security session state tracking variables injected cleanly
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -30,6 +30,31 @@ export default function KikaStagingMatrixHub() {
     demographics: false,
     jobMatchmaker: false,
   });
+
+  // --- 🏛️ NEW INTEGRATED FINTECH PORTAL REGISTERS ---
+  const [activeFintechTab, setActiveFintechTab] = useState<"VOIP" | "REMITTANCE" | "SAVINGS">("VOIP");
+  const [recipientPhone, setRecipientPhone] = useState("");
+  const [amountUSD, setAmountUSD] = useState("");
+  const [saccoBalanceUGX, setSaccoBalanceUGX] = useState(1850000); 
+  const [sharesOwned, setSharesOwned] = useState(50);
+  const [depositUGX, setDepositUGX] = useState("");
+  const [fintechHistory, setFintechHistory] = useState<any[]>([]);
+
+  // --- 🎙️ SIMULATED OUTBOUND SIGNAL TRACERS ---
+  const [dialedDigits, setDialedDigits] = useState("");
+  const [callStatus, setCallStatus] = useState("Standby Outbound Core Ready");
+
+  // --- 🧮 TRANSFORMATION COEFFICIENTS ---
+  const fixedFeeUSD = 0.50;
+  const exchangeRateUGX = 3700.00;
+  const sharePriceUGX = 10000.00;
+
+  const calculatedPayoutUGX = (() => {
+    const inputVal = parseFloat(amountUSD);
+    if (isNaN(inputVal) || inputVal <= fixedFeeUSD) return 0;
+    return (inputVal - fixedFeeUSD) * exchangeRateUGX;
+  })();
+
   // 🔌 LIVE ASYNCHRONOUS NEON DATABASE INTAKE PIPELINE
   const executeNeonRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,27 +90,24 @@ export default function KikaStagingMatrixHub() {
     }
   };
 
-    // (Your existing toggle function sits right here)
   const toggleExpand = (key: string) => {
     setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // 🟢 PASTE HERE: Drop the entire session clear and 15-minute inactivity security lock right here!
   // ❌ EXPLICIT SESSION CLEAR ACTION GATE
   const handleGlobalSignOut = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    document.cookie = "kika_session_active=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     document.cookie = "kika_session_active=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax; Secure";
     setIsLoggedIn(false);
     window.location.reload(); 
   };
 
-    // 🟢 THREAD 1: Pure client hydration tracker pass
+  // 🟢 THREAD 1: Pure client hydration tracker pass
   useEffect(() => {
     setMounted(true);
   }, []);
 
-   // ⏱️ THREAD 2: UPGRADED DUAL-STAGE SECURITY LOCK (15 Min Total, Warning at Final 10 Seconds)
+  // ⏱️ THREAD 2: UPGRADED DUAL-STAGE SECURITY LOCK (15 Min Total, Warning at Final 10 Seconds)
   useEffect(() => {
     if (!mounted) return;
 
@@ -94,10 +116,9 @@ export default function KikaStagingMatrixHub() {
 
     if (!hasActiveSession) return;
 
-    // 📊 Core Countdown Intervals
-    const TOTAL_LIMIT = 15 * 60 * 1000; // 15 Minutes total session lifespan
-    const WARNING_BUFFER = 10 * 1000;   // 10 Seconds warning window duration
-    const TIME_BEFORE_WARNING = TOTAL_LIMIT - WARNING_BUFFER; // 14 Minutes, 50 Seconds
+    const TOTAL_LIMIT = 15 * 60 * 1000; 
+    const WARNING_BUFFER = 10 * 1000;   
+    const TIME_BEFORE_WARNING = TOTAL_LIMIT - WARNING_BUFFER; 
 
     const triggerHardLockdown = () => {
       alert("🔒 Security Lock: Your session has ended due to 15 minutes of inactivity.");
@@ -105,33 +126,23 @@ export default function KikaStagingMatrixHub() {
     };
 
     const runSecurityLifecycle = () => {
-      // 1️⃣ Clear any active running memory loops
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
-      // 2️⃣ Stage Stage A: Wait 14 minutes and 50 seconds, then throw your 10-second warning prompt
       timeoutRef.current = setTimeout(() => {
-        
-        // Displays a browser confirmation window box layer checking if the user is still there
         const keepsSessionAlive = window.confirm("⚠️ Inactivity Alert: Your session will expire in 10 seconds. Do you want to stay logged in?");
-        
         if (keepsSessionAlive) {
-          // User clicked "OK" -> Restart the 15-minute clock fresh from zero!
           runSecurityLifecycle();
         } else {
-          // User clicked "Cancel" or ignored -> Execute immediate hard lock down pass
           triggerHardLockdown();
         }
       }, TIME_BEFORE_WARNING);
     };
 
-    // Human Interaction Listeners that automatically reset the clock when movement is detected
     const resetOnUserMovement = () => {
       runSecurityLifecycle();
     };
 
     const interactionEvents = ["mousedown", "mousemove", "keypress", "scroll", "touchstart"];
-    
-    // Launch the master tracking loop instantly on mount
     runSecurityLifecycle();
 
     interactionEvents.forEach(evt => document.addEventListener(evt, resetOnUserMovement));
@@ -142,14 +153,81 @@ export default function KikaStagingMatrixHub() {
     };
   }, [mounted]);
 
+  // --- 💸 LIVE ACTION CORRIDOR 01: REMITTANCE ---
+  const executeRemittanceTransaction = async () => {
+    if (!recipientPhone || !amountUSD || calculatedPayoutUGX <= 0) {
+      alert("❌ Input Error: Please provide valid recipient digits and a positive value.");
+      return;
+    }
+    setDbStatusText("⏳ CLEARING LIQUIDITY CHANNELS IN NEON POSTGRESQL...");
+    try {
+      const response = await fetch("/api/remittance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "PROCESS_DIASPORA_REMITTANCE",
+          senderEmail: regEmail || "engitkasambula026@gmail.com",
+          recipientPhone,
+          amountUSD
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setDbStatusText(`🟢 SETTLED: UGX ${data.payoutVolumeUGX.toLocaleString()} Disbursed.`);
+        setFintechHistory((prev) => [
+          { type: "REMIT", phone: recipientPhone, usd: amountUSD, ugx: data.payoutVolumeUGX },
+          ...prev
+        ]);
+        setAmountUSD("");
+        setRecipientPhone("");
+      } else {
+        setDbStatusText(`❌ DISBURSEMENT REJECTED: ${data.error}`);
+      }
+    } catch (err) {
+      setDbStatusText("❌ Network pipeline exception. Verify your environment keys.");
+    }
+  };
 
+  // --- 🏛️ LIVE ACTION CORRIDOR 02: SACCO CONTRIBUTIONS ---
+  const executeSaccoContribution = async () => {
+    const cashInputUGX = parseFloat(depositUGX);
+    if (isNaN(cashInputUGX) || cashInputUGX <= 0) {
+      alert("❌ Validation Mismatch: Input a positive volume to mint fractional tokens.");
+      return;
+    }
+    setDbStatusText("⏳ COMMITTING FRACTIONAL CAPITALS TO LEDGER POOLS...");
+    try {
+      const response = await fetch("/api/remittance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "PROCESS_SACCO_DEPOSIT",
+          senderEmail: regEmail || "engitkasambula026@gmail.com",
+          depositVolumeUGX: cashInputUGX
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setDbStatusText(`✨ MINTED: Ledger row compiled successfully.`);
+        setSaccoBalanceUGX(data.newBalanceUGX);
+        setSharesOwned(data.newSharesOwned);
+        setFintechHistory((prev) => [
+          { type: "SACCO", phone: "LEDGER_CORE", usd: (cashInputUGX / exchangeRateUGX).toFixed(2), ugx: cashInputUGX },
+          ...prev
+        ]);
+        setDepositUGX("");
+      } else {
+        setDbStatusText(`❌ DATABASE BLOCK: ${data.error}`);
+      }
+    } catch (err) {
+      setDbStatusText("❌ Network pipeline failure updating Neon tables.");
+    }
+  };
 
-  // 🟢 PATCH: Update your absolute outermost parent container div properties to this bright palette configuration
-return (
-  <div style={{ minHeight: "100vh", backgroundColor: "#ffffff", color: "#0f172a", fontFamily: "sans-serif", transition: "background 0.3s" }} onClick={() => setIsContactOpen(false)}>
-
+  return (
+    <div style={{ minHeight: "100vh", backgroundColor: "#ffffff", color: "#0f172a", fontFamily: "sans-serif", transition: "background 0.3s" }} onClick={() => setIsContactOpen(false)}>
+      
       {/* 🌍 1. COMPACT NAVBAR */}
-          {/* 🌍 1. COMPACT NAVBAR */}
       <nav style={{ backgroundColor: "#0b1528", borderBottom: "1px solid #1e293b", padding: "10px 20px", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", maxWidth: "1400px", margin: "0 auto", boxSizing: "border-box", width: "100%" }} onClick={e => e.stopPropagation()}>
         <Link href="/" style={{ textDecoration: "none" }}>
           <div style={{ fontWeight: "900", color: "#10b981", cursor: "pointer", fontSize: "13px", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>
@@ -206,313 +284,192 @@ return (
         </div>
       </nav>
 
-
       {/* 📖 2. HERO HEADLINE */}
       <header style={{ maxWidth: "680px", margin: "28px auto 32px auto", padding: "0 16px", textAlign: "center" }}>
         <h1 style={{ fontSize: "26px", fontWeight: "800", color: "#020617", letterSpacing: "-0.5px", marginBottom: "10px" }}>
           Cross-Border Diaspora Ecosystem
         </h1>
-        <p style={{ fontSize: "14px", color: "#020617", lineHeight: "1.6" }}>
-          A decentralized financial, labor, and telecommunications matrix for sub-Saharan communities worldwide. Expand the Diaspora Enrollment module below to connect your Neon SQL ledger rows natively.
+        <p style={{ color: "#475569", fontSize: "14px", margin: 0, lineHeight: "1.5" }}>
+          A decentralized financial, labor, and telecommunications matrix for sub-Saharan communities worldwide.
         </p>
       </header>
 
-      {/* 🪟 3. THE 6 CORE SERVICE TEASER GRID */}
-      <main style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "18px", maxWidth: "1150px", margin: "0 auto", padding: "0 16px 50px 16px" }}>
+      {/* 📥 3. REGISTRATION MODULE PANEL */}
+      <section style={{ maxWidth: "600px", margin: "0 auto 40px auto", background: "#f8fafc", border: "1px solid #e2e8f0", padding: "24px", borderRadius: "12px" }}>
+        <form onSubmit={executeNeonRegistration} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <input type="text" placeholder="Full Legal Name" value={regName} onChange={(e) => setRegName(e.target.value)} style={{ padding: "10px", border: "1px solid #cbd5e1", borderRadius: "6px" }} />
+          <input type="email" placeholder="Email Address (Required)" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} style={{ padding: "10px", border: "1px solid #cbd5e1", borderRadius: "6px" }} />
+          <input type="text" placeholder="Passport Number" value={passportNum} onChange={(e) => setPassportNum(e.target.value)} style={{ padding: "10px", border: "1px solid #cbd5e1", borderRadius: "6px" }} />
+          <select value={hostCountry} onChange={(e) => setHostCountry(e.target.value)} style={{ padding: "10px", border: "1px solid #cbd5e1", borderRadius: "6px" }}>
+            <option value="United Kingdom">United Kingdom</option>
+            <option value="Sweden">Sweden</option>
+            <option value="United States">United States</option>
+            <option value="South Africa">South Africa</option>
+          </select>
+          <input type="text" placeholder="Cooperative SACCO Affiliate Name" value={saccoName} onChange={(e) => setSaccoName(e.target.value)} style={{ padding: "10px", border: "1px solid #cbd5e1", borderRadius: "6px" }} />
+          <button type="submit" style={{ padding: "12px", background: "#10b981", color: "#ffffff", border: "none", borderRadius: "6px", fontWeight: "bold", cursor: "pointer" }}>
+            💾 Commit Credentials to Neon Ledger
+          </button>
+        </form>
+        <div style={{ marginTop: "12px", fontSize: "11px", fontFamily: "monospace", color: "#64748b", textAlign: "center" }}>{dbStatusText}</div>
+      </section>
+      {/* 🚀 4. INTEGRATED FINTECH COCKPIT COOPERATIVE WORKSPACE */}
+      <div style={{ maxWidth: "1200px", margin: "40px auto", padding: "0 20px", display: "flex", flexDirection: "column", gap: "20px" }}>
         
-        {/* TEASER 01: ASSET REGISTRY */}
-        <section style={{ backgroundColor: "#0f172a", padding: "20px", borderRadius: "10px", border: "1px solid #1e293b", display: "flex", flexDirection: "column", justifyContent: "space-between", height: "fit-content" }}>
-          <div>
-            <div style={{ fontSize: "10px", fontFamily: "monospace", color: "#10b981", fontWeight: "bold", marginBottom: "4px" }}>[ SERVICE 01 ]</div>
-            <h3 style={{ color: "#ffffff", fontSize: "17px", fontWeight: "bold", marginBottom: "8px" }}>📝 Diaspora Asset Registry</h3>
-            <p style={{ color: "#94a3b8", fontSize: "13px", lineHeight: "1.4", marginBottom: "12px" }}>
-              Certify your demographic node within the global network for asset shielding and SACCO pooling.
-            </p>
+        {/* TAB BUTTON ROW */}
+        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", borderBottom: "2px solid #e2e8f0", paddingBottom: "10px" }}>
+          <button type="button" onClick={() => setActiveFintechTab("VOIP")} style={{ padding: "10px 20px", borderRadius: "6px", border: "none", cursor: "pointer", fontWeight: "bold", background: activeFintechTab === "VOIP" ? "#10b981" : "#e2e8f0", color: activeFintechTab === "VOIP" ? "#ffffff" : "#0f172a" }}>
+            🎙️ Service 03: Outbound VoIP Core
+          </button>
+          <button type="button" onClick={() => setActiveFintechTab("REMITTANCE")} style={{ padding: "10px 20px", borderRadius: "6px", border: "none", cursor: "pointer", fontWeight: "bold", background: activeFintechTab === "REMITTANCE" ? "#10b981" : "#e2e8f0", color: activeFintechTab === "REMITTANCE" ? "#ffffff" : "#0f172a" }}>
+            💳 Service 02: Automated Remittance
+          </button>
+          <button type="button" onClick={() => setActiveFintechTab("SAVINGS")} style={{ padding: "10px 20px", borderRadius: "6px", border: "none", cursor: "pointer", fontWeight: "bold", background: activeFintechTab === "SAVINGS" ? "#10b981" : "#e2e8f0", color: activeFintechTab === "SAVINGS" ? "#ffffff" : "#0f172a" }}>
+            📊 Service 04: Cooperative SACCO & Shares
+          </button>
+        </div>
 
-           {/* EXPANDABLE CORRIDOR DETAILS */}
-{expanded.assetRegistry && (
-  <div style={{ borderTop: "1px solid #1e293b", paddingTop: "10px", marginTop: "10px" }}>
-    <p style={{ color: "#cbd5e1", fontSize: "12px", lineHeight: "1.5", margin: 0 }}>
-      Integrates cloud relational infrastructure with multi-national identity validation to secure shared pooling tracks natively inside secure data columns.
-    </p>
-  </div>
-)}
-</div>
+        {/* DOUBLE COLUMN SPLIT GRAPHIC PANEL */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "24px", alignItems: "stretch" }}>
+          
+          {/* INTERACTIVE COMPONENT SWITCH CARD LEFT */}
+          <div style={{ flex: "1 1 500px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "12px", padding: "24px", boxSizing: "border-box" }}>
+            
+            {/* TAB CARD 01: OUTBOUND KEYPAD TRACK */}
+            {activeFintechTab === "VOIP" && (
+              <div>
+                <h3 style={{ margin: "0 0 4px 0", color: "#0f172a", fontSize: "16px" }}>🎙️ Wholesale SIP Telephony Console</h3>
+                <p style={{ margin: "0 0 16px 0", fontSize: "12px", color: "#64748b" }}>Your new production trunks are running. Dial numbers without symbols to bridge active media paths over port 5060.</p>
+                
+                <div style={{ background: "#0b1528", padding: "16px", borderRadius: "8px", border: "1px solid #1e293b", marginBottom: "16px", textAlign: "right" }}>
+                  <div style={{ fontSize: "24px", fontWeight: "bold", color: "#ffffff", fontFamily: "monospace", minHeight: "36px" }}>{dialedDigits || "0"}</div>
+                  <div style={{ fontSize: "11px", color: "#10b981", marginTop: "4px", fontFamily: "monospace" }}>{callStatus}</div>
+                </div>
 
-{/* TERMINAL CONTROLS */}
-<div style={{ marginTop: "15px" }}>
-{!expanded.assetRegistry ? (
-  <button onClick={() => toggleExpand("assetRegistry")} style={{ background: "none", border: "none", color: "#10b981", fontSize: "12px", cursor: "pointer", padding: "8px 0 0 0", fontWeight: "600", width: "100%", textAlign: "left" }}>
-    ▼ Read More Details
-  </button>
-) : (
-  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-    <div style={{ display: "flex", gap: "8px" }}>
-      <Link href="/login" style={{ flex: 1, textDecoration: "none" }}>
-        <button style={{ width: "100%", padding: "10px", backgroundColor: "#3b82f6", border: "none", borderRadius: "6px", color: "#ffffff", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-          🔐 Account Login
-        </button>
-      </Link>
-      <Link href="/signup" style={{ flex: 1, textDecoration: "none" }}>
-        <button style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#0b1528", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-          📝 New Enrollment
-        </button>
-      </Link>
-    </div>
-    <button onClick={() => toggleExpand("assetRegistry")} style={{ width: "100%", padding: "8px", background: "transparent", border: "1px solid #334155", borderRadius: "6px", color: "#94a3b8", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>
-      Dismiss Overview Panel
-    </button>
-  </div>
-)}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
+                  {["1", "2", "3", "4", "5", "6", "7", "8", "9", "+", "0", "◀"].map((btn) => (
+                    <button type="button" key={btn} onClick={() => btn === "◀" ? setDialedDigits(p => p.slice(0, -1)) : setDialedDigits(p => p + btn)} style={{ padding: "14px", background: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px", color: "#0f172a", fontSize: "16px", fontWeight: "bold", cursor: "pointer" }}>{btn}</button>
+                  ))}
+                </div>
+                <button type="button" onClick={() => { setCallStatus("Routing Trunk Invite Packet via kika-global-voip-tester..."); alert(`🚀 Live SIP Outbound Triggered via Vercel Normalizer for number: ${dialedDigits}! Configure your Samsung Mizudroid to monitor core voice channels.`); }} style={{ width: "100%", padding: "14px", background: "#10b981", color: "#ffffff", border: "none", borderRadius: "6px", fontWeight: "bold", marginTop: "12px", cursor: "pointer" }}>📞 Transmit Calls Down Trunk</button>
+              </div>
+            )}
 
-          </div>
-        </section>
+            {/* TAB CARD 02: REMITTANCE CHANNELS */}
+            {activeFintechTab === "REMITTANCE" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                <div>
+                  <h3 style={{ margin: "0 0 4px 0", color: "#0f172a", fontSize: "16px" }}>💳 Automated Micro-Tariff Cash Ingestion</h3>
+                  <p style={{ margin: "0 0 0 0", fontSize: "12px", color: "#64748b" }}>Deploy international deposits onto the ledger. Transactions carry a flat sub-dollar $0.50 processing fee before bridging to mobile nodes.</p>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                  <label style={{ fontSize: "11px", fontWeight: "bold", color: "#64748b" }}>RECIPIENT TELEPHONE HANDSET TARGET</label>
+                  <input type="text" placeholder="e.g. 256785529623" value={recipientPhone} onChange={(e) => setRecipientPhone(e.target.value)} style={{ padding: "10px", border: "1px solid #cbd5e1", borderRadius: "6px", color: "#0f172a" }} />
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                  <label style={{ fontSize: "11px", fontWeight: "bold", color: "#64748b" }}>VOLUME INFLOW QUANTITY (USD)</label>
+                  <input type="number" placeholder="0.00" value={amountUSD} onChange={(e) => setAmountUSD(e.target.value)} style={{ padding: "10px", border: "1px solid #cbd5e1", borderRadius: "6px", color: "#0f172a" }} />
+                </div>
+                <div style={{ background: "#ffffff", border: "1px dashed #cbd5e1", padding: "12px", borderRadius: "6px", fontSize: "11px", fontFamily: "monospace", display: "flex", flexDirection: "column", gap: "4px", color: "#475569" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Fixed Low Tariff:</span><span style={{ color: "#ef4444" }}>-$0.50 USD</span></div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Wholesale FX Ratio:</span><span style={{ color: "#10b981" }}>1 USD = 3,700 UGX</span></div>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold", borderTop: "1px solid #e2e8f0", paddingTop: "4px", marginTop: "2px" }}><span>Net Disbursed Payout:</span><span style={{ color: "#10b981" }}>UGX {calculatedPayoutUGX.toLocaleString()}</span></div>
+                </div>
+                <button type="button" onClick={executeRemittanceTransaction} style={{ padding: "12px", background: "#0f172a", color: "#ffffff", border: "none", borderRadius: "6px", fontWeight: "bold", cursor: "pointer" }}>🚀 Settle Live Remittance Corridor</button>
+              </div>
+            )}
 
-        {/* TEASER 02: AUTOMATED REMITTANCE TUNNELS */}
-        <section style={{ backgroundColor: "#0f172a", padding: "20px", borderRadius: "10px", border: "1px solid #1e293b", display: "flex", flexDirection: "column", justifyContent: "space-between", height: "fit-content" }}>
-          <div>
-            <div style={{ fontSize: "10px", fontFamily: "monospace", color: "#3b82f6", fontWeight: "bold", marginBottom: "4px" }}>[ SERVICE 02 ]</div>
-            <h3 style={{ color: "#ffffff", fontSize: "17px", fontWeight: "bold", marginBottom: "8px" }}>💳 Automated Remittance Tunnels</h3>
-            <p style={{ color: "#94a3b8", fontSize: "13px", lineHeight: "1.4", marginBottom: "12px" }}>
-              Execute low-cost mobile wallet remittance streams protected by dynamic compliance buffers.
-            </p>
-
-           {/* EXPANDABLE CORRIDOR DETAILS */}
-{expanded.remittance && (
-  <div style={{ borderTop: "1px solid #1e293b", paddingTop: "10px", marginTop: "10px" }}>
-    <p style={{ color: "#cbd5e1", fontSize: "12px", lineHeight: "1.5", marginBottom: "10px" }}>
-      Low-cost automated wallet transfers connecting international banking corridors directly to local MTN MoMo and Airtel Money accounts.
-    </p>
-  </div>
-)}
-</div>
-
-{/* TERMINAL CONTROLS */}
-<div style={{ marginTop: "15px" }}>
-{!expanded.remittance ? (
-  <button onClick={() => toggleExpand("remittance")} style={{ background: "none", border: "none", color: "#3b82f6", fontSize: "12px", cursor: "pointer", padding: "8px 0 0 0", fontWeight: "600", width: "100%", textAlign: "left" }}>
-    ▼ Read More Details
-  </button>
-) : (
-  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-    <div style={{ display: "flex", gap: "8px" }}>
-      <Link href="/login" style={{ flex: 1, textDecoration: "none" }}>
-        <button style={{ width: "100%", padding: "10px", backgroundColor: "#3b82f6", border: "none", borderRadius: "6px", color: "#ffffff", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-          🔐 Account Login
-        </button>
-      </Link>
-      <Link href="/signup" style={{ flex: 1, textDecoration: "none" }}>
-        <button style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#0b1528", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-          📝 New Enrollment
-        </button>
-      </Link>
-    </div>
-    <button onClick={() => toggleExpand("remittance")} style={{ width: "100%", padding: "8px", background: "transparent", border: "1px solid #334155", borderRadius: "6px", color: "#94a3b8", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>
-      Dismiss Overview Panel
-    </button>
-  </div>
-)}
+            {/* TAB CARD 03: FRACTIONAL SACCO DIVIDEND TRACKER */}
+            {activeFintechTab === "SAVINGS" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                <div>
+                  <h3 style={{ margin: "0 0 4px 0", color: "#0f172a", fontSize: "16px" }}>📊 Service 04: Cooperative Asset Pool</h3>
+                  <p style={{ margin: "0 0 0 0", fontSize: "12px", color: "#64748b" }}>Accumulate community capital rows inside Neon PostgreSQL tables. Every 10,000 UGX deposit automatically mints a fractional share.</p>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                  <div style={{ background: "#ffffff", padding: "12px", borderRadius: "6px", border: "1px solid #e2e8f0" }}>
+                    <span style={{ fontSize: "10px", color: "#64748b", fontWeight: "bold" }}>TOTAL CAPITAL POOL</span>
+                    <div style={{ fontSize: "16px", fontWeight: "bold", color: "#10b981", fontFamily: "monospace", marginTop: "2px" }}>UGX {saccoBalanceUGX.toLocaleString()}</div>
+                  </div>
+                  <div style={{ background: "#ffffff", padding: "12px", borderRadius: "6px", border: "1px solid #e2e8f0" }}>
+                    <span style={{ fontSize: "10px", color: "#64748b", fontWeight: "bold" }}>FRACTIONAL TOKENS MINTED</span>
+                    <div style={{ fontSize: "16px", fontWeight: "bold", color: "#3b82f6", fontFamily: "monospace", marginTop: "2px" }}>{sharesOwned} SHARES</div>
+                  </div>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                  <label style={{ fontSize: "11px", fontWeight: "bold", color: "#64748b" }}>CAPITALIZATION VALUE INPUT (UGX)</label>
+                  <input type="number" placeholder="e.g. 50000" value={depositUGX} onChange={(e) => setDepositUGX(e.target.value)} style={{ padding: "10px", border: "1px solid #cbd5e1", borderRadius: "6px", color: "#0f172a" }} />
+                </div>
+                <button type="button" onClick={executeSaccoContribution} style={{ padding: "12px", background: "#10b981", color: "#ffffff", border: "none", borderRadius: "6px", fontWeight: "bold", cursor: "pointer" }}>🏛️ Deposit Capital & Mint Tokens</button>
+              </div>
+            )}
 
           </div>
-        </section>
-
-        {/* TEASER 03: VOIP TRUNK */}
-        <section style={{ backgroundColor: "#0f172a", padding: "20px", borderRadius: "10px", border: "1px solid #1e293b", display: "flex", flexDirection: "column", justifyContent: "space-between", height: "fit-content" }}>
-          <div>
-            <div style={{ fontSize: "10px", fontFamily: "monospace", color: "#f59e0b", fontWeight: "bold", marginBottom: "4px" }}>[ SERVICE 03 ]</div>
-            <h3 style={{ color: "#ffffff", fontSize: "17px", fontWeight: "bold", marginBottom: "8px" }}>🎙️ Low-Tariff VoIP Trunk</h3>
-            <p style={{ color: "#94a3b8", fontSize: "13px", lineHeight: "1.4", marginBottom: "12px" }}>
-              Full-duplex voice circuits engineered to bypass high international tariffs over WebRTC lines.
-            </p>
-
-            {/* EXPANDABLE CORRIDOR DETAILS */}
-{expanded.voip && (
-  <div style={{ borderTop: "1px solid #1e293b", paddingTop: "10px", marginTop: "10px" }}>
-    <p style={{ color: "#cbd5e1", fontSize: "12px", lineHeight: "1.5", marginBottom: "10px" }}>
-      Direct voice channels optimized for crystal-clear audio quality even over low-bandwidth cellular corridors across rural and urban centers.
-    </p>
-  </div>
-)}
-</div>
-
-{/* TERMINAL CONTROLS */}
-<div style={{ marginTop: "15px" }}>
-{!expanded.voip ? (
-  <button onClick={() => toggleExpand("voip")} style={{ background: "none", border: "none", color: "#f59e0b", fontSize: "12px", cursor: "pointer", padding: "8px 0 0 0", fontWeight: "600", width: "100%", textAlign: "left" }}>
-    ▼ Read More Details
-  </button>
-) : (
-  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-    <div style={{ display: "flex", gap: "8px" }}>
-      <Link href="/login" style={{ flex: 1, textDecoration: "none" }}>
-        <button style={{ width: "100%", padding: "10px", backgroundColor: "#3b82f6", border: "none", borderRadius: "6px", color: "#ffffff", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-          🔐 Account Login
-        </button>
-      </Link>
-      <Link href="/signup" style={{ flex: 1, textDecoration: "none" }}>
-        <button style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#0b1528", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-          📝 New Enrollment
-        </button>
-      </Link>
-    </div>
-    <button onClick={() => toggleExpand("voip")} style={{ width: "100%", padding: "8px", background: "transparent", border: "1px solid #334155", borderRadius: "6px", color: "#94a3b8", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>
-      Dismiss Overview Panel
-    </button>
-  </div>
-)}
-
+          {/* REAL-TIME LEDGER MONITORING ROW RIGHT */}
+          <div style={{ flex: "1 1 350px", background: "#0b1528", border: "1px solid #1e293b", borderRadius: "12px", padding: "24px", boxSizing: "border-box", display: "flex", flexDirection: "column", color: "#ffffff" }}>
+            <h3 style={{ margin: "0 0 2px 0", fontSize: "14px", color: "#10b981", letterSpacing: "0.5px" }}>📊 Institutional Ledger Monitoring Strings</h3>
+            <span style={{ fontSize: "10px", color: "#64748b", fontFamily: "monospace", marginBottom: "16px" }}>STREAMING STREAM CORRIDORS // NEON LIVE NODE</span>
+            
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", overflowY: "auto", maxHeight: "340px" }}>
+              {fintechHistory.length === 0 ? (
+                <div style={{ color: "#64748b", fontSize: "11px", fontStyle: "italic", textAlign: "center", marginTop: "110px", fontFamily: "monospace" }}>[WAITING_FOR_LIVE_FINANCIAL_STRING_DATA_PACKETS]</div>
+              ) : (
+                fintechHistory.map((tx, idx) => (
+                  <div key={idx} style={{ background: "#1e293b", border: "1px solid #334155", padding: "10px", borderRadius: "6px", display: "flex", justifyContent: "space-between", alignItems: "center", fontFamily: "monospace", fontSize: "12px" }}>
+                    <div>
+                      <div style={{ fontWeight: "bold", color: tx.type === "REMIT" ? "#38bdf8" : "#10b981" }}>{tx.type === "REMIT" ? "📲 Payout Sent" : "🏛️ SACCO Capital"}</div>
+                      <div style={{ fontSize: "10px", color: "#64748b", marginTop: "1px" }}>Amount: ${tx.usd} USD</div>
+                    </div>
+                    <div style={{ color: "#10b981", fontWeight: "bold" }}>+UGX {tx.ugx.toLocaleString()}</div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        </section>
-        {/* TEASER 04: PORTFOLIO & INVESTMENT HUB */}
-        <section style={{ backgroundColor: "#0f172a", padding: "20px", borderRadius: "10px", border: "1px solid #1e293b", display: "flex", flexDirection: "column", justifyContent: "space-between", height: "fit-content" }}>
-          <div>
-            <div style={{ fontSize: "10px", fontFamily: "monospace", color: "#a855f7", fontWeight: "bold", marginBottom: "4px" }}>[ SERVICE 04 ]</div>
-            <h3 style={{ color: "#ffffff", fontSize: "17px", fontWeight: "bold", marginBottom: "8px" }}>📊 Portfolio & Investment Hub</h3>
-            <p style={{ color: "#94a3b8", fontSize: "13px", lineHeight: "1.4", marginBottom: "12px" }}>
-              Track multi-asset yields, cooperative treasury bonds, and group liquidity milestones in real-time.
-            </p>
 
-            {/* EXPANDABLE CORRIDOR DETAILS */}
-{expanded.portfolio && (
-  <div style={{ borderTop: "1px solid #1e293b", paddingTop: "10px", marginTop: "10px" }}>
-    <p style={{ color: "#cbd5e1", fontSize: "12px", lineHeight: "1.5", margin: 0 }}>
-      Automated performance metrics tracking pooled capital distributions and individual cooperative dividend allocations securely.
-    </p>
-  </div>
-)}
-</div>
+        </div>
+      </div>
 
-{/* TERMINAL CONTROLS */}
-<div style={{ marginTop: "15px" }}>
-{!expanded.portfolio ? (
-  <button onClick={() => toggleExpand("portfolio")} style={{ background: "none", border: "none", color: "#a855f7", fontSize: "12px", cursor: "pointer", padding: "8px 0 0 0", fontWeight: "600", width: "100%", textAlign: "left" }}>
-    ▼ Read More Details
-  </button>
-) : (
-  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-    <div style={{ display: "flex", gap: "8px" }}>
-      <Link href="/login" style={{ flex: 1, textDecoration: "none" }}>
-        <button style={{ width: "100%", padding: "10px", backgroundColor: "#3b82f6", border: "none", borderRadius: "6px", color: "#ffffff", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-          🔐 Account Login
-        </button>
-      </Link>
-      <Link href="/signup" style={{ flex: 1, textDecoration: "none" }}>
-        <button style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#0b1528", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-          📝 New Enrollment
-        </button>
-      </Link>
-    </div>
-    <button onClick={() => toggleExpand("portfolio")} style={{ width: "100%", padding: "8px", background: "transparent", border: "1px solid #334155", borderRadius: "6px", color: "#94a3b8", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>
-      Dismiss Overview Panel
-    </button>
-  </div>
-)}
+      {/* 📋 5. TEASER DRAWER MODULE DETAILS GRID */}
+      <section style={{ maxWidth: "1200px", margin: "40px auto", padding: "0 16px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "20px" }}>
+        
+        {/* SERVICE 01 */}
+        <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", padding: "20px", borderRadius: "10px" }}>
+          <h3 style={{ fontSize: "15px", fontWeight: "700", margin: "0 0 6px 0" }}>📝 Service 01: Diaspora Asset Registry</h3>
+          <p style={{ fontSize: "13px", color: "#475569", margin: "0 0 12px 0" }}>Certify your demographic node within the global network for asset shielding and cooperative registry pools.</p>
+          <button type="button" onClick={() => toggleExpand("assetRegistry")} style={{ background: "transparent", border: "none", color: "#10b981", fontWeight: "bold", cursor: "pointer", padding: 0 }}>
+            {expanded.assetRegistry ? "▲ Collapse View" : "▼ Read More Details"}
+          </button>
+          {expanded.assetRegistry && <div style={{ marginTop: "10px", fontSize: "12px", color: "#64748b", borderTop: "1px dashed #cbd5e1", paddingTop: "8px" }}>Production mapping layers active under sub-Saharan constitutional regulatory frameworks. Rows attach securely to immutable workspace partitions.</div>}
+        </div>
 
-          </div>
-        </section>
+        {/* SERVICE 02 */}
+        <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", padding: "20px", borderRadius: "10px" }}>
+          <h3 style={{ fontSize: "15px", fontWeight: "700", margin: "0 0 6px 0" }}>💳 Service 02: Automated Remittance Tunnels</h3>
+          <p style={{ fontSize: "13px", color: "#475569", margin: "0 0 12px 0" }}>Execute low-cost mobile wallet remittance streams protected by dynamic multi-currency compliance buffers.</p>
+          <button type="button" onClick={() => toggleExpand("remittance")} style={{ background: "transparent", border: "none", color: "#10b981", fontWeight: "bold", cursor: "pointer", padding: 0 }}>
+            {expanded.remittance ? "▲ Collapse View" : "▼ Read More Details"}
+          </button>
+          {expanded.remittance && <div style={{ marginTop: "10px", fontSize: "12px", color: "#64748b", borderTop: "1px dashed #cbd5e1", paddingTop: "8px" }}>Linked directly via production API endpoints using serverless database tracking layers to complete high-yield mobile wallet liquidations.</div>}
+        </div>
 
-        {/* TEASER 05: DEMOGRAPHIC ANALYTICS NODE */}
-        <section style={{ backgroundColor: "#0f172a", padding: "20px", borderRadius: "10px", border: "1px solid #1e293b", display: "flex", flexDirection: "column", justifyContent: "space-between", height: "fit-content" }}>
-          <div>
-            <div style={{ fontSize: "10px", fontFamily: "monospace", color: "#06b6d4", fontWeight: "bold", marginBottom: "4px" }}>[ SERVICE 05 ]</div>
-            <h3 style={{ color: "#ffffff", fontSize: "17px", fontWeight: "bold", marginBottom: "8px" }}>🌐 Demographic Analytics Node</h3>
-            <p style={{ color: "#94a3b8", fontSize: "13px", lineHeight: "1.4", marginBottom: "12px" }}>
-              Map global dispersion metrics, host-country domicile distributions, and regional cooperative density.
-            </p>
+        {/* SERVICE 03 */}
+        <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", padding: "20px", borderRadius: "10px" }}>
+          <h3 style={{ fontSize: "15px", fontWeight: "700", margin: "0 0 6px 0" }}>🎙️ Service 03: Low-Tariff VoIP Trunk</h3>
+          <p style={{ fontSize: "13px", color: "#475569", margin: "0 0 12px 0" }}>Full-duplex voice circuits engineered to bypass high international tariffs over WebRTC communication gateways.</p>
+          <button type="button" onClick={() => toggleExpand("voip")} style={{ background: "transparent", border: "none", color: "#10b981", fontWeight: "bold", cursor: "pointer", padding: 0 }}>
+            {expanded.voip ? "▲ Collapse View" : "▼ Read More Details"}
+          </button>
+          {expanded.voip && <div style={{ marginTop: "10px", fontSize: "12px", color: "#64748b", borderTop: "1px dashed #cbd5e1", paddingTop: "8px" }}>Outbound lines connect securely down custom Twilio termination networks. Real-time billing calculations update Neon balances automatically.</div>}
+        </div>
 
-           {/* EXPANDABLE CORRIDOR DETAILS */}
-{expanded.demographics && (
-  <div style={{ borderTop: "1px solid #1e293b", paddingTop: "10px", marginTop: "10px" }}>
-    <p style={{ color: "#cbd5e1", fontSize: "12px", lineHeight: "1.5", margin: 0 }}>
-      Real-time geographic coordinate plotting and population tracking to optimize strategic resource distribution across international chapters.
-    </p>
-  </div>
-)}
-</div>
+      </section>
 
-{/* TERMINAL CONTROLS */}
-<div style={{ marginTop: "15px" }}>
-{!expanded.demographics ? (
-  <button onClick={() => toggleExpand("demographics")} style={{ background: "none", border: "none", color: "#06b6d4", fontSize: "12px", cursor: "pointer", padding: "8px 0 0 0", fontWeight: "600", width: "100%", textAlign: "left" }}>
-    ▼ Read More Details
-  </button>
-) : (
-  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-    <div style={{ display: "flex", gap: "8px" }}>
-      <Link href="/login" style={{ flex: 1, textDecoration: "none" }}>
-        <button style={{ width: "100%", padding: "10px", backgroundColor: "#3b82f6", border: "none", borderRadius: "6px", color: "#ffffff", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-          🔐 Account Login
-        </button>
-      </Link>
-      <Link href="/signup" style={{ flex: 1, textDecoration: "none" }}>
-        <button style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#0b1528", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-          📝 New Enrollment
-        </button>
-      </Link>
-    </div>
-    <button onClick={() => toggleExpand("demographics")} style={{ width: "100%", padding: "8px", background: "transparent", border: "1px solid #334155", borderRadius: "6px", color: "#94a3b8", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>
-      Dismiss Overview Panel
-    </button>
-  </div>
-)}
-
-          </div>
-        </section>
-
-        {/* TEASER 06: JOB & SKILL MATCHMAKER */}
-        <section style={{ backgroundColor: "#0f172a", padding: "20px", borderRadius: "10px", border: "1px solid #1e293b", display: "flex", flexDirection: "column", justifyContent: "space-between", height: "fit-content" }}>
-          <div>
-            <div style={{ fontSize: "10px", fontFamily: "monospace", color: "#ec4899", fontWeight: "bold", marginBottom: "4px" }}>[ SERVICE 06 ]</div>
-            <h3 style={{ color: "#ffffff", fontSize: "17px", fontWeight: "bold", marginBottom: "8px" }}>💼 Global Job & Skill Matchmaker</h3>
-            <p style={{ color: "#94a3b8", fontSize: "13px", lineHeight: "1.4", marginBottom: "12px" }}>
-              Connect professional diaspora skillsets with domestic enterprise requirements and advisory roles.
-            </p>
-
-           {/* EXPANDABLE CORRIDOR DETAILS */}
-{expanded.jobMatchmaker && (
-  <div style={{ borderTop: "1px solid #1e293b", paddingTop: "10px", marginTop: "10px" }}>
-    <p style={{ color: "#cbd5e1", fontSize: "12px", lineHeight: "1.5", margin: 0 }}>
-      Specialized matching protocol evaluating professional qualifications, certifications, and availability for remote or localized execution.
-    </p>
-  </div>
-)}
-</div>
-
-{/* TERMINAL CONTROLS */}
-<div style={{ marginTop: "15px" }}>
-{!expanded.jobMatchmaker ? (
-  <button onClick={() => toggleExpand("jobMatchmaker")} style={{ background: "none", border: "none", color: "#ec4899", fontSize: "12px", cursor: "pointer", padding: "8px 0 0 0", fontWeight: "600", width: "100%", textAlign: "left" }}>
-    ▼ Read More Details
-  </button>
-) : (
-  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-    <div style={{ display: "flex", gap: "8px" }}>
-      <Link href="/login" style={{ flex: 1, textDecoration: "none" }}>
-        <button style={{ width: "100%", padding: "10px", backgroundColor: "#3b82f6", border: "none", borderRadius: "6px", color: "#ffffff", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-          🔐 Account Login
-        </button>
-      </Link>
-      <Link href="/signup" style={{ flex: 1, textDecoration: "none" }}>
-        <button style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#0b1528", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-          📝 New Enrollment
-        </button>
-      </Link>
-    </div>
-    <button onClick={() => toggleExpand("jobMatchmaker")} style={{ width: "100%", padding: "8px", background: "transparent", border: "1px solid #334155", borderRadius: "6px", color: "#94a3b8", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>
-      Dismiss Overview Panel
-    </button>
-  </div>
-)}
-
-          </div>
-        </section>
-
-      </main>
-
-      <footer style={{ backgroundColor: "#0b1528", textAlign: "center", padding: "20px", color: "#64748b", fontSize: "12px", borderTop: "1px solid #1e293b", maxWidth: "1400px", margin: "40px auto 0 auto" }}>
-        KiKa Global Ventures SE 127 31 Stockholm Staging Infrastructure• NITA-U Secured Framework Compliance © 2026
+      {/* 🧱 6. FOOTER STAGING COMPLIANCE */}
+      <footer style={{ borderTop: "1px solid #e2e8f0", padding: "24px 16px", textAlign: "center", fontSize: "12px", color: "#64748b" }}>
+        KiKa Global Ventures SE 127 31 Stockholm Staging Infrastructure • NITA-U Secured Framework Compliance © 2026
       </footer>
+
     </div>
   );
 }
-

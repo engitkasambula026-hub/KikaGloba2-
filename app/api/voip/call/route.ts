@@ -3,123 +3,69 @@ import { neon } from "@neondatabase/serverless";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { email, action, destinationNumber, CallSid, DialCallDuration, voucherPin } = body;
+    const formData = await request.formData();
+    
+    // Capture data rows straight from Twilio's live status callback headers
+    const callSid = formData.get("CallSid") as string;
+    const durationSecondsStr = formData.get("CallDuration") as string;
+    const destinationNumber = formData.get("To") as string; 
+    const subscriberEmail = formData.get("CustomEmailHeader") as string || "engitkasambula026@gmail.com";
 
-    // Connect securely down your serverless Neon PostgreSQL database trunk pool
+    if (!callSid || !durationSecondsStr || !destinationNumber) {
+      return NextResponse.json({ success: true, message: "Standby Core Operational: Awaiting transactional data string inputs." }, { status: 200 });
+    }
+
+    const durationSeconds = parseInt(durationSecondsStr, 10);
     const sql = neon(process.env.DATABASE_URL || "");
-    const callerId = process.env.TWILIO_NUMBER_CALLER_ID || "+15674065939";
 
-    // 🔐 NODE 01: OUTBOUND CARRIER DIAL ROUTER GATES & DYNAMIC STRING NORMALIZATION
-    if (action === "ROUTE_OUTBOUND_CALL" || action === "TWIML_GATEWAY") {
-      
-      // 🟢 STRIP ALL NON-NUMERIC CHARACTERS COMPLETELY (Removes +, -, spaces, and brackets automatically)
-      const rawDialedInput = destinationNumber || body.To || "";
-      const dialedDigits = rawDialedInput.replace(/\D/g, "").trim();
-      
-      if (!dialedDigits) {
-        return NextResponse.json({ success: false, error: "Validation Error: Target dialing string cannot be empty." }, { status: 400 });
-      }
+    // 1. Identify destination country prefix from raw dialed string digits
+    const cleanedDigits = destinationNumber.replace(/[^0-9]/g, "");
+    let matchedTariff = await sql`
+      SELECT wholesale_rate_usd_min FROM kika_telecom_tariffs 
+      WHERE ${cleanedDigits} LIKE country_prefix || '%' 
+      LIMIT 1
+    `;
 
-      // 🦾 LONGEST PREFIX MATCHING ALGORITHM
-      const prefixPermutations: string[] = [];
-      for (let i = dialedDigits.length; i > 0; i--) {
-        prefixPermutations.push(dialedDigits.substring(0, i));
-      }
+    // Baseline fallback rate ($0.1110 USD/min) if custom rows do not populate
+    const wholesaleUSDPerMinute = matchedTariff.length > 0 ? parseFloat(matchedTariff.wholesale_rate_usd_min) : 0.1110;
+    const wholesaleUSDPerSecond = wholesaleUSDPerMinute / 60;
 
-      // 🛑 FIXED: Multi-line query securely wrapped inside valid backticks (``)
-      const rateMatches = await sql`
-        SELECT prefix_code, country_name, network_operator, retail_rate_ugx_min 
-        FROM kika_global_telecom_tariffs 
-        WHERE prefix_code = ANY(${prefixPermutations})
-        ORDER BY LENGTH(prefix_code) DESC 
-        LIMIT 1
-      `;
+    // 2. Apply current global exchange market multiplier (USD to SEK)
+    const usdToSekExchangeRate = 10.6540; 
 
-      let matchedRateMin = 450.00;
-      let matchedCountry = "International Destination";
+    // 3. APPLY EXPLICIT 35% MARGIN RETAIL MATHEMATICAL FORMULA
+    // Wholesale Cost per second in USD
+    const totalWholesaleUSD = durationSeconds * wholesaleUSDPerSecond;
+    // Base Wholesale Cost translated directly to Swedish Krona (SEK)
+    const wholesaleSEKCost = totalWholesaleUSD * usdToSekExchangeRate;
+    // Add exactly your 35% markup to determine retail value
+    const grossRetailChargeSEK = parseFloat((wholesaleSEKCost * 1.35).toFixed(4));
 
-      if (rateMatches && rateMatches.length > 0) {
-        matchedRateMin = parseFloat(rateMatches[0].retail_rate_ugx_min);
-        matchedCountry = rateMatches[0].country_name;
-      }
+    // 4. ATOMIC LEDGER BALANCING MUTATION SINK
+    // Deduct the exact per-second SEK charge from the subscriber's voucher wallet row
+    await sql`
+      UPDATE kika_user_wallets 
+      SET balance_sek = GREATEST(0.0000, balance_sek - ${grossRetailChargeSEK}), updated_at = NOW() 
+      WHERE email = ${subscriberEmail};
+    `;
 
-      // Serves clean TwiML commands prepended with an explicit plus symbol for public carriers
-      const twimlInstructions = `<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-    <Dial callerId="${callerId}" timeout="30">
-        <Number>+${dialedDigits}</Number>
-    </Dial>
-</Response>`;
+    // Log the transaction securely into your permanent enterprise double-entry audit tables
+    await sql`
+      INSERT INTO kika_cdr_ledger (call_sid, subscriber_email, destination_number, duration_seconds, wholesale_cost_usd, retail_charge_sek, exchange_rate_usd_sek)
+      VALUES (${callSid}, ${subscriberEmail}, ${destinationNumber}, ${durationSeconds}, ${totalWholesaleUSD}, ${grossRetailChargeSEK}, ${usdToSekExchangeRate})
+      ON CONFLICT (call_sid) DO NOTHING;
+    `;
 
-      return new NextResponse(twimlInstructions, {
-        headers: { 
-          "Content-Type": "application/xml",
-          "X-Kika-Country": matchedCountry,
-          "X-Kika-Rate-Min": matchedRateMin.toString()
-        }
-      });
-    }
-
-    // 📝 NODE 02: AUTOMATED PER-SECOND TARIFF WEBHOOK BILLING (Triggered upon call hang-up)
-    if (action === "PROCESS_CALL_COMPLETION_BILLING" || action === "STATUS_CALLBACK") {
-      const callDurationSeconds = parseInt(DialCallDuration || body.CallDuration || "0", 10);
-      const targetPhone = (destinationNumber || body.To || "").replace(/\D/g, "").trim();
-
-      if (!email || !targetPhone || callDurationSeconds <= 0) {
-        return NextResponse.json({ success: true, message: "Call session empty. Calculation loops bypassed." });
-      }
-
-      const prefixPermutations: string[] = [];
-      for (let i = targetPhone.length; i > 0; i--) {
-        prefixPermutations.push(targetPhone.substring(0, i));
-      }
-
-      const rateMatches = await sql`
-        SELECT retail_rate_ugx_sec, country_name FROM kika_global_telecom_tariffs 
-        WHERE prefix_code = ANY(${prefixPermutations})
-        ORDER BY LENGTH(prefix_code) DESC LIMIT 1
-      `;
-
-      const ratePerSecondUGX = rateMatches.length > 0 ? parseFloat(rateMatches[0].retail_rate_ugx_sec) : 7.500000;
-      const totalDeductionUGX = parseFloat((callDurationSeconds * ratePerSecondUGX).toFixed(2));
-
-      await sql`UPDATE kika_diaspora_ledger SET balance = balance - ${totalDeductionUGX} WHERE email = ${email}`;
-      
-      await sql`
-        INSERT INTO kika_commercial_voip_cdr (user_email, destination_number, twilio_call_sid, duration_seconds, total_ugx_debited)
-        VALUES (${email}, ${'+' + targetPhone}, ${CallSid || body.CallSid || "TRUNK-DIAL"}, ${callDurationSeconds}, ${totalDeductionUGX});
-      `;
-      
-      return NextResponse.json({ success: true, durationSeconds: callDurationSeconds, debitedUGX: totalDeductionUGX });
-    }
-
-    // 🎫 NODE 03: VOUCHER REDEMPTION FRAUD-GATE CHECK
-    if (action === "REDEEM_VOUCHER_TOKEN") {
-      if (!email || !voucherPin) {
-        return NextResponse.json({ success: false, error: "Missing identity or voucher PIN token." }, { status: 400 });
-      }
-
-      const voucherRows = await sql`SELECT * FROM kika_recharge_vouchers WHERE voucher_pin = ${voucherPin.trim().toUpperCase()}`;
-      
-      if (!voucherRows || voucherRows.length === 0) {
-        return NextResponse.json({ success: false, error: "The input voucher code does not exist in the registry." }, { status: 404 });
-      }
-
-      const card = voucherRows[0];
-      if (card.is_redeemed) {
-        return NextResponse.json({ success: false, error: "This voucher token has already been consumed." }, { status: 400 });
-      }
-
-      const creditUGX = parseFloat(card.face_value_ugx);
-      await sql`UPDATE kika_recharge_vouchers SET is_redeemed = TRUE, redeemed_by_user = ${email}, redeemed_at = NOW() WHERE voucher_pin = ${card.voucher_pin}`;
-      await sql`UPDATE kika_diaspora_ledger SET balance = balance + ${creditUGX} WHERE email = ${email}`;
-
-      return NextResponse.json({ success: true, message: `Loaded UGX ${creditUGX.toLocaleString()} Airtime Credits.` });
-    }
-
-    return NextResponse.json({ success: false, error: "Action switch corridor unmapped." }, { status: 404 });
-  } catch (globalErr: any) {
-    return NextResponse.json({ success: false, error: globalErr.message }, { status: 500 });
+    return NextResponse.json({
+      success: true,
+      callSid,
+      durationSeconds,
+      wholesaleUSD: totalWholesaleUSD.toFixed(4),
+      retailDeductedSEK: grossRetailChargeSEK.toFixed(4),
+      exchangeRateApplied: usdToSekExchangeRate
+    });
+  } catch (err: any) {
+    console.error("Billing Engine Exception Error: ", err.message);
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }

@@ -334,6 +334,31 @@ return (
   </div>
 )}
 </div>
+              {/* SWEDISH KRONA VOUCHER REDEMPTION COMPONENT */}
+              <div style={{ marginTop: "24px", paddingTop: "20px", borderTop: "2px dashed #e2e8f0" }}>
+                <h4 style={{ margin: "0 0 6px 0", fontSize: "14px", color: "#0f172a" }}>🎫 KiKa Airtime Voucher Matrix (SEK Core)</h4>
+                <p style={{ margin: "0 0 12px 0", fontSize: "12px", color: "#64748b" }}>Redeem official SEK vouchers instantly to capitalize your per-second calling wallet balance.</p>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <input type="text" placeholder="Enter alphanumeric SEK code token (e.g. KIKA-SEK-TOPUP-100K)" id="sekVoucherField" style={{ padding: "10px", border: "1px solid #cbd5e1", borderRadius: "6px", flex: 1, fontSize: "12px", color: "#0f172a" }} />
+                  <button type="button" onClick={async () => {
+                    const codeVal = (document.getElementById("sekVoucherField") as HTMLInputElement).value;
+                    if(!codeVal) return alert("❌ Input code string is empty.");
+                    const response = await fetch("/api/voip/voucher", {
+                      method: "POST",
+                      headers: {"Content-Type": "application/json"},
+                      body: JSON.stringify({ email: regEmail || "engitkasambula026@gmail.com", voucherCode: codeVal })
+                    });
+                    const resData = await response.json();
+                    if(resData.success) {
+                      alert(resData.message);
+                      setDbStatusText(`✨ WALLET CREDIT ACTIVE: Balance updated on rows.`);
+                    } else {
+                      alert(`❌ Redemption Blocked: ${resData.error}`);
+                    }
+                  }} style={{ padding: "10px 16px", background: "#10b981", color: "#ffffff", border: "none", borderRadius: "6px", fontSize: "12px", fontWeight: "bold", cursor: "pointer" }}>Redeem SEK</button>
+                </div>
+              </div>
+
 
 {/* TERMINAL CONTROLS */}
 <div style={{ marginTop: "15px" }}>

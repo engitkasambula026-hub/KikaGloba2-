@@ -388,7 +388,7 @@ return (
 
           </div>
         </section>
-        {/* TEASER 04: PORTFOLIO & INVESTMENT HUB */}
+         {/* TEASER 04: PORTFOLIO & INVESTMENT HUB */}
         <section style={{ backgroundColor: "#0f172a", padding: "20px", borderRadius: "10px", border: "1px solid #1e293b", display: "flex", flexDirection: "column", justifyContent: "space-between", height: "fit-content" }}>
           <div>
             <div style={{ fontSize: "10px", fontFamily: "monospace", color: "#a855f7", fontWeight: "bold", marginBottom: "4px" }}>[ SERVICE 04 ]</div>
@@ -398,43 +398,104 @@ return (
             </p>
 
             {/* EXPANDABLE CORRIDOR DETAILS */}
-{expanded.portfolio && (
-  <div style={{ borderTop: "1px solid #1e293b", paddingTop: "10px", marginTop: "10px" }}>
-    <p style={{ color: "#cbd5e1", fontSize: "12px", lineHeight: "1.5", margin: 0 }}>
-      Automated performance metrics tracking pooled capital distributions and individual cooperative dividend allocations securely.
-    </p>
-  </div>
-)}
-</div>
+            {expanded.portfolio && (
+              <div style={{ borderTop: "1px solid #1e293b", paddingTop: "10px", marginTop: "10px" }}>
+                <p style={{ color: "#cbd5e1", fontSize: "12px", lineHeight: "1.5", margin: "0 0 12px 0" }}>
+                  Automated performance metrics tracking pooled capital distributions and individual cooperative dividend allocations securely.
+                </p>
 
-{/* TERMINAL CONTROLS */}
-<div style={{ marginTop: "15px" }}>
-{!expanded.portfolio ? (
-  <button onClick={() => toggleExpand("portfolio")} style={{ background: "none", border: "none", color: "#a855f7", fontSize: "12px", cursor: "pointer", padding: "8px 0 0 0", fontWeight: "600", width: "100%", textAlign: "left" }}>
-    ▼ Read More Details
-  </button>
-) : (
-  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-    <div style={{ display: "flex", gap: "8px" }}>
-      <Link href="/login" style={{ flex: 1, textDecoration: "none" }}>
-        <button style={{ width: "100%", padding: "10px", backgroundColor: "#3b82f6", border: "none", borderRadius: "6px", color: "#ffffff", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-          🔐 Account Login
-        </button>
-      </Link>
-      <Link href="/signup" style={{ flex: 1, textDecoration: "none" }}>
-        <button style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#0b1528", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-          📝 New Enrollment
-        </button>
-      </Link>
-    </div>
-    <button onClick={() => toggleExpand("portfolio")} style={{ width: "100%", padding: "8px", background: "transparent", border: "1px solid #334155", borderRadius: "6px", color: "#94a3b8", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>
-      Dismiss Overview Panel
-    </button>
-  </div>
-)}
+                {/* REAL-TIME INVESTMENT TICKER & BIDDING SYSTEM */}
+                <div style={{ padding: "16px", background: "#1e293b", borderRadius: "8px", marginTop: "12px", border: "1px solid #334155" }}>
+                  <h4 style={{ margin: "0 0 8px 0", fontSize: "13px", color: "#ffffff", fontWeight: "bold" }}>📊 Live Diaspora Capital Markets Ticker</h4>
+                  <div style={{ display: "flex", gap: "12px", marginBottom: "12px" }}>
+                    <div style={{ flex: 1, padding: "10px", background: "#0f172a", borderRadius: "6px", border: "1px solid #334155" }}>
+                      <span style={{ fontSize: "11px", fontWeight: "bold", color: "#94a3b8" }}>KIKA-SACCO-BOND</span>
+                      <div style={{ fontSize: "15px", fontWeight: "bold", color: "#10b981", marginTop: "2px" }}>150.25 SEK <span style={{ fontSize: "10px", fontWeight: "normal" }}>(+8.5%)</span></div>
+                    </div>
+                    <div style={{ flex: 1, padding: "10px", background: "#0f172a", borderRadius: "6px", border: "1px solid #334155" }}>
+                      <span style={{ fontSize: "11px", fontWeight: "bold", color: "#94a3b8" }}>UGX-MTN-EQUITY</span>
+                      <div style={{ fontSize: "15px", fontWeight: "bold", color: "#10b981", marginTop: "2px" }}>1.85 SEK <span style={{ fontSize: "10px", fontWeight: "normal" }}>(+12.0%)</span></div>
+                    </div>
+                  </div>
+                  
+                  {/* INTERACTIVE BID SUBMISSION INPUT ROW */}
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <select id="tickerSelectorField" style={{ padding: "8px", borderRadius: "6px", border: "1px solid #475569", backgroundColor: "#0f172a", color: "#ffffff", fontSize: "12px" }}>
+                      <option value="KIKA-SACCO-BOND">KIKA-SACCO-BOND</option>
+                      <option value="UGX-MTN-EQUITY">UGX-MTN-EQUITY</option>
+                    </select>
+                    <input type="number" id="sharesQtyField" placeholder="Qty (e.g. 10)" style={{ padding: "8px", borderRadius: "6px", border: "1px solid #475569", backgroundColor: "#0f172a", color: "#ffffff", fontSize: "12px", width: "100px" }} />
+                    <button type="button" onClick={async () => {
+                      const ticker = (document.getElementById("tickerSelectorField") as HTMLSelectElement).value;
+                      const qty = (document.getElementById("sharesQtyField") as HTMLInputElement).value;
+                      if(!qty) return alert("❌ Specify quantities.");
+                      const res = await fetch("/api/finance/ticker", {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify({ email: typeof regEmail !== 'undefined' ? regEmail : "engitkasambula026@gmail.com", tickerSymbol: ticker, sharesQuantity: qty, offeredPrice: ticker === "KIKA-SACCO-BOND" ? 150.25 : 1.85 })
+                      });
+                      const data = await res.json();
+                      alert(data.success ? data.message : `❌ Order Blocked: ${data.error}`);
+                    }} style={{ padding: "8px 12px", background: "#a855f7", color: "#ffffff", border: "none", borderRadius: "6px", fontSize: "12px", fontWeight: "bold", cursor: "pointer" }}>Bid</button>
+                  </div>
+                </div>
 
+                {/* AUTOMATED MOBILE MONEY REMITTANCE TUNNEL SYSTEM */}
+                <div style={{ padding: "16px", background: "#064e3b", borderRadius: "8px", marginTop: "16px", border: "1px solid #065f46" }}>
+                  <h4 style={{ margin: "0 0 4px 0", fontSize: "13px", color: "#34d399", fontWeight: "bold" }}>💳 Automated Diaspora Remittance Tunnel</h4>
+                  <p style={{ margin: "0 0 12px 0", fontSize: "11px", color: "#a7f3d0" }}>Instant sub-second mobile money payouts to MTN & Airtel networks mapped to SEK wallet balances.</p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <input type="text" id="remitRecipientPhone" placeholder="Recipient Phone (e.g. +256785529623)" style={{ padding: "10px", borderRadius: "6px", border: "1px solid #047857", backgroundColor: "#022c22", color: "#ffffff", fontSize: "12px" }} />
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <input type="number" id="remitAmountSEK" placeholder="Amount in SEK (e.g. 200)" style={{ padding: "10px", borderRadius: "6px", border: "1px solid #047857", backgroundColor: "#022c22", color: "#ffffff", fontSize: "12px", flex: 1 }} />
+                      <button type="button" onClick={async () => {
+                        const phone = (document.getElementById("remitRecipientPhone") as HTMLInputElement).value;
+                        const amt = (document.getElementById("remitAmountSEK") as HTMLInputElement).value;
+                        if(!phone || !amt) return alert("❌ Fields cannot be empty.");
+                        const res = await fetch("/api/finance/remit", {
+                          method: "POST",
+                          headers: {"Content-Type": "application/json"},
+                          body: JSON.stringify({ email: typeof regEmail !== 'undefined' ? regEmail : "engitkasambula026@gmail.com", recipientPhone: phone, amountSek: amt })
+                        });
+                        const data = await res.json();
+                        alert(data.success ? data.message : `❌ Remittance Failed: ${data.error}`);
+                      }} style={{ padding: "10px 14px", background: "#10b981", color: "#000000", border: "none", borderRadius: "6px", fontSize: "12px", fontWeight: "bold", cursor: "pointer" }}>Fire Tunnel</button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            )}
+          </div>
+
+          {/* TERMINAL CONTROLS */}
+          <div style={{ marginTop: "15px" }}>
+            {!expanded.portfolio ? (
+              <button onClick={() => toggleExpand("portfolio")} style={{ background: "none", border: "none", color: "#a855f7", fontSize: "12px", cursor: "pointer", padding: "8px 0 0 0", fontWeight: "600", width: "100%", textAlign: "left" }}>
+                ▼ Read More Details
+              </button>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <Link href="/login" style={{ flex: 1, textDecoration: "none" }}>
+                    <button style={{ width: "100%", padding: "10px", backgroundColor: "#3b82f6", border: "none", borderRadius: "6px", color: "#ffffff", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
+                      🔐 Account Login
+                    </button>
+                  </Link>
+                  <Link href="/signup" style={{ flex: 1, textDecoration: "none" }}>
+                    <button style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#0b1528", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
+                      📝 New Enrollment
+                    </button>
+                  </Link>
+                </div>
+                <button onClick={() => toggleExpand("portfolio")} style={{ width: "100%", padding: "8px", background: "transparent", border: "1px solid #334155", borderRadius: "6px", color: "#94a3b8", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>
+                  Dismiss Overview Panel
+                </button>
+              </div>
+            )}
           </div>
         </section>
+
 
         {/* TEASER 05: DEMOGRAPHIC ANALYTICS NODE */}
         <section style={{ backgroundColor: "#0f172a", padding: "20px", borderRadius: "10px", border: "1px solid #1e293b", display: "flex", flexDirection: "column", justifyContent: "space-between", height: "fit-content" }}>

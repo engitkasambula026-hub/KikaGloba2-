@@ -44,6 +44,25 @@ export default function AdminConsoleDashboard() {
   // Compute key account volume metrics dynamically
   const totalAccounts = members.length;
   const pendingClearance = members.filter(m => m.account_status === "PENDING_ADMIN_APPROVAL").length;
+  // Add this block inside your component right before the return statement:
+  const [adminEmail, setAdminEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Pull the active email from local browser session memory slots
+    const storedEmail = localStorage.getItem("kika_user_email") || sessionStorage.getItem("kika_user_email");
+    setAdminEmail(storedEmail);
+  }, []);
+
+  // Hard governance lock check
+  if (adminEmail !== "engitkasambula026@gmail.com") {
+    return (
+      <div style={{ padding: "50px", backgroundColor: "#0f172a", color: "#ffffff", height: "100vh", textAlign: "center", fontFamily: "sans-serif" }}>
+        <h2 style={{ color: "#ef4444" }}>🛑 ACCESS DENIED: Security Exception</h2>
+        <p style={{ color: "#94a3b8" }}>Your digital signature does not possess Super-Admin governance permissions for the KiKa Core Matrix.</p>
+        <a href="/" style={{ color: "#38bdf8", fontWeight: "bold", textDecoration: "none" }}>← Return to Public Corridor</a>
+      </div>
+    );
+  }
 
   return (
     <div style={{ backgroundColor: "#0f172a", minHeight: "100vh", padding: "30px", color: "#ffffff", fontFamily: "sans-serif" }}>

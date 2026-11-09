@@ -316,7 +316,7 @@ return (
           </div>
         </section>
 
-        {/* TEASER 03: VOIP TRUNK */}
+               {/* TEASER 03: VOIP TRUNK */}
         <section style={{ backgroundColor: "#0f172a", padding: "20px", borderRadius: "10px", border: "1px solid #1e293b", display: "flex", flexDirection: "column", justifyContent: "space-between", height: "fit-content" }}>
           <div>
             <div style={{ fontSize: "10px", fontFamily: "monospace", color: "#f59e0b", fontWeight: "bold", marginBottom: "4px" }}>[ SERVICE 03 ]</div>
@@ -326,68 +326,125 @@ return (
             </p>
 
             {/* EXPANDABLE CORRIDOR DETAILS */}
-{expanded.voip && (
-  <div style={{ borderTop: "1px solid #1e293b", paddingTop: "10px", marginTop: "10px" }}>
-    <p style={{ color: "#cbd5e1", fontSize: "12px", lineHeight: "1.5", marginBottom: "10px" }}>
-      Direct voice channels optimized for crystal-clear audio quality even over low-bandwidth cellular corridors across rural and urban centers.
-    </p>
-  </div>
-)}
-</div>
-              {/* SWEDISH KRONA VOUCHER REDEMPTION COMPONENT */}
-              <div style={{ marginTop: "24px", paddingTop: "20px", borderTop: "2px dashed #e2e8f0" }}>
-                <h4 style={{ margin: "0 0 6px 0", fontSize: "14px", color: "#0f172a" }}>🎫 KiKa Airtime Voucher Matrix (SEK Core)</h4>
-                <p style={{ margin: "0 0 12px 0", fontSize: "12px", color: "#64748b" }}>Redeem official SEK vouchers instantly to capitalize your per-second calling wallet balance.</p>
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <input type="text" placeholder="Enter alphanumeric SEK code token (e.g. KIKA-SEK-TOPUP-100K)" id="sekVoucherField" style={{ padding: "10px", border: "1px solid #cbd5e1", borderRadius: "6px", flex: 1, fontSize: "12px", color: "#0f172a" }} />
-                  <button type="button" onClick={async () => {
-                    const codeVal = (document.getElementById("sekVoucherField") as HTMLInputElement).value;
-                    if(!codeVal) return alert("❌ Input code string is empty.");
-                    const response = await fetch("/api/voip/voucher", {
-                      method: "POST",
-                      headers: {"Content-Type": "application/json"},
-                      body: JSON.stringify({ email: regEmail || "engitkasambula026@gmail.com", voucherCode: codeVal })
-                    });
-                    const resData = await response.json();
-                    if(resData.success) {
-                      alert(resData.message);
-                      setDbStatusText(`✨ WALLET CREDIT ACTIVE: Balance updated on rows.`);
-                    } else {
-                      alert(`❌ Redemption Blocked: ${resData.error}`);
-                    }
-                  }} style={{ padding: "10px 16px", background: "#10b981", color: "#ffffff", border: "none", borderRadius: "6px", fontSize: "12px", fontWeight: "bold", cursor: "pointer" }}>Redeem SEK</button>
+            {expanded.voip && (
+              <div style={{ borderTop: "1px solid #1e293b", paddingTop: "10px", marginTop: "10px" }}>
+                <p style={{ color: "#cbd5e1", fontSize: "12px", lineHeight: "1.5", marginBottom: "10px" }}>
+                  Direct voice channels optimized for crystal-clear audio quality even over low-bandwidth cellular corridors across rural and urban centers.
+                </p>
+
+                {/* SWEDISH KRONA VOUCHER REDEMPTION COMPONENT */}
+                <div style={{ marginTop: "24px", paddingTop: "20px", borderTop: "2px dashed #334155" }}>
+                  <h4 style={{ margin: "0 0 6px 0", fontSize: "14px", color: "#ffffff", fontWeight: "bold" }}>🎫 KiKa Airtime Voucher Matrix (SEK Core)</h4>
+                  <p style={{ margin: "0 0 12px 0", fontSize: "12px", color: "#94a3b8" }}>Redeem official SEK vouchers instantly to capitalize your per-second calling wallet balance.</p>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <input type="text" placeholder="Enter alphanumeric SEK code token" id="sekVoucherField" style={{ padding: "10px", border: "1px solid #475569", backgroundColor: "#0f172a", borderRadius: "6px", flex: 1, fontSize: "12px", color: "#ffffff" }} />
+                    <button type="button" onClick={async () => {
+                      const codeVal = (document.getElementById("sekVoucherField") as HTMLInputElement).value;
+                      if(!codeVal) return alert("❌ Input code string is empty.");
+                      const response = await fetch("/api/voip/voucher", {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify({ email: typeof regEmail !== 'undefined' ? regEmail : "engitkasambula026@gmail.com", voucherCode: codeVal })
+                      });
+                      const resData = await response.json();
+                      if(resData.success) {
+                        alert(resData.message);
+                        if (typeof setDbStatusText !== 'undefined') setDbStatusText(`✨ WALLET CREDIT ACTIVE: Balance updated on rows.`);
+                      } else {
+                        alert(`❌ Redemption Blocked: ${resData.error}`);
+                      }
+                    }} style={{ padding: "10px 16px", background: "#10b981", color: "#0b1528", border: "none", borderRadius: "6px", fontSize: "12px", fontWeight: "bold", cursor: "pointer" }}>Redeem SEK</button>
+                  </div>
                 </div>
+
+                {/* INTERACTIVE SACCO COOPERATIVE CONSOLE */}
+                <div style={{ padding: "20px", backgroundColor: "#1e293b", borderRadius: "8px", marginTop: "20px", border: "1px solid #334155" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
+                    <div>
+                      <span style={{ fontSize: "11px", fontWeight: "bold", color: "#94a3b8", textTransform: "uppercase" }}>Member Registry Asset Matrix</span>
+                      <h4 style={{ margin: "2px 0 0 0", color: "#ffffff", fontSize: "15px" }}>Adam Thabit Kasambula</h4>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <span style={{ fontSize: "10px", padding: "3px 8px", backgroundColor: "#064e3b", color: "#34d399", borderRadius: "12px", fontWeight: "bold" }}>🟢 VERIFIED ACCRUAL</span>
+                    </div>
+                  </div>
+
+                  {/* ACCOUNT METRICS BLOCKS */}
+                  <div style={{ display: "flex", gap: "12px", marginBottom: "16px" }}>
+                    <div style={{ flex: 1, padding: "12px", backgroundColor: "#0f172a", borderRadius: "6px", border: "1px solid #334155" }}>
+                      <div style={{ fontSize: "11px", color: "#94a3b8" }}>Savings Pool Balance</div>
+                      <div style={{ fontSize: "18px", fontWeight: "bold", color: "#ffffff", marginTop: "4px" }}>5,000.00 <span style={{ fontSize: "12px", color: "#a855f7" }}>SEK</span></div>
+                    </div>
+                    <div style={{ flex: 1, padding: "12px", backgroundColor: "#0f172a", borderRadius: "6px", border: "1px solid #334155" }}>
+                      <div style={{ fontSize: "11px", color: "#94a3b8" }}>Underwriting Score</div>
+                      <div style={{ fontSize: "18px", fontWeight: "bold", color: "#3b82f6", marginTop: "4px" }}>720 <span style={{ fontSize: "11px", color: "#94a3b8", fontWeight: "normal" }}>/ 850</span></div>
+                    </div>
+                  </div>
+
+                  {/* INTERACTIVE BANKING ACTIONS PANELS */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <input type="number" id="saccoAmountInputSlot" placeholder="Enter SEK Amount" style={{ flex: 1, padding: "10px", borderRadius: "6px", border: "1px solid #475569", backgroundColor: "#0f172a", color: "#ffffff", fontSize: "13px" }} />
+                      <select id="saccoActionTypeSelector" style={{ padding: "10px", borderRadius: "6px", border: "1px solid #475569", backgroundColor: "#0f172a", color: "#ffffff", fontSize: "13px" }}>
+                        <option value="DEPOSIT">📥 Quick Deposit</option>
+                        <option value="WITHDRAWAL">📤 Fund Withdrawal</option>
+                      </select>
+                    </div>
+                    <button type="button" onClick={async () => {
+                      const amt = (document.getElementById("saccoAmountInputSlot") as HTMLInputElement).value;
+                      const type = (document.getElementById("saccoActionTypeSelector") as HTMLSelectElement).value;
+                      if(!amt || parseFloat(amt) <= 0) return alert("❌ Input a valid capital amount.");
+                      
+                      const response = await fetch("/api/sacco/engine", {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify({ email: "engitkasambula026@gmail.com", actionType: type, transactionAmountSEK: amt })
+                      });
+                      const result = await response.json();
+                      if(result.success) {
+                        alert(`✅ Transaction Settled!\nReference: ${result.reference}\nNew Balance: ${result.updatedBalanceSEK} SEK\nNew Credit Score: ${result.updatedCreditScore}`);
+                        window.location.reload();
+                      } else {
+                        alert(`❌ Core Transaction Rejected: ${result.error}`);
+                      }
+                    }} style={{ width: "100%", padding: "12px", backgroundColor: "#a855f7", color: "#ffffff", border: "none", borderRadius: "6px", fontWeight: "bold", fontSize: "13px", cursor: "pointer" }}>
+                      Commit Action to Cooperative Ledger
+                    </button>
+                  </div>
+                </div>
+
               </div>
+            )}
+          </div>
 
-
-{/* TERMINAL CONTROLS */}
-<div style={{ marginTop: "15px" }}>
-{!expanded.voip ? (
-  <button onClick={() => toggleExpand("voip")} style={{ background: "none", border: "none", color: "#f59e0b", fontSize: "12px", cursor: "pointer", padding: "8px 0 0 0", fontWeight: "600", width: "100%", textAlign: "left" }}>
-    ▼ Read More Details
-  </button>
-) : (
-  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-    <div style={{ display: "flex", gap: "8px" }}>
-      <Link href="/login" style={{ flex: 1, textDecoration: "none" }}>
-        <button style={{ width: "100%", padding: "10px", backgroundColor: "#3b82f6", border: "none", borderRadius: "6px", color: "#ffffff", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-          🔐 Account Login
-        </button>
-      </Link>
-      <Link href="/signup" style={{ flex: 1, textDecoration: "none" }}>
-        <button style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#0b1528", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
-          📝 New Enrollment
-        </button>
-      </Link>
-    </div>
-    <button onClick={() => toggleExpand("voip")} style={{ width: "100%", padding: "8px", background: "transparent", border: "1px solid #334155", borderRadius: "6px", color: "#94a3b8", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>
-      Dismiss Overview Panel
-    </button>
-  </div>
-)}
-
+          {/* TERMINAL CONTROLS */}
+          <div style={{ marginTop: "15px" }}>
+            {!expanded.voip ? (
+              <button onClick={() => toggleExpand("voip")} style={{ background: "none", border: "none", color: "#f59e0b", fontSize: "12px", cursor: "pointer", padding: "8px 0 0 0", fontWeight: "600", width: "100%", textAlign: "left" }}>
+                ▼ Read More Details
+              </button>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <Link href="/login" style={{ flex: 1, textDecoration: "none" }}>
+                    <button style={{ width: "100%", padding: "10px", backgroundColor: "#3b82f6", border: "none", borderRadius: "6px", color: "#ffffff", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
+                      🔐 Account Login
+                    </button>
+                  </Link>
+                  <Link href="/signup" style={{ flex: 1, textDecoration: "none" }}>
+                    <button style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", border: "none", borderRadius: "6px", color: "#0b1528", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}>
+                      📝 New Enrollment
+                    </button>
+                  </Link>
+                </div>
+                <button onClick={() => toggleExpand("voip")} style={{ width: "100%", padding: "8px", background: "transparent", border: "1px solid #334155", borderRadius: "6px", color: "#94a3b8", fontSize: "12px", cursor: "pointer", fontWeight: "600" }}>
+                  Dismiss Overview Panel
+                </button>
+              </div>
+            )}
           </div>
         </section>
+
          {/* TEASER 04: PORTFOLIO & INVESTMENT HUB */}
         <section style={{ backgroundColor: "#0f172a", padding: "20px", borderRadius: "10px", border: "1px solid #1e293b", display: "flex", flexDirection: "column", justifyContent: "space-between", height: "fit-content" }}>
           <div>

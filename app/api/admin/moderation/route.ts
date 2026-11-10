@@ -8,12 +8,22 @@ const resend = new Resend(process.env.RESEND_API_KEY || "re_dummy");
 export async function GET() {
   try {
     const sql = neon(process.env.DATABASE_URL || "");
+    
+    // Pull full user listing rows matching active dashboard states
     const members = await sql`
       SELECT member_id, full_name, email, savings_balance_sek, credit_underwriting_score, account_status, last_login_at 
       FROM sacco_members 
       ORDER BY joined_at DESC;
     `;
-    const logs = await sql`SELECT * FROM kika_access_logs ORDER BY timestamp DESC LIMIT 15;`;
+    
+    // Pull advanced telemetry logs including device and browser footprints
+    const logs = await sql`
+      SELECT log_id, user_email, event_type, ip_address, platform_browser, device_type, timestamp 
+      FROM kika_access_logs 
+      ORDER BY timestamp DESC 
+      LIMIT 25;
+    `;
+    
     return NextResponse.json({ success: true, members, logs });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
@@ -36,7 +46,7 @@ export async function POST(request: Request) {
       WHERE email = ${targetEmail};
     `;
 
-    // Append log event tracking the administrative action
+    // Append log event tracking the administrative action into the ledger
     await sql`
       INSERT INTO kika_access_logs (user_email, event_type, ip_address, user_agent)
       VALUES (${targetEmail}, ${`ADMIN_STATUS_${newStatus}`}, '127.0.0.1', 'KiKa Governance Engine');

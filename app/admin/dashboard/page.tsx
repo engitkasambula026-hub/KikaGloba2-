@@ -7,21 +7,29 @@ export default function AdminConsoleDashboard() {
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState<boolean | null>(null);
 
-  useEffect(() => {
+   useEffect(() => {
     async function verifyAndFetchEcosystemMetrics() {
       try {
-        const res = await fetch("/api/admin/moderation");
+        // 1. Verify active browser session belongs strictly to Super-Admin
+        const storedEmail =
+          typeof window !== "undefined"
+            ? (localStorage.getItem("kika_user_email") || sessionStorage.getItem("kika_user_email") || "").toLowerCase().trim()
+            : "";
+
+        if (storedEmail !== "engitkasambula026@gmail.com") {
+          setAuthorized(false);
+          setLoading(false);
+          return;
+        }
+
+        // 2. Fetch telemetry payload protected by server-side cookie check
+        const res = await fetch("/api/admin/moderation", { credentials: "include" });
         const data = await res.json();
-        if (data.success) {
-          const activeSessions = data.members || [];
-          const adminProfile = activeSessions.find((m: any) => m.email === "engitkasambula026@gmail.com");
-          if (adminProfile && adminProfile.account_status === "ACTIVE") {
-            setMembers(data.members);
-            setLogs(data.logs || []);
-            setAuthorized(true);
-          } else {
-            setAuthorized(false);
-          }
+
+        if (res.ok && data.success) {
+          setMembers(data.members || []);
+          setLogs(data.logs || []);
+          setAuthorized(true);
         } else {
           setAuthorized(false);
         }
@@ -32,6 +40,7 @@ export default function AdminConsoleDashboard() {
         setLoading(false);
       }
     }
+
     verifyAndFetchEcosystemMetrics();
   }, []);
 

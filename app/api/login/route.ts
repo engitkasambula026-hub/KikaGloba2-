@@ -1,44 +1,131 @@
 import { NextResponse } from "next/server";
-import { sql } from "@/lib/db"; // 🟢 CORRECT FIX: Imports 'sql' natively matching your library configuration
+import { neon } from "@neondatabase/serverless";
+import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { email, password } = body;
+    const { email, password } = await request.json();
 
     if (!email || !password) {
-      return NextResponse.json({ success: false, error: "Credentials missing" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "Email and password are required." },
+        { status: 400 }
+      );
     }
 
-    // 🛡️ DIRECT SECURE NEON SQL CREDENTIAL VERIFICATION LOOKUP LOOP
-    const users = await sql`
-      SELECT * FROM kika_diaspora_ledger WHERE email = ${email} LIMIT 1;
+    const sql = neon(process.env.DATABASE_URL || "");
+    const cleanEmail = email.toLowerCase().trim();
+    const forwardedHeader = request.headers.get("x-forwarded-for");
+    const incomingIP = forwardedHeader ? forwardedHeader.split(",")[0].trim() : "0.0.0.0";
+    const userAgent = request.headers.get("user-agent") || "Unknown Browser";
+    const deviceType = /mobile/i.test(userAgent) ? "Mobile" : "Desktop";
+
+    // 1. Check Admin Control Center approval status first
+    const memberCheck = await sql`
+      SELECT full_name, account_status FROM sacco_members
+      WHERE LOWER(TRIM(email)) = ${cleanEmail}
+      LIMIT 1;
     `;
 
-    if (!users || users.length === 0) {
-      return NextResponse.json({ success: false, error: "Invalid identity credentials logged." }, { status: 200 });
+    const memberRow = memberCheck[0];
+
+    if (memberRow && memberRow.account_status !== "ACTIVE") {
+      await sql`
+        INSERT INTO kika_access_logs (user_email, event_type, ip_address, platform_browser, device_type)
+        VALUES (${cleanEmail}, 'LOGIN_BLOCKED_UNAPPROVED', ${incomingIP}, ${userAgent.slice(0, 140)}, ${deviceType});
+      `;
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Access Restricted: Your account status is ${memberRow.account_status}. Please wait for Admin approval.`
+        },
+        { status: 403 }
+      );
     }
 
-    const user = users[0];
+    // 2. Look up password hash across BOTH primary registration tables (users + kika_diaspora_ledger)
+    let storedHash: string | null = null;
+    let resolvedName: string = memberRow?.full_name || "KiKa Member";
 
-    // 🔑 BASIC PASS AUTHENTICATOR (HOOKED UP STABLE TO YOUR REGISTER SCHEMA)
-    if (user.password !== password) {
-      return NextResponse.json({ success: false, error: "Invalid identity credentials logged." }, { status: 200 });
+    try {
+      const usersRows = await sql`
+        SELECT full_name, password_hash FROM users
+        WHERE LOWER(TRIM(email)) = ${cleanEmail}
+        LIMIT 1;
+      `;
+      const userRow = usersRows[0];
+      if (userRow && userRow.password_hash) {
+        storedHash = userRow.password_hash;
+        resolvedName = userRow.full_name || resolvedName;
+      }
+    } catch (_) {}
+
+    if (!storedHash) {
+      try {
+               const ledgerRows = await sql`
+          SELECT name AS full_name, password AS password_hash FROM kika_diaspora_ledger
+          WHERE LOWER(TRIM(email)) = ${cleanEmail}
+          LIMIT 1;
+        `;
+
+        const ledgerRow = ledgerRows[0];
+        if (ledgerRow && ledgerRow.password_hash) {
+          storedHash = ledgerRow.password_hash;
+          resolvedName = ledgerRow.full_name || resolvedName;
+        }
+      } catch (_) {}
     }
+
+    // 3. Validate password against bcrypt, SHA-256, or direct hash match
+    let isPasswordValid = false;
+    if (storedHash) {
+      if (storedHash.startsWith("$2a$") || storedHash.startsWith("$2b$") || storedHash.startsWith("$2y$")) {
+        isPasswordValid = await bcrypt.compare(password, storedHash);
+      } else {
+        const sha256Hash = crypto.createHash("sha256").update(password).digest("hex");
+        isPasswordValid = storedHash === sha256Hash || storedHash === password;
+      }
+    }
+
+    if (!isPasswordValid) {
+      await sql`
+        INSERT INTO kika_access_logs (user_email, event_type, ip_address, platform_browser, device_type)
+        VALUES (${cleanEmail}, 'LOGIN_FAILED', ${incomingIP}, ${userAgent.slice(0, 140)}, ${deviceType});
+      `;
+
+      return NextResponse.json(
+        { success: false, error: "Invalid email or password credentials." },
+        { status: 401 }
+      );
+    }
+
+    // 4. Update last login timestamp and record successful login
+    await sql`
+      UPDATE sacco_members
+      SET last_login_at = NOW()
+      WHERE LOWER(TRIM(email)) = ${cleanEmail};
+    `;
+
+    await sql`
+      INSERT INTO kika_access_logs (user_email, event_type, ip_address, platform_browser, device_type)
+      VALUES (${cleanEmail}, 'LOGIN_SUCCESS', ${incomingIP}, ${userAgent.slice(0, 140)}, ${deviceType});
+    `;
 
     return NextResponse.json({
       success: true,
-      message: "Authorization node session verified successfully.",
+      message: "Authentication successful.",
       user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        country: user.country
+        email: cleanEmail,
+        fullName: resolvedName,
+        role: cleanEmail === "engitkasambula026@gmail.com" ? "SUPER_ADMIN" : "MEMBER"
       }
-    }, { status: 200 });
-
-  } catch (error: any) {
-    console.error("Login API Exception Intercepted: ", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    });
+  } catch (err: any) {
+    return NextResponse.json(
+      { success: false, error: err.message || "Authentication server error." },
+      { status: 500 }
+    );
   }
 }

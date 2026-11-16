@@ -13,12 +13,13 @@ export default function SignupPage() {
     profession: "", saccoName: "",
     phoneNumber: "", countryCode: "+256", physicalAddress: "", postalCode: ""
   });
-
+  
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const router = useRouter();
 
-const syncGps = () => {
+  const syncGps = () => {
     if (typeof window !== "undefined" && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((pos) => {
         const coords = `${pos.coords.latitude},${pos.coords.longitude}`;
@@ -33,16 +34,12 @@ const syncGps = () => {
     setError("");
     setLoading(true);
 
-        try {
-      setLoading(true);
-      setError("");
-
-      // 🟢 CORRECT TARGET PASS: Re-routes network traffic directly to your active unified endpoint route
+    try {
       const res = await fetch("/api/route", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: "REGISTER_MEMBER", // 🛡️ CRITICAL TOKEN: Instructs your route handler to trigger the 16-field Neon insert code
+          action: "REGISTER_MEMBER",
           name: form.name,
           email: form.email.toLowerCase().trim(),
           password: form.password,
@@ -67,16 +64,42 @@ const syncGps = () => {
 
       if (!res.ok) {
         setError(data.error || "Enrollment transaction validation drop.");
+        setLoading(false);
       } else {
-        alert("🟢 Diaspora Asset Profile written directly to secure Neon PostgreSQL ledger rows!");
-        router.push("/login"); // Redirects member to your streamlined authentication portal path
+        setLoading(false);
+        setRegistrationSuccess(true);
       }
-
     } catch (err) {
       setError("Ecosystem pipeline offline. Connection failed.");
       setLoading(false);
     }
   };
+
+  if (registrationSuccess) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: "#0f172a", fontFamily: "Arial, sans-serif" }}>
+        <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "15px 30px", borderBottom: "1px solid #1e293b", background: "#1e293b" }}>
+          <span style={{ fontSize: "18px", fontWeight: "900", color: "#34d399" }}>🚀 KIKA REGISTRATION HUB</span>
+          <button onClick={() => router.push("/")} style={{ background: "transparent", border: "1px solid #34d399", color: "#34d399", padding: "8px 16px", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "bold" }}>⬅️ Return to Main Page</button>
+        </header>
+
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", flex: 1, padding: "40px 20px" }}>
+          <div style={{ background: "#1e293b", padding: "40px", borderRadius: "16px", width: "100%", maxWidth: "560px", border: "1px solid #10b981", textAlign: "center", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)" }}>
+            <h2 style={{ color: "#34d399", margin: "0 0 12px 0", fontSize: "22px" }}>✅ Registration Submitted Successfully!</h2>
+            <p style={{ color: "#e2e8f0", fontSize: "14px", lineHeight: "1.6", margin: "0 0 16px 0" }}>
+              Thank you for signing up with the <strong>KiKa Diaspora Ecosystem</strong>. A confirmation email has been sent to <strong>{form.email}</strong> to acknowledge your registration.
+            </p>
+            <div style={{ background: "#0f172a", padding: "14px", borderRadius: "8px", border: "1px solid #334155", color: "#fbbf24", fontSize: "13px", marginBottom: "24px" }}>
+              🟡 <strong>Account Status:</strong> Pending Admin Verification. You will receive a second email confirmation as soon as your portal access is activated.
+            </div>
+            <button onClick={() => router.push("/")} style={{ padding: "12px 24px", background: "#10b981", color: "#022c22", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer", fontSize: "14px" }}>
+              Return to Main Landing Page
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: "#0f172a", fontFamily: "Arial, sans-serif" }}>

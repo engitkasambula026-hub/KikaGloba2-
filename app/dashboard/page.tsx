@@ -1,219 +1,283 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+"use client";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-interface Transaction {
-  id: string;
-  sender_email: string;
-  recipient_email: string;
-  amount: string;
-  corridor_type: string;
-  created_at: string;
-}
-
-export default function DashboardPage() {
+export default function MemberCockpitDashboard() {
+  const router = useRouter();
   const [userEmail, setUserEmail] = useState<string>("");
-  const [balance, setBalance] = useState<number>(0);
-  const [saccoBalance, setSaccoBalance] = useState<number>(0);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [profile, setProfile] = useState<any>(null);
+  const [ledger, setLedger] = useState<any[]>([]);
+  const [remittances, setRemittances] = useState<any[]>([]);
+  const [corridors, setCorridors] = useState<any>({});
+  const [loading, setLoading] = useState(true);
+  const [selectedService, setSelectedService] = useState<string>("SACCO_POOL");
 
-  // Form inputs
-  const [targetRecipient, setTargetRecipient] = useState<string>("");
-  const [sendAmount, setSendAmount] = useState<string>("");
-  const [saccoAmount, setSaccoAmount] = useState<string>("");
-  const [uiMessage, setUiMessage] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(true);
+  const [saccoType, setSaccoType] = useState("DEPOSIT");
+  const [saccoAmount, setSaccoAmount] = useState("");
+  const [voucherAmount, setVoucherAmount] = useState("25");
+  const [destCountry, setDestCountry] = useState("Uganda");
+  const [recipientName, setRecipientName] = useState("");
+  const [recipientPhone, setRecipientPhone] = useState("");
+  const [remitAmountSEK, setRemitAmountSEK] = useState("");
+  const [processing, setProcessing] = useState(false);
 
-  // 🦾 AUTOMATED ENGINE HYDRATION LOOKUP
-  const fetchActiveUserData = async (emailToQuery: string) => {
+  async function loadCockpitData(emailToLoad: string) {
     try {
-      // Direct call fetching profile parameters straight from your live Neon PostgreSQL database rows
-      const res = await fetch(`/api/route?action=GET_MEMBER_PROFILE&email=${emailToQuery}`);
+      const res = await fetch(`/api/user/cockpit?email=${encodeURIComponent(emailToLoad)}`);
       const data = await res.json();
-      
-      if (data.success && data.profile) {
-        setBalance(parseFloat(data.profile.balance) || 0);
-        setSaccoBalance(parseFloat(data.profile.sacco_balance) || 0);
-        setTransactions(data.transactions || []);
+      if (data.success) {
+        setProfile(data.profile);
+        setLedger(data.ledger || []);
+        setRemittances(data.remittances || []);
+        setCorridors(data.corridors || {});
       }
     } catch (err) {
-      console.error("Database connection timeout:", err);
+      console.error("Failed loading cockpit data:", err);
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    // 🛡️ SECURITY SESSION RECOVERY CAPTURE
-    const activeCookies = document.cookie.split("; ");
-    // For local testing safety, we look for a fallback or recover your admin profile identity string
-    const emailCookie = activeCookies.find(row => row.startsWith("kika_user_email="));
-    const capturedEmail = emailCookie ? decodeURIComponent(emailCookie.split("=")[1]) : "audit02@kikaglobal.com";
-    
-    setUserEmail(capturedEmail);
-    fetchActiveUserData(capturedEmail);
-  }, []);
-
-  const handleSendMoneyAction = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setUiMessage("⏳ Cleaving secure network transfer circuits...");
-
-    try {
-      const res = await fetch("/api/route", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "INTERNAL_SEND_MONEY",
-          senderEmail: userEmail,
-          recipientEmail: targetRecipient.trim().toLowerCase(),
-          amount: sendAmount
-        })
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        setUiMessage(`✅ Success: ${data.message}`);
-        setTargetRecipient("");
-        setSendAmount("");
-        fetchActiveUserData(userEmail); // Hot-reloads ledger metrics instantly from Neon cloud storage layers
-      } else {
-        setUiMessage(`❌ Transaction Dropped: ${data.error}`);
-      }
-    } catch (err: any) {
-      setUiMessage(`🚧 Connection Drop: ${err.message}`);
-    }
-  };
-
-  const handleSaccoPoolAction = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setUiMessage("⏳ Pooling capital reserves into SACCO cell channels...");
-
-    try {
-      const res = await fetch("/api/route", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "SACCO_POOL_DEPOSIT",
-          email: userEmail,
-          amount: saccoAmount
-        })
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        setUiMessage("✅ Success: Capital locked securely into Cooperative Fund rows.");
-        setSaccoAmount("");
-        fetchActiveUserData(userEmail);
-      } else {
-        setUiMessage(`❌ Allocation Drop: ${data.error}`);
-      }
-    } catch (err) {
-      setUiMessage("🚧 Local corridor link stable.");
-    }
-  };
-
-  const handleSignOutClear = () => {
-    document.cookie = "kika_session_active=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-    window.location.href = "/";
-  };
-
-  if (loading) {
-    return <div className="min-h-screen bg-gray-50 flex items-center justify-center font-bold text-slate-700">⏳ RECOVERING SECURE DATA CHANNELS FROM NEON SQL...</div>;
   }
 
+  useEffect(() => {
+    const storedEmail =
+      typeof window !== "undefined"
+        ? localStorage.getItem("kika_user_email") || sessionStorage.getItem("kika_user_email") || ""
+        : "";
+    setUserEmail(storedEmail);
+    if (storedEmail) {
+      loadCockpitData(storedEmail);
+    } else {
+      setLoading(false);
+    }
+  }, []);
+
+  async function handleSaccoAction(e: React.FormEvent) {
+    e.preventDefault();
+    if (!saccoAmount || parseFloat(saccoAmount) <= 0) return alert("Enter a valid SEK amount.");
+    setProcessing(true);
+    const res = await fetch("/api/sacco/engine", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: userEmail, actionType: saccoType, transactionAmountSEK: saccoAmount })
+    });
+    const data = await res.json();
+    setProcessing(false);
+    alert(data.message || data.error);
+    if (data.success) {
+      setSaccoAmount("");
+      loadCockpitData(userEmail);
+    }
+  }
+
+  async function handleVoucherPurchase(e: React.FormEvent) {
+    e.preventDefault();
+    setProcessing(true);
+    const res = await fetch("/api/user/cockpit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: userEmail, action: "BUY_VOIP_VOUCHER", amountSEK: voucherAmount })
+    });
+    const data = await res.json();
+    setProcessing(false);
+    alert(data.message || data.error);
+    if (data.success) loadCockpitData(userEmail);
+  }
+
+  async function handleRemittanceSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!remitAmountSEK || parseFloat(remitAmountSEK) <= 0) return alert("Enter a valid SEK amount.");
+    setProcessing(true);
+    const res = await fetch("/api/user/cockpit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: userEmail,
+        action: "SEND_REMITTANCE",
+        amountSEK: remitAmountSEK,
+        destinationCountry: destCountry,
+        recipientName,
+        recipientPhone
+      })
+    });
+    const data = await res.json();
+    setProcessing(false);
+    alert(data.message || data.error);
+    if (data.success) {
+      setRemitAmountSEK("");
+      setRecipientName("");
+      setRecipientPhone("");
+      loadCockpitData(userEmail);
+    }
+  }
+  if (loading) {
+    return <div style={{ padding: "40px", backgroundColor: "#0f172a", color: "#ffffff", minHeight: "100vh", fontFamily: "sans-serif" }}>⚡ Initializing Personalized KiKa Member Cockpit...</div>;
+  }
+
+  const activeCorridor = corridors[destCountry] || { region: "Africa", currency: "UGX", rateFromSEK: 350 };
+  const previewConverted = remitAmountSEK ? (parseFloat(remitAmountSEK) * activeCorridor.rateFromSEK).toLocaleString() : "0.00";
+
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
-      
-      {/* NAVIGATION HEADER BAR CONTAINER */}
-      <nav className="bg-slate-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
-        <div className="flex items-center gap-6">
-          <div className="font-black text-emerald-400 text-sm tracking-wider uppercase">🌍 KIKA COMMAND CENTER</div>
-          <Link href="/" className="text-xs font-semibold text-slate-300 hover:text-blue-400 transition-colors duration-200">🏠 Return to Landing Grid</Link>
+    <div style={{ backgroundColor: "#0f172a", minHeight: "100vh", color: "#ffffff", fontFamily: "sans-serif" }}>
+      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 32px", backgroundColor: "#1e293b", borderBottom: "1px solid #334155" }}>
+        <div>
+          <span style={{ fontSize: "11px", color: "#34d399", fontWeight: "bold", fontFamily: "monospace" }}>[ SWEDEN SEK SPRINGBOARD NODE ]</span>
+          <h1 style={{ margin: "2px 0 0 0", fontSize: "20px" }}>🌍 KiKa Member Cockpit</h1>
         </div>
-        <button onClick={handleSignOutClear} className="bg-transparent border border-red-500 text-red-500 text-xs font-bold px-3 py-1.5 rounded-md hover:bg-red-500 hover:text-white transition-all duration-200">🚪 Secure Log Out</button>
-      </nav>
-
-      <div className="max-w-7xl mx-auto p-6 space-y-6">
-        
-        {/* 💳 CARD ROW LAYER: REAL-TIME VAULT BALANCES */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-gradient-to-br from-indigo-800 to-blue-700 text-white p-6 rounded-2xl shadow-lg border border-indigo-900">
-            <p className="text-indigo-200 text-xs font-bold tracking-wider uppercase">Available Liquid Vault Balance</p>
-            <h2 className="text-4xl font-black mt-1">UGX {balance.toLocaleString()}</h2>
-            <p className="text-xs text-indigo-100 font-medium mt-3">● Secured Row Cell Node ID Active</p>
-          </div>
-
-          <div className="bg-gradient-to-br from-emerald-800 to-teal-700 text-white p-6 rounded-2xl shadow-lg border border-emerald-900">
-            <p className="text-emerald-200 text-xs font-bold tracking-wider uppercase">Cooperative Sacco Savings Pool</p>
-            <h2 className="text-4xl font-black mt-1">UGX {saccoBalance.toLocaleString()}</h2>
-            <p className="text-xs text-emerald-100 font-medium mt-3">📈 Multi-Signatory Capital Shield Engaged</p>
-          </div>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button onClick={() => router.push("/")} style={{ padding: "8px 14px", backgroundColor: "transparent", border: "1px solid #475569", color: "#cbd5e1", borderRadius: "6px", cursor: "pointer", fontSize: "12px", fontWeight: "bold" }}>🏠 Main Portal</button>
+          <button onClick={() => { localStorage.clear(); sessionStorage.clear(); router.push("/login"); }} style={{ padding: "8px 14px", backgroundColor: "#dc2626", border: "none", color: "#ffffff", borderRadius: "6px", cursor: "pointer", fontSize: "12px", fontWeight: "bold" }}>Sign Out</button>
         </div>
+      </header>
 
-        {/* DYNAMIC ACTION INPUT BLOCKS GRID */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
-          <div className="lg:col-span-2 space-y-6">
-            {/* TERMINAL 1: SEND MONEY TRUNK */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-              <h3 className="text-base font-bold text-gray-900 mb-4">💸 Execute Send Money Trunk Transfer</h3>
-              <form onSubmit={handleSendMoneyAction} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-1">Beneficiary Global Email Account</label>
-                  <input required type="email" value={targetRecipient} onChange={e => setTargetRecipient(e.target.value)} className="w-full border border-gray-300 p-2.5 rounded-lg text-sm outline-none" placeholder="recipient@kikaglobal.com" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-1">Capital Transfer Value (UGX)</label>
-                  <input required type="number" value={sendAmount} onChange={e => setSendAmount(e.target.value)} className="w-full border border-gray-300 p-2.5 rounded-lg text-sm outline-none" placeholder="e.g. 100000" />
-                </div>
-                <button type="submit" className="md:col-span-2 bg-slate-900 text-white font-bold py-3 rounded-lg text-xs tracking-wider uppercase hover:bg-black transition-all">Authorize Immediate Balance Release</button>
-              </form>
+      <main style={{ maxWidth: "1050px", margin: "0 auto", padding: "30px 20px" }}>
+        <section style={{ backgroundColor: "#1e293b", padding: "24px", borderRadius: "12px", border: "1px solid #334155", marginBottom: "28px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
+            <div>
+              <div style={{ fontSize: "12px", color: "#94a3b8" }}>Authenticated Member Profile</div>
+              <h2 style={{ margin: "2px 0", fontSize: "22px" }}>{profile?.full_name || "KiKa Member"}</h2>
+              <div style={{ fontSize: "12px", color: "#38bdf8" }}>{userEmail}</div>
             </div>
-
-            {/* TERMINAL 2: SACCO DEPOSIT TUNNEL */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-              <h3 className="text-base font-bold text-gray-900 mb-4">🤝 Lock Capital Reserves Into SACCO Pool</h3>
-              <form onSubmit={handleSaccoPoolAction} className="flex gap-4 items-end">
-                <div className="flex-1">
-                  <label className="block text-xs font-bold text-gray-500 mb-1">Allocation Value to Cooperative Society Shares (UGX)</label>
-                  <input required type="number" value={saccoAmount} onChange={e => setSaccoAmount(e.target.value)} className="w-full border border-gray-300 p-2.5 rounded-lg text-sm outline-none" placeholder="e.g. 50000" />
-                </div>
-                <button type="submit" className="bg-emerald-600 text-white font-bold py-3 px-6 rounded-lg text-xs tracking-wider uppercase hover:bg-emerald-700 transition-all">Commit Liquidity</button>
-              </form>
-            </div>
+            <span style={{ padding: "6px 12px", backgroundColor: "#064e3b", color: "#34d399", borderRadius: "20px", fontSize: "12px", fontWeight: "bold" }}>
+              🟢 {profile?.account_status || "ACTIVE"} | Base: Sweden (SEK)
+            </span>
           </div>
 
-          {/* RIGHT VIEW PANEL: LIVE LEDGER LOG ROWS */}
-          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm h-fit">
-            <h3 className="text-base font-bold text-gray-900 mb-4">📜 Chronological Ledger Logs</h3>
-            {transactions.length === 0 ? (
-              <p className="text-xs text-gray-400 text-center py-6">[ Absolute zero ledger trace items logged ]</p>
-            ) : (
-              <div className="space-y-3">
-                {transactions.map((txn) => (
-                  <div key={txn.id} className="p-3 bg-gray-50 rounded-xl border border-gray-100 flex justify-between items-center text-xs">
-                    <div>
-                      <p className="font-bold text-gray-800">{txn.corridor_type}</p>
-                      <p className="text-gray-400 text-[10px] mt-0.5">To: {txn.recipient_email}</p>
-                    </div>
-                    <p className="font-black text-red-600">- UGX {parseFloat(txn.amount).toLocaleString()}</p>
-                         </div>
-                ))}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
+            <div style={{ backgroundColor: "#0f172a", padding: "18px", borderRadius: "8px", border: "1px solid #334155" }}>
+              <div style={{ fontSize: "12px", color: "#94a3b8" }}>Cooperative SACCO Savings</div>
+              <div style={{ fontSize: "24px", fontWeight: "bold", color: "#10b981", marginTop: "6px" }}>
+                {parseFloat(profile?.savings_balance_sek || "0").toFixed(2)} <span style={{ fontSize: "14px" }}>SEK</span>
               </div>
-            )}
+            </div>
+            <div style={{ backgroundColor: "#0f172a", padding: "18px", borderRadius: "8px", border: "1px solid #334155" }}>
+              <div style={{ fontSize: "12px", color: "#94a3b8" }}>Low-Tariff VoIP Calling Wallet</div>
+              <div style={{ fontSize: "24px", fontWeight: "bold", color: "#f59e0b", marginTop: "6px" }}>
+                {parseFloat(profile?.voip_balance_sek || "0").toFixed(2)} <span style={{ fontSize: "14px" }}>SEK</span>
+              </div>
+            </div>
+            <div style={{ backgroundColor: "#0f172a", padding: "18px", borderRadius: "8px", border: "1px solid #334155" }}>
+              <div style={{ fontSize: "12px", color: "#94a3b8" }}>SACCO Credit Underwriting Score</div>
+              <div style={{ fontSize: "24px", fontWeight: "bold", color: "#a855f7", marginTop: "6px" }}>
+                {profile?.credit_underwriting_score || 500} <span style={{ fontSize: "13px", color: "#64748b" }}>/ 850</span>
+              </div>
+            </div>
           </div>
+        </section>
 
-        </div>
+        <section style={{ backgroundColor: "#1e293b", padding: "24px", borderRadius: "12px", border: "1px solid #334155", marginBottom: "28px" }}>
+          <label style={{ display: "block", fontSize: "12px", color: "#94a3b8", fontWeight: "bold", marginBottom: "8px", textTransform: "uppercase" }}>
+            Select Ecosystem Service Module
+          </label>
+          <select
+            value={selectedService}
+            onChange={(e) => setSelectedService(e.target.value)}
+            style={{ width: "100%", padding: "14px", backgroundColor: "#0f172a", color: "#ffffff", border: "1px solid #a855f7", borderRadius: "8px", fontSize: "15px", fontWeight: "bold", marginBottom: "24px" }}
+          >
+            <option value="SACCO_POOL">🏦 1. Cooperative SACCO Savings & Capital Deposits (SEK)</option>
+            <option value="VOIP_VOUCHER">🎙️ 2. Purchase Low-Tariff Global VoIP Calling Vouchers</option>
+            <option value="GLOBAL_REMITTANCE">🌐 3. Global Continental Remittance (Springboard: Sweden SEK)</option>
+          </select>
 
-        {/* 📟 FEEDBACK BANNER CONSOLE CONTAINER RENDER ROW */}
-        {uiMessage && (
-          <div style={{ marginTop: "24px", padding: "16px", borderRadius: "12px", textAlign: "center", fontWeight: "bold", fontSize: "14px", backgroundColor: "#0f172a", color: "#ffffff", border: "1px solid #1e293b", boxShadow: "inset 0 2px 4px rgba(0,0,0,0.3)" }}>
-            {uiMessage}
-          </div>
-        )}
+          {selectedService === "SACCO_POOL" && (
+            <form onSubmit={handleSaccoAction} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              <h3 style={{ margin: 0, color: "#34d399" }}>🏦 Cooperative SACCO Deposit & Liquidity Management</h3>
+              <p style={{ margin: 0, fontSize: "13px", color: "#94a3b8" }}>Deposits automatically increase your SEK pool balance and raise your algorithmic credit score.</p>
+              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                <select value={saccoType} onChange={(e) => setSaccoType(e.target.value)} style={{ padding: "12px", backgroundColor: "#0f172a", color: "#ffffff", border: "1px solid #475569", borderRadius: "8px" }}>
+                  <option value="DEPOSIT">📥 Deposit Funds (SEK)</option>
+                  <option value="WITHDRAWAL">📤 Withdraw Funds (SEK)</option>
+                </select>
+                <input type="number" placeholder="Amount in SEK (e.g. 500)" value={saccoAmount} onChange={(e) => setSaccoAmount(e.target.value)} required style={{ flex: 1, padding: "12px", backgroundColor: "#0f172a", color: "#ffffff", border: "1px solid #475569", borderRadius: "8px" }} />
+                <button type="submit" disabled={processing} style={{ padding: "12px 24px", backgroundColor: "#10b981", color: "#022c22", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}>
+                  {processing ? "Settling..." : "Execute SACCO Entry"}
+                </button>
+              </div>
+            </form>
+          )}
+          {selectedService === "VOIP_VOUCHER" && (
+            <form onSubmit={handleVoucherPurchase} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              <h3 style={{ margin: 0, color: "#f59e0b" }}>🎙️ Buy Low-Tariff International VoIP Calling Voucher</h3>
+              <p style={{ margin: 0, fontSize: "13px", color: "#94a3b8" }}>Convert SEK from your savings balance into instant per-second global calling credit.</p>
+              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                <select value={voucherAmount} onChange={(e) => setVoucherAmount(e.target.value)} style={{ flex: 1, padding: "12px", backgroundColor: "#0f172a", color: "#ffffff", border: "1px solid #475569", borderRadius: "8px" }}>
+                  <option value="10">10.00 SEK Starter Calling Voucher</option>
+                  <option value="25">25.00 SEK Standard Diaspora Voucher</option>
+                  <option value="50">50.00 SEK Extended Corridor Voucher</option>
+                  <option value="100">100.00 SEK Enterprise Trunk Voucher</option>
+                </select>
+                <button type="submit" disabled={processing} style={{ padding: "12px 24px", backgroundColor: "#f59e0b", color: "#0f172a", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}>
+                  {processing ? "Issuing..." : "Purchase VoIP Voucher"}
+                </button>
+              </div>
+            </form>
+          )}
 
-      </div>
+          {selectedService === "GLOBAL_REMITTANCE" && (
+            <form onSubmit={handleRemittanceSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              <h3 style={{ margin: 0, color: "#38bdf8" }}>🌐 Global Continental Remittance (Springboard: Sweden SEK)</h3>
+              <p style={{ margin: 0, fontSize: "13px", color: "#94a3b8" }}>Send instant cross-border transfers from your SEK balance to major countries across all continents.</p>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
+                <select value={destCountry} onChange={(e) => setDestCountry(e.target.value)} style={{ padding: "12px", backgroundColor: "#0f172a", color: "#ffffff", border: "1px solid #475569", borderRadius: "8px" }}>
+                  <optgroup label="🌍 Africa">
+                    <option value="Uganda">Uganda (UGX)</option>
+                    <option value="Kenya">Kenya (KES)</option>
+                    <option value="Nigeria">Nigeria (NGN)</option>
+                    <option value="South Africa">South Africa (ZAR)</option>
+                  </optgroup>
+                  <optgroup label="🇪🇺 Europe">
+                    <option value="Sweden (Local)">Sweden (SEK)</option>
+                    <option value="United Kingdom">United Kingdom (GBP)</option>
+                    <option value="Eurozone (DE/FR/NL)">Eurozone (EUR)</option>
+                  </optgroup>
+                  <optgroup label="🌎 North America">
+                    <option value="United States">United States (USD)</option>
+                    <option value="Canada">Canada (CAD)</option>
+                  </optgroup>
+                  <optgroup label="🌏 Middle East & Asia">
+                    <option value="United Arab Emirates">United Arab Emirates (AED)</option>
+                    <option value="India">India (INR)</option>
+                  </optgroup>
+                </select>
+
+                <input type="text" placeholder="Recipient Full Name" value={recipientName} onChange={(e) => setRecipientName(e.target.value)} required style={{ padding: "12px", backgroundColor: "#0f172a", color: "#ffffff", border: "1px solid #475569", borderRadius: "8px" }} />
+                <input type="text" placeholder="Recipient Mobile (+256...)" value={recipientPhone} onChange={(e) => setRecipientPhone(e.target.value)} required style={{ padding: "12px", backgroundColor: "#0f172a", color: "#ffffff", border: "1px solid #475569", borderRadius: "8px" }} />
+                <input type="number" placeholder="Send Amount (SEK)" value={remitAmountSEK} onChange={(e) => setRemitAmountSEK(e.target.value)} required style={{ padding: "12px", backgroundColor: "#0f172a", color: "#ffffff", border: "1px solid #475569", borderRadius: "8px" }} />
+              </div>
+
+              <div style={{ padding: "12px", backgroundColor: "#0f172a", borderRadius: "8px", border: "1px dashed #38bdf8", fontSize: "13px", color: "#bae6fd" }}>
+                💱 <strong>Live Springboard Conversion ({activeCorridor.region} – {destCountry}):</strong> Recipient receives <strong>{previewConverted} {activeCorridor.currency}</strong> (Rate: 1 SEK = {activeCorridor.rateFromSEK} {activeCorridor.currency})
+              </div>
+
+              <button type="submit" disabled={processing} style={{ padding: "14px", backgroundColor: "#38bdf8", color: "#0f172a", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer", fontSize: "14px" }}>
+                {processing ? "Dispatching..." : `Send Remittance from Sweden (SEK) to ${destCountry}`}
+              </button>
+            </form>
+          )}
+        </section>
+
+        <section style={{ backgroundColor: "#1e293b", padding: "24px", borderRadius: "12px", border: "1px solid #334155" }}>
+          <h3 style={{ margin: "0 0 14px 0", fontSize: "16px", color: "#cbd5e1" }}>📜 Recent Account Ledger & Remittance Receipts</h3>
+          {ledger.length === 0 && remittances.length === 0 ? (
+            <p style={{ color: "#64748b", fontSize: "13px" }}>No transactions recorded on your account yet.</p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "12px", fontFamily: "monospace" }}>
+              {remittances.map((r: any, idx: number) => (
+                <div key={`remit-${idx}`} style={{ padding: "10px", backgroundColor: "#0f172a", borderRadius: "6px", border: "1px solid #334155", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
+                  <span>🌐 [{r.continental_region} / {r.destination_country}] Sent <strong>{parseFloat(r.amount_sek).toFixed(2)} SEK</strong> → <strong>{parseFloat(r.converted_amount).toLocaleString()} {r.target_currency}</strong> ({r.recipient_name})</span>
+                  <span style={{ color: "#38bdf8" }}>{r.tx_reference}</span>
+                </div>
+              ))}
+              {ledger.map((tx: any, idx: number) => (
+                <div key={`tx-${idx}`} style={{ padding: "10px", backgroundColor: "#0f172a", borderRadius: "6px", border: "1px solid #334155", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
+                  <span>💳 [{tx.tx_type}] {parseFloat(tx.amount_sek).toFixed(2)} SEK | Balance Snapshot: {parseFloat(tx.balance_snapshot_sek).toFixed(2)} SEK</span>
+                  <span style={{ color: "#10b981" }}>{tx.tx_reference}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </main>
     </div>
   );
 }
-

@@ -35,6 +35,24 @@ export async function POST(req: Request) {
       )
       RETURNING id, full_name, email, host_country, id_type, id_number, kyc_status, created_at;
     `;
+    // Extract network IP and device telemetry headers
+    const incomingIP = req.headers.get("x-forwarded-for")?.split(",")[0] || "0.0.0.0";
+    const userAgent = req.headers.get("user-agent") || "Unknown Browser";
+    const deviceType = /mobile/i.test(userAgent) ? "Mobile" : "Desktop";
+    const cleanEmail = email.toLowerCase().trim();
+
+    // 1. Mirror user into Admin Control Center with PENDING_ADMIN_APPROVAL lock
+    await sql`
+      INSERT INTO sacco_members (full_name, email, phone_sweden, account_status, registration_ip)
+      VALUES (${fullName}, ${cleanEmail}, '', 'PENDING_ADMIN_APPROVAL', ${incomingIP})
+      ON CONFLICT (email) DO NOTHING;
+    `;
+
+    // 2. Record telemetry footprint in live access logs
+    await sql`
+      INSERT INTO kika_access_logs (user_email, event_type, ip_address, platform_browser, device_type)
+      VALUES (${cleanEmail}, 'REGISTRATION_PENDING', ${incomingIP}, ${userAgent.slice(0, 140)}, ${deviceType});
+    `;
 
     return NextResponse.json({
       message: "Ecosystem account created under regional KYC compliance rules.",

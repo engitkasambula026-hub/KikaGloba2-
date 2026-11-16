@@ -29,7 +29,9 @@ export default function KikaUnifiedAuthPage() {
         // 🟢 SUCCESSFUL AUTHENTICATION HARVEST GATEWAY
       if (data.success) {
         setMessage("🟢 Session authorized successfully! Redirecting...");
-        
+            localStorage.setItem("kika_user_email", email.trim().toLowerCase());
+      sessionStorage.setItem("kika_user_email", email.trim().toLowerCase());
+  
         // 🔒 SMART ENVIRONMENT MULTI-COOKIE CORRIDOR: Auto-detects local laptop vs live cloud servers
         const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
         

@@ -10,15 +10,11 @@ export default function AdminConsoleDashboard() {
   useEffect(() => {
     async function verifyAndFetchEcosystemMetrics() {
       try {
-        // 1. Fetch telemetry payload metrics natively from cloud database nodes
         const res = await fetch("/api/admin/moderation");
         const data = await res.json();
-        
         if (data.success) {
-          // 2. Scan active session metrics arrays to check the root admin identity status row
           const activeSessions = data.members || [];
           const adminProfile = activeSessions.find((m: any) => m.email === "engitkasambula026@gmail.com");
-
           if (adminProfile && adminProfile.account_status === "ACTIVE") {
             setMembers(data.members);
             setLogs(data.logs || []);
@@ -36,13 +32,11 @@ export default function AdminConsoleDashboard() {
         setLoading(false);
       }
     }
-
     verifyAndFetchEcosystemMetrics();
   }, []);
 
   if (loading) return <div style={{ padding: "40px", backgroundColor: "#0f172a", color: "#ffffff", height: "100vh", fontFamily: "sans-serif" }}>⚡ Gathering KiKa Security Telemetry Matrix...</div>;
 
-  // 🛡️ INLINE ACCESS BLOCK GATEWAY SHIELD
   if (authorized === false) {
     return (
       <div style={{ padding: "50px", backgroundColor: "#0f172a", color: "#ffffff", height: "100vh", textAlign: "center", fontFamily: "sans-serif" }}>
@@ -53,20 +47,16 @@ export default function AdminConsoleDashboard() {
     );
   }
 
-  // Compute key account volume metrics dynamically from database sets
   const totalAccounts = members.length;
   const pendingClearance = members.filter(m => m.account_status === "PENDING_ADMIN_APPROVAL").length;
 
   return (
     <div style={{ backgroundColor: "#0f172a", minHeight: "100vh", padding: "30px", color: "#ffffff", fontFamily: "sans-serif" }}>
-      
-      {/* HEADER COMMAND CAP AREA */}
       <div style={{ borderBottom: "1px solid #1e293b", paddingBottom: "20px", marginBottom: "30px" }}>
         <span style={{ fontSize: "11px", color: "#a855f7", fontWeight: "bold", fontFamily: "monospace" }}>[ PARENT GOVERNANCE MATRIX ]</span>
         <h1 style={{ margin: "4px 0 0 0", fontSize: "26px", fontWeight: "bold" }}>🌍 KiKa Ecosystem Admin Control Command Center</h1>
       </div>
 
-      {/* METRIC CARD SUMMARY ROW */}
       <div style={{ display: "flex", gap: "16px", marginBottom: "24px" }}>
         <div style={{ flex: 1, padding: "20px", backgroundColor: "#1e293b", borderRadius: "8px", border: "1px solid #334155" }}>
           <div style={{ fontSize: "12px", color: "#94a3b8" }}>Total Ecosystem Members Created</div>
@@ -79,8 +69,6 @@ export default function AdminConsoleDashboard() {
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "30px" }}>
-        
-        {/* MEMBERSHIP DATA GRID */}
         <section style={{ backgroundColor: "#1e293b", padding: "24px", borderRadius: "12px", border: "1px solid #334155" }}>
           <h2 style={{ margin: "0 0 16px 0", fontSize: "18px", color: "#38bdf8" }}>👤 Demographic User Accounts Registry Ledger</h2>
           <div style={{ overflowX: "auto" }}>
@@ -101,14 +89,7 @@ export default function AdminConsoleDashboard() {
                     <td style={{ padding: "12px", color: "#cbd5e1" }}>{user.email}</td>
                     <td style={{ padding: "12px", color: "#10b981", fontWeight: "bold" }}>{parseFloat(user.savings_balance_sek).toFixed(2)} SEK</td>
                     <td style={{ padding: "12px" }}>
-                      <span style={{ 
-                        padding: "4px 8px", 
-                        borderRadius: "10px", 
-                        fontSize: "11px", 
-                        fontWeight: "bold", 
-                        backgroundColor: user.account_status === "ACTIVE" ? "#064e3b" : user.account_status.includes("PENDING") ? "#78350f" : "#7f1d1d", 
-                        color: user.account_status === "ACTIVE" ? "#34d399" : user.account_status.includes("PENDING") ? "#fcd34d" : "#fca5a5" 
-                      }}>
+                      <span style={{ padding: "4px 8px", borderRadius: "10px", fontSize: "11px", fontWeight: "bold", backgroundColor: user.account_status === "ACTIVE" ? "#064e3b" : user.account_status.includes("PENDING") ? "#78350f" : "#7f1d1d", color: user.account_status === "ACTIVE" ? "#34d399" : user.account_status.includes("PENDING") ? "#fcd34d" : "#fca5a5" }}>
                         {user.account_status}
                       </span>
                     </td>
@@ -148,7 +129,6 @@ export default function AdminConsoleDashboard() {
             </table>
           </div>
         </section>
-        {/* ENHANCED LIVE ACCESS TELEMETRY INSIGHTS PANEL */}
         <section style={{ backgroundColor: "#1e293b", padding: "24px", borderRadius: "12px", border: "1px solid #334155" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
             <div>
@@ -203,7 +183,6 @@ export default function AdminConsoleDashboard() {
             </table>
           </div>
         </section>
-
       </div>
     </div>
   );

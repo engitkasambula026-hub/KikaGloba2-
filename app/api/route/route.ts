@@ -1,8 +1,17 @@
 import { NextResponse } from "next/server";
 import { sql } from "../../../lib/db";
+import nodemailer from "nodemailer";
+
+const mailTransporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASS,
+  },
+});
 
 export async function POST(request: Request) {
-  try {
+  try {   
     const body = await request.json();
     const { action, seatId, sdp, ice, name, email, passport, hostCountry, saccoName } = body;
 
@@ -337,6 +346,48 @@ export async function POST(request: Request) {
       if (!email || !password) {
         return NextResponse.json({ success: false, error: "Missing required identity or account credentials validation parameters." }, { status: 400 });
       }
+      
+      // Extract network IP and device telemetry headers
+      const incomingIP = request.headers.get("x-forwarded-for")?.split(",") || "0.0.0.0";
+      const userAgent = request.headers.get("user-agent") || "Unknown Browser";
+      const deviceType = /mobile/i.test(userAgent) ? "Mobile" : "Desktop";
+      const cleanEmail = email.toLowerCase().trim();
+      const fullPhone = `${countryCode || ""}${phoneNumber || ""}`.trim();
+
+      // 1. Mirror user into Admin Control Center with PENDING_ADMIN_APPROVAL lock
+      await sql`
+        INSERT INTO sacco_members (full_name, email, phone_sweden, account_status, registration_ip)
+        VALUES (${name || "Anonymous"}, ${cleanEmail}, ${fullPhone}, 'PENDING_ADMIN_APPROVAL', ${incomingIP})
+        ON CONFLICT (email) DO NOTHING;
+      `;
+
+      // 2. Record telemetry footprint in live access logs
+      await sql`
+        INSERT INTO kika_access_logs (user_email, event_type, ip_address, platform_browser, device_type)
+        VALUES (${cleanEmail}, 'REGISTRATION_PENDING', ${incomingIP}, ${userAgent.slice(0, 140)}, ${deviceType});
+      `;
+      
+       const gmailUser = process.env.GMAIL_USER?.trim();
+    const gmailPass = process.env.GMAIL_APP_PASS?.replace(/\s+/g, "");
+
+    if (gmailUser && gmailPass) {
+      const mailTransporter = nodemailer.createTransport({
+        host: "://gmail.com",
+        port: 465,
+        secure: true,
+        auth: {
+          user: gmailUser,
+          pass: gmailPass,
+        },
+      });
+
+      await mailTransporter.sendMail({
+        from: `"KiKa Global Ventures" <${gmailUser}>`,
+        to: cleanEmail,
+        subject: "📩 Registration Received: Pending Admin Verification | KiKa Ecosystem",
+        html: `<p>Hello <strong>${name || "Applicant"}</strong>, thank you for registering with KiKa Ecosystem. Your account is queued for Admin verification.</p>`
+      });
+    }
 
       try {
         // Asynchronous insert routing parameters natively to your updated Neon table slots

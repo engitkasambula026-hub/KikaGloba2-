@@ -653,7 +653,8 @@ return (
       </main>
 
       <footer style={{ backgroundColor: "#0b1528", textAlign: "center", padding: "20px", color: "#64748b", fontSize: "12px", borderTop: "1px solid #1e293b", maxWidth: "1400px", margin: "40px auto 0 auto" }}>
-        KiKa Global Ventures SE 127 31 Stockholm Staging Infrastructure• NITA-U Secured Framework Compliance © 2026
+  KiKa Global Ventures — Operated by SNABBISH (Reg. Sole Proprietorship: Adam Thabit Kasambula) Ålgrytevägen-137• 127 31 Skärlholmen, Sweden • Contact:Tel +46729265001 telecom@kika-ecosystem.com • © 2026
+
       </footer>
     </div>
   );

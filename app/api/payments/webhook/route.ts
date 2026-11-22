@@ -2,11 +2,21 @@ import { NextResponse } from "next/server";
 import { neon } from "@neondatabase/serverless";
 import Stripe from "stripe";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(request: Request) {
   try {
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) {
+      return NextResponse.json(
+        { error: "STRIPE_SECRET_KEY is not configured." },
+        { status: 500 }
+      );
+    }
+
     const rawBody = await request.text();
     const signature = request.headers.get("stripe-signature") || "";
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
+    const stripe = new Stripe(stripeKey);
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || "";
 
     let event: Stripe.Event;
@@ -33,7 +43,9 @@ export async function POST(request: Request) {
           RETURNING savings_balance_sek;
         `;
 
-        const newBalance = parseFloat(updated[0]?.savings_balance_sek || String(amountSEK));
+        const newBalance = parseFloat(
+          updated[0]?.savings_balance_sek || String(amountSEK)
+        );
 
         await sql`
           INSERT INTO sacco_ledger (member_email, tx_type, amount_sek, balance_snapshot_sek, tx_reference)
@@ -48,4 +60,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: err.message }, { status: 400 });
   }
 }
-

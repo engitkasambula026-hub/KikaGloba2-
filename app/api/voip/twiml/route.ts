@@ -1,37 +1,33 @@
 import { NextResponse } from "next/server";
 import twilio from "twilio";
 
-const VoiceResponse = twilio.twiml.VoiceResponse;
-
 export async function POST(request: Request) {
   try {
-    const response = new VoiceResponse();
-    
-    // Direct Twilio to dial your verified Ugandan test mobile phone number
-    response.dial().number("+256784868667"); 
+    const formData = await request.formData();
+    const toNumber = formData.get("To")?.toString() || "";
+    const maxSeconds = Number(formData.get("MaxSeconds") || 60);
 
-    // Return the formatted XML response that Twilio servers understand natively
-    return new NextResponse(response.toString(), {
+    const VoiceResponse = twilio.twiml.VoiceResponse;
+    const twiml = new VoiceResponse();
+
+    if (!toNumber) {
+      twiml.say("No destination number provided. Disconnecting.");
+    } else {
+      const dial = twiml.dial({
+        callerId: process.env.TWILIO_CALLER_ID || "+46100000000",
+        timeLimit: Math.max(10, maxSeconds) // Hard cut-off when prepaid wallet reaches 0.00 SEK
+      });
+      dial.number(toNumber);
+    }
+
+    return new NextResponse(twiml.toString(), {
       status: 200,
-      headers: { 
-        "Content-Type": "text/xml",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type"
-      },
+      headers: { "Content-Type": "text/xml" }
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (err: any) {
+    return new NextResponse(`<Response><Say>Switching error.</Say></Response>`, {
+      status: 200,
+      headers: { "Content-Type": "text/xml" }
+    });
   }
-}
-
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-    },
-  });
 }

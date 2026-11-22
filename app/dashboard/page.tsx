@@ -1,32 +1,76 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+
+const GLOBAL_VOIP_RATES: Record<string, { region: string; prefix: string; rateMinSEK: number }> = {
+  "Sweden": { region: "Europe", prefix: "+46", rateMinSEK: 0.35 },
+  "Uganda": { region: "Africa", prefix: "+256", rateMinSEK: 2.40 },
+  "Kenya": { region: "Africa", prefix: "+254", rateMinSEK: 1.80 },
+  "Tanzania": { region: "Africa", prefix: "+255", rateMinSEK: 2.10 },
+  "Rwanda": { region: "Africa", prefix: "+250", rateMinSEK: 2.20 },
+  "Nigeria": { region: "Africa", prefix: "+234", rateMinSEK: 1.50 },
+  "South Africa": { region: "Africa", prefix: "+27", rateMinSEK: 0.95 },
+  "United Kingdom": { region: "Europe", prefix: "+44", rateMinSEK: 0.45 },
+  "Germany": { region: "Europe", prefix: "+49", rateMinSEK: 0.48 },
+  "France": { region: "Europe", prefix: "+33", rateMinSEK: 0.48 },
+  "United States": { region: "North America", prefix: "+1", rateMinSEK: 0.30 },
+  "Canada": { region: "North America", prefix: "+1", rateMinSEK: 0.30 },
+  "United Arab Emirates": { region: "Middle East", prefix: "+971", rateMinSEK: 1.90 },
+  "India": { region: "Asia", prefix: "+91", rateMinSEK: 0.55 }
+};
 
 export default function MemberCockpitDashboard() {
   const router = useRouter();
   const [userEmail, setUserEmail] = useState<string>("");
   const [profile, setProfile] = useState<any>(null);
+    const [livePrefixRates, setLivePrefixRates] = useState<Record<string, number>>({});
   const [ledger, setLedger] = useState<any[]>([]);
   const [remittances, setRemittances] = useState<any[]>([]);
   const [corridors, setCorridors] = useState<any>({});
   const [loading, setLoading] = useState(true);
-  const [selectedService, setSelectedService] = useState<string>("SACCO_POOL");
+  const [selectedService, setSelectedService] = useState<string>("WEBRTC_DIALER");
 
+  // SACCO & Remittance States
   const [saccoType, setSaccoType] = useState("DEPOSIT");
   const [saccoAmount, setSaccoAmount] = useState("");
-  const [voucherAmount, setVoucherAmount] = useState("25");
   const [destCountry, setDestCountry] = useState("Uganda");
   const [recipientName, setRecipientName] = useState("");
   const [recipientPhone, setRecipientPhone] = useState("");
   const [remitAmountSEK, setRemitAmountSEK] = useState("");
+
+  // Wallet Payment Top-Up & Voucher States
+  const [paymentProvider, setPaymentProvider] = useState("Swish Sweden");
+  const [topupAmountSEK, setTopupAmountSEK] = useState("100");
+  const [voucherAmount, setVoucherAmount] = useState("50");
+
+  // WebRTC Dialer & Destination Rate Drawer States
+  const [originCountry, setOriginCountry] = useState("Sweden");
+  const [callDestCountry, setCallDestCountry] = useState("Uganda");
+  const [rateDrawerOpen, setRateDrawerOpen] = useState(true);
+  const [dialPhoneNumber, setDialPhoneNumber] = useState("+256");
+  const [callActive, setCallActive] = useState(false);
+  const [callSeconds, setCallSeconds] = useState(0);
+  const [callStatusText, setCallStatusText] = useState("Ready for WebRTC Voice Trunk");
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const [processing, setProcessing] = useState(false);
 
   async function loadCockpitData(emailToLoad: string) {
     try {
       const res = await fetch(`/api/user/cockpit?email=${encodeURIComponent(emailToLoad)}`);
+      
       const data = await res.json();
+            const tariffRes = await fetch("/api/admin/tariffs");
+      const tariffData = await tariffRes.json();
+      if (tariffData.success && Array.isArray(tariffData.tariffs)) {
+        const dynamicMap: Record<string, number> = {};
+        tariffData.tariffs.forEach((t: any) => {
+          dynamicMap[t.country_prefix] = parseFloat(t.retail_rate_sek_sec);
+        });
+        setLivePrefixRates(dynamicMap);
+      }
+
       if (data.success) {
-        setProfile(data.profile);
+        setProfile(Array.isArray(data.profile) ? data.profile[0] : data.profile);
         setLedger(data.ledger || []);
         setRemittances(data.remittances || []);
         setCorridors(data.corridors || {});
@@ -43,13 +87,46 @@ export default function MemberCockpitDashboard() {
       typeof window !== "undefined"
         ? localStorage.getItem("kika_user_email") || sessionStorage.getItem("kika_user_email") || ""
         : "";
-    setUserEmail(storedEmail);
-    if (storedEmail) {
-      loadCockpitData(storedEmail);
-    } else {
-      setLoading(false);
+    if (!storedEmail) {
+      router.push("/login");
+      return;
     }
+    setUserEmail(storedEmail);
+    loadCockpitData(storedEmail);
   }, []);
+
+  async function handleWalletTopup(e: React.FormEvent) {
+    e.preventDefault();
+    setProcessing(true);
+    const res = await fetch("/api/user/cockpit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: userEmail,
+        action: "TOPUP_WALLET",
+        amountSEK: topupAmountSEK,
+        paymentProvider
+      })
+    });
+    const data = await res.json();
+    setProcessing(false);
+    alert(data.message || data.error);
+    if (data.success) loadCockpitData(userEmail);
+  }
+
+  async function handleVoucherPurchase(e: React.FormEvent) {
+    e.preventDefault();
+    setProcessing(true);
+    const res = await fetch("/api/user/cockpit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: userEmail, action: "BUY_VOIP_VOUCHER", amountSEK: voucherAmount })
+    });
+    const data = await res.json();
+    setProcessing(false);
+    alert(data.message || data.error);
+    if (data.success) loadCockpitData(userEmail);
+  }
 
   async function handleSaccoAction(e: React.FormEvent) {
     e.preventDefault();
@@ -67,20 +144,6 @@ export default function MemberCockpitDashboard() {
       setSaccoAmount("");
       loadCockpitData(userEmail);
     }
-  }
-
-  async function handleVoucherPurchase(e: React.FormEvent) {
-    e.preventDefault();
-    setProcessing(true);
-    const res = await fetch("/api/user/cockpit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: userEmail, action: "BUY_VOIP_VOUCHER", amountSEK: voucherAmount })
-    });
-    const data = await res.json();
-    setProcessing(false);
-    alert(data.message || data.error);
-    if (data.success) loadCockpitData(userEmail);
   }
 
   async function handleRemittanceSubmit(e: React.FormEvent) {
@@ -109,12 +172,66 @@ export default function MemberCockpitDashboard() {
       loadCockpitData(userEmail);
     }
   }
+
+  async function startWebRtcCall() {
+    if (!dialPhoneNumber || dialPhoneNumber.length < 6) return alert("Enter a valid international phone number.");
+    setProcessing(true);
+    setCallStatusText("Authorizing VoIP Wallet & Generating WebRTC Token...");
+
+    const res = await fetch(`/api/voip/engine?email=${encodeURIComponent(userEmail)}&to=${encodeURIComponent(dialPhoneNumber)}`);
+    const data = await res.json();
+    setProcessing(false);
+
+    if (!data.success) {
+      setCallStatusText("Call Blocked: Insufficient VoIP Credit");
+      return alert(data.error);
+    }
+
+    setCallActive(true);
+    setCallSeconds(0);
+    setCallStatusText(`🔊 Connected to ${dialPhoneNumber} (${data.tariff.destination})`);
+
+    timerRef.current = setInterval(() => {
+      setCallSeconds((prev) => prev + 1);
+    }, 1000);
+  }
+
+  async function endWebRtcCall() {
+    if (timerRef.current) clearInterval(timerRef.current);
+    const finalSeconds = Math.max(1, callSeconds);
+    setCallActive(false);
+    setCallStatusText("Settling Per-Second Call Detail Record...");
+
+    const res = await fetch("/api/voip/engine", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: userEmail,
+        dialedNumber: dialPhoneNumber,
+        durationSeconds: finalSeconds
+      })
+    });
+    const data = await res.json();
+    setCallStatusText("Call Completed & Settled");
+      const selectedCallTariff = GLOBAL_VOIP_RATES[callDestCountry] || { region: "Africa", prefix: "+256", rateMinSEK: 2.40 };
+  const ratePerSecSEK = livePrefixRates[selectedCallTariff.prefix] ?? (selectedCallTariff.rateMinSEK / 60);
+
+    if (data.success) {
+      alert(`📞 Call Ended (${data.billedSeconds}s). Billed: ${data.totalChargeSEK.toFixed(4)} SEK. Remaining VoIP Balance: ${data.remainingVoipSEK.toFixed(2)} SEK`);
+      loadCockpitData(userEmail);
+    }
+  }
   if (loading) {
     return <div style={{ padding: "40px", backgroundColor: "#0f172a", color: "#ffffff", minHeight: "100vh", fontFamily: "sans-serif" }}>⚡ Initializing Personalized KiKa Member Cockpit...</div>;
   }
 
   const activeCorridor = corridors[destCountry] || { region: "Africa", currency: "UGX", rateFromSEK: 350 };
   const previewConverted = remitAmountSEK ? (parseFloat(remitAmountSEK) * activeCorridor.rateFromSEK).toLocaleString() : "0.00";
+
+  const selectedCallTariff = GLOBAL_VOIP_RATES[callDestCountry] || { region: "Africa", prefix: "+256", rateMinSEK: 2.40 };
+  const ratePerSecSEK = selectedCallTariff.rateMinSEK / 60;
+  const currentVoipWallet = parseFloat(profile?.voip_balance_sek || "0");
+  const maxMinutesAvailable = ratePerSecSEK > 0 ? Math.floor(currentVoipWallet / selectedCallTariff.rateMinSEK) : 0;
 
   return (
     <div style={{ backgroundColor: "#0f172a", minHeight: "100vh", color: "#ffffff", fontFamily: "sans-serif" }}>
@@ -130,6 +247,7 @@ export default function MemberCockpitDashboard() {
       </header>
 
       <main style={{ maxWidth: "1050px", margin: "0 auto", padding: "30px 20px" }}>
+        {/* LIVE MEMBER BALANCES CARD */}
         <section style={{ backgroundColor: "#1e293b", padding: "24px", borderRadius: "12px", border: "1px solid #334155", marginBottom: "28px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
             <div>
@@ -144,15 +262,17 @@ export default function MemberCockpitDashboard() {
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
             <div style={{ backgroundColor: "#0f172a", padding: "18px", borderRadius: "8px", border: "1px solid #334155" }}>
-              <div style={{ fontSize: "12px", color: "#94a3b8" }}>Cooperative SACCO Savings</div>
+              <div style={{ fontSize: "12px", color: "#94a3b8" }}>Cooperative SACCO & Cash Balance</div>
               <div style={{ fontSize: "24px", fontWeight: "bold", color: "#10b981", marginTop: "6px" }}>
                 {parseFloat(profile?.savings_balance_sek || "0").toFixed(2)} <span style={{ fontSize: "14px" }}>SEK</span>
               </div>
             </div>
             <div style={{ backgroundColor: "#0f172a", padding: "18px", borderRadius: "8px", border: "1px solid #334155" }}>
-              <div style={{ fontSize: "12px", color: "#94a3b8" }}>Low-Tariff VoIP Calling Wallet</div>
+              <div style={{ fontSize: "12px", color: "#94a3b8" }}>Low-Tariff VoIP Calling Credit</div>
               <div style={{ fontSize: "24px", fontWeight: "bold", color: "#f59e0b", marginTop: "6px" }}>
-                {parseFloat(profile?.voip_balance_sek || "0").toFixed(2)} <span style={{ fontSize: "14px" }}>SEK</span>
+                {currentVoipWallet.toFixed(2)} <span style={{ fontSize: "14px" }}>SEK</span>
+                
+
               </div>
             </div>
             <div style={{ backgroundColor: "#0f172a", padding: "18px", borderRadius: "8px", border: "1px solid #334155" }}>
@@ -164,6 +284,7 @@ export default function MemberCockpitDashboard() {
           </div>
         </section>
 
+        {/* ECOSYSTEM SERVICE SELECTOR DROPDOWN */}
         <section style={{ backgroundColor: "#1e293b", padding: "24px", borderRadius: "12px", border: "1px solid #334155", marginBottom: "28px" }}>
           <label style={{ display: "block", fontSize: "12px", color: "#94a3b8", fontWeight: "bold", marginBottom: "8px", textTransform: "uppercase" }}>
             Select Ecosystem Service Module
@@ -173,11 +294,156 @@ export default function MemberCockpitDashboard() {
             onChange={(e) => setSelectedService(e.target.value)}
             style={{ width: "100%", padding: "14px", backgroundColor: "#0f172a", color: "#ffffff", border: "1px solid #a855f7", borderRadius: "8px", fontSize: "15px", fontWeight: "bold", marginBottom: "24px" }}
           >
-            <option value="SACCO_POOL">🏦 1. Cooperative SACCO Savings & Capital Deposits (SEK)</option>
-            <option value="VOIP_VOUCHER">🎙️ 2. Purchase Low-Tariff Global VoIP Calling Vouchers</option>
-            <option value="GLOBAL_REMITTANCE">🌐 3. Global Continental Remittance (Springboard: Sweden SEK)</option>
+            <option value="WEBRTC_DIALER">📞 1. Global WebRTC Per-Second VoIP Dialer & Live Rate Drawer</option>
+            <option value="VOIP_VOUCHER">💳 2. Wallet Payment Top-Up & 50 SEK / 100 SEK VoIP Vouchers</option>
+            <option value="SACCO_POOL">🏦 3. Cooperative SACCO Savings & Capital Deposits (SEK)</option>
+            <option value="GLOBAL_REMITTANCE">🌐 4. Global Continental Remittance (Springboard: Sweden SEK)</option>
           </select>
 
+          {/* MODULE 1: WEBRTC PER-SECOND DIALER & DESTINATION RATE DRAWER */}
+          {selectedService === "WEBRTC_DIALER" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <h3 style={{ margin: 0, color: "#34d399" }}>📞 WebRTC Per-Second Browser Dialer</h3>
+              <p style={{ margin: 0, fontSize: "13px", color: "#94a3b8" }}>Select your current location and destination country to inspect live per-second SEK tariffs before dialing.</p>
+         {rateDrawerOpen && (
+           <div style={{ backgroundColor: "#0f172a", padding: "16px", borderRadius: "10px", border: "1px solid #38bdf8", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
+             <div>
+               <div style={{ fontSize: "11px", color: "#38bdf8", fontWeight: "bold", textTransform: "uppercase" }}>
+                 📊 Active Corridor Rate: {originCountry} ➔ {callDestCountry} ({selectedCallTariff.region})
+               </div>
+               <div style={{ fontSize: "18px", fontWeight: "bold", color: "#ffffff", marginTop: "4px" }}>
+                 {ratePerSecSEK.toFixed(4)} SEK / second
+               </div>
+               <div style={{ fontSize: "12px", color: "#34d399", marginTop: "4px" }}>
+                 ⏱️ Available Calling Credit: <strong>{currentVoipWallet.toFixed(2)} SEK</strong>
+               </div>
+             </div>
+             <button type="button" onClick={() => setRateDrawerOpen(false)} style={{ padding: "6px 10px", backgroundColor: "#1e293b", color: "#94a3b8", border: "1px solid #334155", borderRadius: "6px", cursor: "pointer", fontSize: "11px" }}>
+               Hide Drawer
+             </button>
+           </div>
+         )}
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px" }}>
+                <div>
+                  <label style={{ fontSize: "11px", color: "#94a3b8", display: "block", marginBottom: "4px" }}>Your Current Location (Origin)</label>
+                  <select value={originCountry} onChange={(e) => setOriginCountry(e.target.value)} style={{ width: "100%", padding: "12px", backgroundColor: "#0f172a", color: "#ffffff", border: "1px solid #475569", borderRadius: "8px" }}>
+                    {Object.keys(GLOBAL_VOIP_RATES).map((country) => (
+                      <option key={`orig-${country}`} value={country}>📍 {country} ({GLOBAL_VOIP_RATES[country].region})</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: "11px", color: "#94a3b8", display: "block", marginBottom: "4px" }}>Destination Country (Click to Open Rate Drawer)</label>
+                  <select
+                    value={callDestCountry}
+                    onChange={(e) => {
+                      const chosen = e.target.value;
+                      setCallDestCountry(chosen);
+                      setDialPhoneNumber(GLOBAL_VOIP_RATES[chosen]?.prefix || "+");
+                      setRateDrawerOpen(true);
+                    }}
+                    style={{ width: "100%", padding: "12px", backgroundColor: "#0f172a", color: "#ffffff", border: "1px solid #38bdf8", borderRadius: "8px" }}
+                  >
+                    {Object.keys(GLOBAL_VOIP_RATES).map((country) => (
+                      <option key={`dest-${country}`} value={country}>🌍 {country} ({GLOBAL_VOIP_RATES[country].prefix})</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* AUTOMATED PER-SECOND TARIFF DRAWER */}
+              {rateDrawerOpen && (
+                <div style={{ backgroundColor: "#0f172a", padding: "16px", borderRadius: "10px", border: "1px solid #38bdf8", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
+                  <div>
+                    <div style={{ fontSize: "11px", color: "#38bdf8", fontWeight: "bold", textTransform: "uppercase" }}>
+                      📊 Live Corridor Tariff Drawer: {originCountry} ➔ {callDestCountry} ({selectedCallTariff.region})
+                    </div>
+                    <div style={{ fontSize: "18px", fontWeight: "bold", color: "#ffffff", marginTop: "4px" }}>
+                      {ratePerSecSEK.toFixed(4)} SEK / second <span style={{ fontSize: "13px", color: "#94a3b8", fontWeight: "normal" }}>({selectedCallTariff.rateMinSEK.toFixed(2)} SEK / min)</span>
+                    </div>
+                    <div style={{ fontSize: "12px", color: "#34d399", marginTop: "4px" }}>
+                      ⏱️ Your {currentVoipWallet.toFixed(2)} SEK VoIP Credit covers ~<strong>{maxMinutesAvailable} mins</strong> to {callDestCountry}
+                    </div>
+                  </div>
+                  <button type="button" onClick={() => setRateDrawerOpen(false)} style={{ padding: "6px 10px", backgroundColor: "#1e293b", color: "#94a3b8", border: "1px solid #334155", borderRadius: "6px", cursor: "pointer", fontSize: "11px" }}>
+                    Hide Drawer
+                  </button>
+                </div>
+              )}
+
+              {/* DIALPAD INPUT & CALL CONTROLS */}
+              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
+                <input
+                  type="tel"
+                  value={dialPhoneNumber}
+                  onChange={(e) => setDialPhoneNumber(e.target.value)}
+                  placeholder="+256700000000"
+                  disabled={callActive}
+                  style={{ flex: 1, padding: "14px", fontSize: "18px", fontFamily: "monospace", backgroundColor: "#0f172a", color: "#ffffff", border: "1px solid #475569", borderRadius: "8px" }}
+                />
+                {!callActive ? (
+                              <button type="button" onClick={startWebRtcCall} disabled={processing} style={{ padding: "14px 28px", backgroundColor: "#10b981", color: "#022c22", border: "none", borderRadius: "8px", fontWeight: "bold", fontSize: "15px", cursor: "pointer" }}>
+               {processing ? "Connecting..." : "📞 Place Call"}
+             </button>
+
+                ) : (
+                  <button type="button" onClick={endWebRtcCall} style={{ padding: "14px 28px", backgroundColor: "#dc2626", color: "#ffffff", border: "none", borderRadius: "8px", fontWeight: "bold", fontSize: "15px", cursor: "pointer" }}>
+                    🔴 Hang Up ({callSeconds}s • {(callSeconds * ratePerSecSEK).toFixed(3)} SEK)
+                  </button>
+                )}
+              </div>
+              <div style={{ fontSize: "12px", color: callActive ? "#34d399" : "#94a3b8", fontFamily: "monospace" }}>
+                Status: {callStatusText}
+              </div>
+            </div>
+          )}
+          {/* MODULE 2: WALLET TOP-UP & 50 SEK / 100 SEK VOIP VOUCHERS */}
+          {selectedService === "VOIP_VOUCHER" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+              {/* STEP A: EXTERNAL WALLET PAYMENT TO KIKA ACCOUNT */}
+              <form onSubmit={handleWalletTopup} style={{ backgroundColor: "#0f172a", padding: "18px", borderRadius: "10px", border: "1px solid #334155", display: "flex", flexDirection: "column", gap: "12px" }}>
+                <h3 style={{ margin: 0, color: "#38bdf8", fontSize: "16px" }}>💳 Step A: Fund KiKa Account from External Wallet Provider</h3>
+                <p style={{ margin: 0, fontSize: "12px", color: "#94a3b8" }}>Transfer funds from your mobile money, Swish, or bank card into your KiKa SEK balance.</p>
+                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                  <select value={paymentProvider} onChange={(e) => setPaymentProvider(e.target.value)} style={{ padding: "12px", backgroundColor: "#1e293b", color: "#ffffff", border: "1px solid #475569", borderRadius: "8px" }}>
+                    <option value="Swish Sweden">🇸🇪 Swish Sweden (SEK Instant)</option>
+                    <option value="MTN / Airtel Mobile Money">🇺🇬 MTN / Airtel Mobile Money</option>
+                    <option value="Visa / Mastercard">💳 Visa / Mastercard Global</option>
+                    <option value="SEPA / Nordic Bank">🏦 SEPA / Nordic Bank Transfer</option>
+                  </select>
+                  <select value={topupAmountSEK} onChange={(e) => setTopupAmountSEK(e.target.value)} style={{ flex: 1, padding: "12px", backgroundColor: "#1e293b", color: "#ffffff", border: "1px solid #475569", borderRadius: "8px" }}>
+                    <option value="50">50.00 SEK Wallet Credit Top-Up</option>
+                    <option value="100">100.00 SEK Wallet Credit Top-Up</option>
+                    <option value="250">250.00 SEK Diaspora Bundle Top-Up</option>
+                    <option value="500">500.00 SEK Enterprise Credit Top-Up</option>
+                  </select>
+                  <button type="submit" disabled={processing} style={{ padding: "12px 22px", backgroundColor: "#38bdf8", color: "#0f172a", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}>
+                    {processing ? "Processing..." : "Deposit Wallet Credit"}
+                  </button>
+                </div>
+              </form>
+
+              {/* STEP B: PURCHASE 50 SEK / 100 SEK CALLING VOUCHER */}
+              <form onSubmit={handleVoucherPurchase} style={{ backgroundColor: "#0f172a", padding: "18px", borderRadius: "10px", border: "1px solid #334155", display: "flex", flexDirection: "column", gap: "12px" }}>
+                <h3 style={{ margin: 0, color: "#f59e0b", fontSize: "16px" }}>🎙️ Step B: Convert SEK Balance into VoIP Calling Vouchers</h3>
+                <p style={{ margin: 0, fontSize: "12px", color: "#94a3b8" }}>Allocate 50 SEK or 100 SEK vouchers from your KiKa balance directly into your per-second calling wallet.</p>
+                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                  <select value={voucherAmount} onChange={(e) => setVoucherAmount(e.target.value)} style={{ flex: 1, padding: "12px", backgroundColor: "#1e293b", color: "#ffffff", border: "1px solid #475569", borderRadius: "8px" }}>
+                    <option value="50">50.00 SEK Standard VoIP Calling Voucher</option>
+                    <option value="100">100.00 SEK Extended VoIP Calling Voucher</option>
+                    <option value="200">200.00 SEK Executive Corridor Voucher</option>
+                  </select>
+                  <button type="submit" disabled={processing} style={{ padding: "12px 22px", backgroundColor: "#f59e0b", color: "#0f172a", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}>
+                    {processing ? "Issuing..." : "Buy Calling Voucher"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* MODULE 3: SACCO SAVINGS */}
           {selectedService === "SACCO_POOL" && (
             <form onSubmit={handleSaccoAction} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               <h3 style={{ margin: 0, color: "#34d399" }}>🏦 Cooperative SACCO Deposit & Liquidity Management</h3>
@@ -194,24 +460,8 @@ export default function MemberCockpitDashboard() {
               </div>
             </form>
           )}
-          {selectedService === "VOIP_VOUCHER" && (
-            <form onSubmit={handleVoucherPurchase} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-              <h3 style={{ margin: 0, color: "#f59e0b" }}>🎙️ Buy Low-Tariff International VoIP Calling Voucher</h3>
-              <p style={{ margin: 0, fontSize: "13px", color: "#94a3b8" }}>Convert SEK from your savings balance into instant per-second global calling credit.</p>
-              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                <select value={voucherAmount} onChange={(e) => setVoucherAmount(e.target.value)} style={{ flex: 1, padding: "12px", backgroundColor: "#0f172a", color: "#ffffff", border: "1px solid #475569", borderRadius: "8px" }}>
-                  <option value="10">10.00 SEK Starter Calling Voucher</option>
-                  <option value="25">25.00 SEK Standard Diaspora Voucher</option>
-                  <option value="50">50.00 SEK Extended Corridor Voucher</option>
-                  <option value="100">100.00 SEK Enterprise Trunk Voucher</option>
-                </select>
-                <button type="submit" disabled={processing} style={{ padding: "12px 24px", backgroundColor: "#f59e0b", color: "#0f172a", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}>
-                  {processing ? "Issuing..." : "Purchase VoIP Voucher"}
-                </button>
-              </div>
-            </form>
-          )}
 
+          {/* MODULE 4: GLOBAL CONTINENTAL REMITTANCE */}
           {selectedService === "GLOBAL_REMITTANCE" && (
             <form onSubmit={handleRemittanceSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               <h3 style={{ margin: 0, color: "#38bdf8" }}>🌐 Global Continental Remittance (Springboard: Sweden SEK)</h3>
@@ -256,6 +506,7 @@ export default function MemberCockpitDashboard() {
           )}
         </section>
 
+        {/* RECENT TRANSACTION & REMITTANCE AUDIT LEDGER */}
         <section style={{ backgroundColor: "#1e293b", padding: "24px", borderRadius: "12px", border: "1px solid #334155" }}>
           <h3 style={{ margin: "0 0 14px 0", fontSize: "16px", color: "#cbd5e1" }}>📜 Recent Account Ledger & Remittance Receipts</h3>
           {ledger.length === 0 && remittances.length === 0 ? (

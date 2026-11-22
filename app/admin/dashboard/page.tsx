@@ -6,6 +6,12 @@ export default function AdminConsoleDashboard() {
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState<boolean | null>(null);
+  const [tariffs, setTariffs] = useState<any[]>([]);
+  const [editPrefix, setEditPrefix] = useState("+256");
+  const [editDestName, setEditDestName] = useState("Uganda Mobile / Landline");
+  const [editWholesaleMin, setEditWholesaleMin] = useState("1.4500");
+  const [editRetailSec, setEditRetailSec] = useState("0.0300");
+  const [decimalPrecision, setDecimalPrecision] = useState("4");
 
    useEffect(() => {
     async function verifyAndFetchEcosystemMetrics() {
@@ -30,6 +36,10 @@ export default function AdminConsoleDashboard() {
           setMembers(data.members || []);
           setLogs(data.logs || []);
           setAuthorized(true);
+                    const tariffRes = await fetch("/api/admin/tariffs", { credentials: "include" });
+          const tariffData = await tariffRes.json();
+          if (tariffData.success) setTariffs(tariffData.tariffs || []);
+
         } else {
           setAuthorized(false);
         }
@@ -80,6 +90,92 @@ export default function AdminConsoleDashboard() {
       <div style={{ display: "flex", flexDirection: "column", gap: "30px" }}>
         <section style={{ backgroundColor: "#1e293b", padding: "24px", borderRadius: "12px", border: "1px solid #334155" }}>
           <h2 style={{ margin: "0 0 16px 0", fontSize: "18px", color: "#38bdf8" }}>👤 Demographic User Accounts Registry Ledger</h2>
+                  <section style={{ backgroundColor: "#1e293b", padding: "24px", borderRadius: "12px", border: "1px solid #334155" }}>
+          <h2 style={{ margin: "0 0 6px 0", fontSize: "18px", color: "#34d399" }}>🧮 Admin VoIP Tariff & Margin Calculation Engine (Private)</h2>
+          <p style={{ margin: "0 0 16px 0", fontSize: "12px", color: "#94a3b8" }}>
+            Calibrate Twilio wholesale per-minute costs against retail per-second customer rates to lower decimal units dynamically.
+          </p>
+
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const res = await fetch("/api/admin/tariffs", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({
+                  countryPrefix: editPrefix,
+                  destinationName: editDestName,
+                  wholesaleCostMinSEK: editWholesaleMin,
+                  retailRatePerSecSEK: editRetailSec,
+                  decimalPlaces: decimalPrecision
+                })
+              });
+              const data = await res.json();
+              alert(data.message || data.error);
+              if (data.success) window.location.reload();
+            }}
+            style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: "10px", marginBottom: "18px" }}
+          >
+            <input type="text" placeholder="Prefix (+256)" value={editPrefix} onChange={(e) => setEditPrefix(e.target.value)} required style={{ padding: "10px", backgroundColor: "#0f172a", color: "#fff", border: "1px solid #475569", borderRadius: "6px" }} />
+            <input type="text" placeholder="Corridor Name" value={editDestName} onChange={(e) => setEditDestName(e.target.value)} required style={{ padding: "10px", backgroundColor: "#0f172a", color: "#fff", border: "1px solid #475569", borderRadius: "6px" }} />
+            <input type="number" step="0.0001" placeholder="Twilio Wholesale (SEK/min)" value={editWholesaleMin} onChange={(e) => setEditWholesaleMin(e.target.value)} required style={{ padding: "10px", backgroundColor: "#0f172a", color: "#fff", border: "1px solid #475569", borderRadius: "6px" }} />
+            <input type="number" step="0.000001" placeholder="Retail Rate (SEK/sec)" value={editRetailSec} onChange={(e) => setEditRetailSec(e.target.value)} required style={{ padding: "10px", backgroundColor: "#0f172a", color: "#fff", border: "1px solid #38bdf8", borderRadius: "6px" }} />
+            <select value={decimalPrecision} onChange={(e) => setDecimalPrecision(e.target.value)} style={{ padding: "10px", backgroundColor: "#0f172a", color: "#fff", border: "1px solid #475569", borderRadius: "6px" }}>
+              <option value="2">2 Decimals (0.01)</option>
+              <option value="3">3 Decimals (0.001)</option>
+              <option value="4">4 Decimals (0.0001)</option>
+              <option value="5">5 Decimals (0.00001)</option>
+              <option value="6">6 Decimals (0.000001)</option>
+            </select>
+            <button type="submit" style={{ padding: "10px", backgroundColor: "#10b981", color: "#022c22", border: "none", borderRadius: "6px", fontWeight: "bold", cursor: "pointer" }}>
+              ⚡ Recalculate & Publish
+            </button>
+          </form>
+
+          {/* LIVE WHOLESALE VS RETAIL MARGIN PREVIEW */}
+          <div style={{ padding: "12px", backgroundColor: "#0f172a", borderRadius: "8px", border: "1px dashed #34d399", fontSize: "12px", marginBottom: "16px", fontFamily: "monospace" }}>
+            📊 <strong>Margin Simulator:</strong> Wholesale Cost = <strong>{parseFloat(editWholesaleMin || "0").toFixed(4)} SEK/min</strong> | Retail Yield = <strong>{(parseFloat(editRetailSec || "0") * 60).toFixed(4)} SEK/min</strong> ({parseFloat(editRetailSec || "0").toFixed(Number(decimalPrecision))} SEK/sec) | Net Spread ={" "}
+            <span style={{ color: (parseFloat(editRetailSec || "0") * 60) - parseFloat(editWholesaleMin || "0") >= 0 ? "#34d399" : "#f87171" }}>
+              {((parseFloat(editRetailSec || "0") * 60) - parseFloat(editWholesaleMin || "0")).toFixed(4)} SEK/min
+            </span>
+          </div>
+
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px", textAlign: "left" }}>
+              <thead>
+                <tr style={{ borderBottom: "1px solid #334155", color: "#94a3b8" }}>
+                  <th style={{ padding: "8px" }}>Prefix</th>
+                  <th style={{ padding: "8px" }}>Destination</th>
+                  <th style={{ padding: "8px" }}>Twilio Wholesale / Min</th>
+                  <th style={{ padding: "8px" }}>Published Retail / Sec</th>
+                  <th style={{ padding: "8px" }}>Retail Equivalent / Min</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tariffs.map((t: any) => (
+                  <tr
+                    key={t.tariff_id}
+                    onClick={() => {
+                      setEditPrefix(t.country_prefix);
+                      setEditDestName(t.destination_name);
+                      setEditWholesaleMin(t.wholesale_cost_sek_min);
+                      setEditRetailSec(parseFloat(t.retail_rate_sek_sec).toFixed(4));
+                    }}
+                    style={{ borderBottom: "1px solid #1e293b", cursor: "pointer" }}
+                  >
+                    <td style={{ padding: "8px", fontFamily: "monospace", color: "#38bdf8" }}>{t.country_prefix}</td>
+                    <td style={{ padding: "8px" }}>{t.destination_name}</td>
+                    <td style={{ padding: "8px", color: "#f59e0b" }}>{parseFloat(t.wholesale_cost_sek_min).toFixed(4)} SEK</td>
+                    <td style={{ padding: "8px", color: "#34d399", fontWeight: "bold" }}>{parseFloat(t.retail_rate_sek_sec).toFixed(5)} SEK/s</td>
+                    <td style={{ padding: "8px", color: "#cbd5e1" }}>{parseFloat(t.retail_rate_sek_min).toFixed(4)} SEK</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px", textAlign: "left" }}>
               <thead>

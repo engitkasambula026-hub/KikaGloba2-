@@ -11,7 +11,7 @@
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
     "@prisma/client": "^6.19.3",
-    "@twilio/voice-sdk": "^2.18.3",
+    "@twilio/voice-sdk": "^2.19.0",
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.4.5",
     "lucide-react": "^0.344.0",
@@ -21,7 +21,8 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "resend": "^6.37.0",
-    "twilio": "^6.0.2"
+    "stripe": "^23.2.0",
+    "twilio": "^6.3.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

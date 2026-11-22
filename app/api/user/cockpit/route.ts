@@ -81,6 +81,27 @@ export async function POST(request: Request) {
     const currentSavings = parseFloat(members[0].savings_balance_sek);
     const currentVoip = parseFloat(members[0].voip_balance_sek || "0");
     const txRef = `KIKA-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
+ // 0. DIRECT WALLET TOP-UP INTO MEMBER SEK ACCOUNT
+ if (action === "TOPUP_WALLET") {
+   const paymentProvider = body.paymentProvider || "Swish Sweden";
+   const newSavings = currentSavings + parsedAmount;
+
+   await sql`
+     UPDATE sacco_members
+     SET savings_balance_sek = ${newSavings}
+     WHERE LOWER(TRIM(email)) = ${cleanEmail};
+   `;
+
+   await sql`
+     INSERT INTO sacco_ledger (member_email, tx_type, amount_sek, balance_snapshot_sek, tx_reference)
+     VALUES (${cleanEmail}, ${`TOPUP_${paymentProvider.toUpperCase().replace(/\s+/g, "_")}`}, ${parsedAmount}, ${newSavings}, ${txRef});
+   `;
+
+   return NextResponse.json({
+     success: true,
+     message: `Credited ${parsedAmount.toFixed(2)} SEK via ${paymentProvider}! Ref: ${txRef}`
+   });
+ }
 
     // 1. PURCHASE VOIP LOW-TARIFF CALLING VOUCHER
     if (action === "BUY_VOIP_VOUCHER") {

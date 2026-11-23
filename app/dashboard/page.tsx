@@ -95,24 +95,33 @@ export default function MemberCockpitDashboard() {
     loadCockpitData(storedEmail);
   }, []);
 
-  async function handleWalletTopup(e: React.FormEvent) {
+    async function handleWalletTopup(e: React.FormEvent) {
     e.preventDefault();
     setProcessing(true);
-    const res = await fetch("/api/user/cockpit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: userEmail,
-        action: "TOPUP_WALLET",
-        amountSEK: topupAmountSEK,
-        paymentProvider
-      })
-    });
-    const data = await res.json();
-    setProcessing(false);
-    alert(data.message || data.error);
-    if (data.success) loadCockpitData(userEmail);
+    try {
+      const res = await fetch("/api/payments/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: userEmail,
+          amountSEK: topupAmountSEK,
+          paymentProvider
+        })
+      });
+      const data = await res.json();
+      setProcessing(false);
+
+      if (data.success && data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      } else {
+        alert(data.error || "Unable to initialize Stripe Checkout.");
+      }
+    } catch (err: any) {
+      setProcessing(false);
+      alert(err.message || "Network error connecting to Stripe.");
+    }
   }
+
 
   async function handleVoucherPurchase(e: React.FormEvent) {
     e.preventDefault();

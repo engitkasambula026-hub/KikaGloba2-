@@ -1,6 +1,9 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { STRIPE_PAYMENT_METHODS, AZ_COUNTRY_VOIP_RATES } from "../../lib/kika-directory";
+
+
 
 const GLOBAL_VOIP_RATES: Record<string, { region: string; prefix: string; rateMinSEK: number }> = {
   "Sweden": { region: "Europe", prefix: "+46", rateMinSEK: 0.35 },
@@ -38,10 +41,38 @@ export default function MemberCockpitDashboard() {
   const [recipientPhone, setRecipientPhone] = useState("");
   const [remitAmountSEK, setRemitAmountSEK] = useState("");
 
-  // Wallet Payment Top-Up & Voucher States
-  const [paymentProvider, setPaymentProvider] = useState("Swish Sweden");
-  const [topupAmountSEK, setTopupAmountSEK] = useState("100");
-  const [voucherAmount, setVoucherAmount] = useState("50");
+  // Wallet Payment Top-Up & Voucher States  
+const [paymentProvider, setPaymentProvider] = useState("Visa / Mastercard");
+const [topupAmountSEK, setTopupAmountSEK] = useState("10");
+const [voucherAmount, setVoucherAmount] = useState("5");
+  const [rateSearch, setRateSearch] = useState("");
+  const [selectedCorridor, setSelectedCorridor] = useState("ALL");
+  const [gpsLocation, setGpsLocation] = useState<{ lat: string; lng: string; status: string }>({
+    lat: "",
+    lng: "",
+    status: "Pin Ready"
+  });
+
+  function detectUserGpsPin() {
+    if (!navigator.geolocation) {
+      setGpsLocation({ lat: "", lng: "", status: "GPS Unsupported" });
+      return;
+    }
+    setGpsLocation({ lat: "", lng: "", status: "Locating..." });
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setGpsLocation({
+          lat: pos.coords.latitude.toFixed(5),
+          lng: pos.coords.longitude.toFixed(5),
+          status: "GPS Verified"
+        });
+      },
+      () => {
+        setGpsLocation({ lat: "", lng: "", status: "Permission Denied" });
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
 
   // WebRTC Dialer & Destination Rate Drawer States
   const [originCountry, setOriginCountry] = useState("Sweden");
@@ -137,9 +168,10 @@ export default function MemberCockpitDashboard() {
     if (data.success) loadCockpitData(userEmail);
   }
 
+
   async function handleSaccoAction(e: React.FormEvent) {
     e.preventDefault();
-    if (!saccoAmount || parseFloat(saccoAmount) <= 0) return alert("Enter a valid SEK amount.");
+    if (!saccoAmount || parseFloat(saccoAmount) <= 0) return alert("Enter a valid USD amount.");
     setProcessing(true);
     const res = await fetch("/api/sacco/engine", {
       method: "POST",
@@ -157,7 +189,7 @@ export default function MemberCockpitDashboard() {
 
   async function handleRemittanceSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!remitAmountSEK || parseFloat(remitAmountSEK) <= 0) return alert("Enter a valid SEK amount.");
+    if (!remitAmountSEK || parseFloat(remitAmountSEK) <= 0) return alert("Enter a valid USD amount.");
     setProcessing(true);
     const res = await fetch("/api/user/cockpit", {
       method: "POST",
@@ -181,6 +213,13 @@ export default function MemberCockpitDashboard() {
       loadCockpitData(userEmail);
     }
   }
+<button
+  type="button"
+  onClick={detectUserGpsPin}
+  style={{ padding: "8px 14px", borderRadius: "999px", background: "#0f172a", border: "1px solid #06b6d4", color: "#38bdf8", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}
+>
+  📍 {gpsLocation.lat ? `${gpsLocation.lat}, ${gpsLocation.lng}` : gpsLocation.status}
+</button>
 
   async function startWebRtcCall() {
     if (!dialPhoneNumber || dialPhoneNumber.length < 6) return alert("Enter a valid international phone number.");
@@ -226,7 +265,7 @@ export default function MemberCockpitDashboard() {
   const ratePerSecSEK = livePrefixRates[selectedCallTariff.prefix] ?? (selectedCallTariff.rateMinSEK / 60);
 
     if (data.success) {
-      alert(`📞 Call Ended (${data.billedSeconds}s). Billed: ${data.totalChargeSEK.toFixed(4)} SEK. Remaining VoIP Balance: ${data.remainingVoipSEK.toFixed(2)} SEK`);
+      alert(`📞 Call Ended (${data.billedSeconds}s). Billed: ${data.totalChargeSEK.toFixed(4)} USD. Remaining VoIP Balance: ${data.remainingVoipSEK.toFixed(2)} USD`);
       loadCockpitData(userEmail);
     }
   }
@@ -246,7 +285,7 @@ export default function MemberCockpitDashboard() {
     <div style={{ backgroundColor: "#0f172a", minHeight: "100vh", color: "#ffffff", fontFamily: "sans-serif" }}>
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 32px", backgroundColor: "#1e293b", borderBottom: "1px solid #334155" }}>
         <div>
-          <span style={{ fontSize: "11px", color: "#34d399", fontWeight: "bold", fontFamily: "monospace" }}>[ SWEDEN SEK SPRINGBOARD NODE ]</span>
+          <span style={{ fontSize: "11px", color: "#34d399", fontWeight: "bold", fontFamily: "monospace" }}>[ SWEDEN USD SPRINGBOARD NODE ]</span>
           <h1 style={{ margin: "2px 0 0 0", fontSize: "20px" }}>🌍 KiKa Member Cockpit</h1>
         </div>
         <div style={{ display: "flex", gap: "10px" }}>
@@ -265,7 +304,7 @@ export default function MemberCockpitDashboard() {
               <div style={{ fontSize: "12px", color: "#38bdf8" }}>{userEmail}</div>
             </div>
             <span style={{ padding: "6px 12px", backgroundColor: "#064e3b", color: "#34d399", borderRadius: "20px", fontSize: "12px", fontWeight: "bold" }}>
-              🟢 {profile?.account_status || "ACTIVE"} | Base: Sweden (SEK)
+              🟢 {profile?.account_status || "ACTIVE"} | Base: Sweden (USD)
             </span>
           </div>
 
@@ -273,13 +312,13 @@ export default function MemberCockpitDashboard() {
             <div style={{ backgroundColor: "#0f172a", padding: "18px", borderRadius: "8px", border: "1px solid #334155" }}>
               <div style={{ fontSize: "12px", color: "#94a3b8" }}>Cooperative SACCO & Cash Balance</div>
               <div style={{ fontSize: "24px", fontWeight: "bold", color: "#10b981", marginTop: "6px" }}>
-                {parseFloat(profile?.savings_balance_sek || "0").toFixed(2)} <span style={{ fontSize: "14px" }}>SEK</span>
+                {parseFloat(profile?.savings_balance_sek || "0").toFixed(2)} <span style={{ fontSize: "14px" }}>USD</span>
               </div>
             </div>
             <div style={{ backgroundColor: "#0f172a", padding: "18px", borderRadius: "8px", border: "1px solid #334155" }}>
               <div style={{ fontSize: "12px", color: "#94a3b8" }}>Low-Tariff VoIP Calling Credit</div>
               <div style={{ fontSize: "24px", fontWeight: "bold", color: "#f59e0b", marginTop: "6px" }}>
-                {currentVoipWallet.toFixed(2)} <span style={{ fontSize: "14px" }}>SEK</span>
+                {currentVoipWallet.toFixed(2)} <span style={{ fontSize: "14px" }}>USD</span>
                 
 
               </div>
@@ -304,16 +343,16 @@ export default function MemberCockpitDashboard() {
             style={{ width: "100%", padding: "14px", backgroundColor: "#0f172a", color: "#ffffff", border: "1px solid #a855f7", borderRadius: "8px", fontSize: "15px", fontWeight: "bold", marginBottom: "24px" }}
           >
             <option value="WEBRTC_DIALER">📞 1. Global WebRTC Per-Second VoIP Dialer & Live Rate Drawer</option>
-            <option value="VOIP_VOUCHER">💳 2. Wallet Payment Top-Up & 50 SEK / 100 SEK VoIP Vouchers</option>
-            <option value="SACCO_POOL">🏦 3. Cooperative SACCO Savings & Capital Deposits (SEK)</option>
-            <option value="GLOBAL_REMITTANCE">🌐 4. Global Continental Remittance (Springboard: Sweden SEK)</option>
+            <option value="VOIP_VOUCHER">💳 2. Wallet Payment Top-Up & 50 USD / 100 USD VoIP Vouchers</option>
+            <option value="SACCO_POOL">🏦 3. Cooperative SACCO Savings & Capital Deposits (USD)</option>
+            <option value="GLOBAL_REMITTANCE">🌐 4. Global Continental Remittance (Springboard: Sweden USD)</option>
           </select>
 
           {/* MODULE 1: WEBRTC PER-SECOND DIALER & DESTINATION RATE DRAWER */}
           {selectedService === "WEBRTC_DIALER" && (
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               <h3 style={{ margin: 0, color: "#34d399" }}>📞 WebRTC Per-Second Browser Dialer</h3>
-              <p style={{ margin: 0, fontSize: "13px", color: "#94a3b8" }}>Select your current location and destination country to inspect live per-second SEK tariffs before dialing.</p>
+              <p style={{ margin: 0, fontSize: "13px", color: "#94a3b8" }}>Select your current location and destination country to inspect live per-second USD tariffs before dialing.</p>
          {rateDrawerOpen && (
            <div style={{ backgroundColor: "#0f172a", padding: "16px", borderRadius: "10px", border: "1px solid #38bdf8", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
              <div>
@@ -321,12 +360,62 @@ export default function MemberCockpitDashboard() {
                  📊 Active Corridor Rate: {originCountry} ➔ {callDestCountry} ({selectedCallTariff.region})
                </div>
                <div style={{ fontSize: "18px", fontWeight: "bold", color: "#ffffff", marginTop: "4px" }}>
-                 {ratePerSecSEK.toFixed(4)} SEK / second
+                 {ratePerSecSEK.toFixed(4)} USD / second
                </div>
                <div style={{ fontSize: "12px", color: "#34d399", marginTop: "4px" }}>
-                 ⏱️ Available Calling Credit: <strong>{currentVoipWallet.toFixed(2)} SEK</strong>
+                 ⏱️ Available Calling Credit: <strong>{currentVoipWallet.toFixed(2)} USD</strong>
                </div>
              </div>
+             <details style={{ marginTop: "18px", background: "#090d16", border: "1px solid #1e293b", borderRadius: "12px", padding: "14px" }}>
+  <summary style={{ cursor: "pointer", fontWeight: 700, color: "#38bdf8", fontSize: "14px" }}>
+    🌍 A–Z Global Country Calling Directory & Twilio Per-Minute Rates ({AZ_COUNTRY_VOIP_RATES.length} Countries)
+  </summary>
+  <div style={{ marginTop: "12px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
+    <input
+      type="text"
+      placeholder="Search A–Z country or +code (e.g. Uganda, Sweden, +256)..."
+      value={rateSearch}
+      onChange={(e) => setRateSearch(e.target.value)}
+      style={{ flex: 2, minWidth: "200px", padding: "10px", borderRadius: "8px", background: "#0f172a", border: "1px solid #334155", color: "#f8fafc", fontSize: "13px" }}
+    />
+    <select
+      value={selectedCorridor}
+      onChange={(e) => setSelectedCorridor(e.target.value)}
+      style={{ flex: 1, minWidth: "150px", padding: "10px", borderRadius: "8px", background: "#0f172a", border: "1px solid #334155", color: "#f8fafc", fontSize: "13px" }}
+    >
+      <option value="ALL">All Regions (A–Z)</option>
+      <option value="Africa">Africa</option>
+      <option value="Europe">Europe</option>
+      <option value="North America">North America</option>
+      <option value="Asia & Middle East">Asia & Middle East</option>
+      <option value="Oceania & Americas">Oceania & Americas</option>
+    </select>
+  </div>
+  <div style={{ marginTop: "12px", maxHeight: "260px", overflowY: "auto", display: "grid", gap: "6px" }}>
+    {AZ_COUNTRY_VOIP_RATES.filter((c) => {
+      const matchesRegion = selectedCorridor === "ALL" || c.corridor === selectedCorridor;
+      const q = rateSearch.toLowerCase().trim();
+      const matchesQuery = !q || c.country.toLowerCase().includes(q) || c.dialPrefix.includes(q);
+      return matchesRegion && matchesQuery;
+    }).map((item) => (
+      <div
+        key={item.code}
+        onClick={() => setDialPhoneNumber(item.dialPrefix)}
+        style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", borderRadius: "8px", background: "#0f172a", border: "1px solid #1e293b", cursor: "pointer", fontSize: "13px" }}
+      >
+        <span>
+          <strong style={{ color: "#f8fafc" }}>{item.country}</strong>{" "}
+          <span style={{ color: "#38bdf8", fontWeight: 700 }}>({item.dialPrefix})</span>{" "}
+          <span style={{ color: "#64748b", fontSize: "11px" }}>• {item.corridor}</span>
+        </span>
+        <span style={{ color: "#10b981", fontWeight: 700 }}>
+          ${item.ratePerMinUSD.toFixed(2)} USD/min (${(item.ratePerMinUSD / 60).toFixed(4)}/sec)
+        </span>
+      </div>
+    ))}
+  </div>
+</details>
+
              <button type="button" onClick={() => setRateDrawerOpen(false)} style={{ padding: "6px 10px", backgroundColor: "#1e293b", color: "#94a3b8", border: "1px solid #334155", borderRadius: "6px", cursor: "pointer", fontSize: "11px" }}>
                Hide Drawer
              </button>
@@ -370,10 +459,10 @@ export default function MemberCockpitDashboard() {
                       📊 Live Corridor Tariff Drawer: {originCountry} ➔ {callDestCountry} ({selectedCallTariff.region})
                     </div>
                     <div style={{ fontSize: "18px", fontWeight: "bold", color: "#ffffff", marginTop: "4px" }}>
-                      {ratePerSecSEK.toFixed(4)} SEK / second <span style={{ fontSize: "13px", color: "#94a3b8", fontWeight: "normal" }}>({selectedCallTariff.rateMinSEK.toFixed(2)} SEK / min)</span>
+                      {ratePerSecSEK.toFixed(4)} USD / second <span style={{ fontSize: "13px", color: "#94a3b8", fontWeight: "normal" }}>({selectedCallTariff.rateMinSEK.toFixed(2)} USD / min)</span>
                     </div>
                     <div style={{ fontSize: "12px", color: "#34d399", marginTop: "4px" }}>
-                      ⏱️ Your {currentVoipWallet.toFixed(2)} SEK VoIP Credit covers ~<strong>{maxMinutesAvailable} mins</strong> to {callDestCountry}
+                      ⏱️ Your {currentVoipWallet.toFixed(2)} USD VoIP Credit covers ~<strong>{maxMinutesAvailable} mins</strong> to {callDestCountry}
                     </div>
                   </div>
                   <button type="button" onClick={() => setRateDrawerOpen(false)} style={{ padding: "6px 10px", backgroundColor: "#1e293b", color: "#94a3b8", border: "1px solid #334155", borderRadius: "6px", cursor: "pointer", fontSize: "11px" }}>
@@ -399,7 +488,7 @@ export default function MemberCockpitDashboard() {
 
                 ) : (
                   <button type="button" onClick={endWebRtcCall} style={{ padding: "14px 28px", backgroundColor: "#dc2626", color: "#ffffff", border: "none", borderRadius: "8px", fontWeight: "bold", fontSize: "15px", cursor: "pointer" }}>
-                    🔴 Hang Up ({callSeconds}s • {(callSeconds * ratePerSecSEK).toFixed(3)} SEK)
+                    🔴 Hang Up ({callSeconds}s • {(callSeconds * ratePerSecSEK).toFixed(3)} USD)
                   </button>
                 )}
               </div>
@@ -408,25 +497,26 @@ export default function MemberCockpitDashboard() {
               </div>
             </div>
           )}
-          {/* MODULE 2: WALLET TOP-UP & 50 SEK / 100 SEK VOIP VOUCHERS */}
+          {/* MODULE 2: WALLET TOP-UP & 50 USD / 100 USD VOIP VOUCHERS */}
           {selectedService === "VOIP_VOUCHER" && (
             <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
               {/* STEP A: EXTERNAL WALLET PAYMENT TO KIKA ACCOUNT */}
               <form onSubmit={handleWalletTopup} style={{ backgroundColor: "#0f172a", padding: "18px", borderRadius: "10px", border: "1px solid #334155", display: "flex", flexDirection: "column", gap: "12px" }}>
                 <h3 style={{ margin: 0, color: "#38bdf8", fontSize: "16px" }}>💳 Step A: Fund KiKa Account from External Wallet Provider</h3>
-                <p style={{ margin: 0, fontSize: "12px", color: "#94a3b8" }}>Transfer funds from your mobile money, Swish, or bank card into your KiKa SEK balance.</p>
+                <p style={{ margin: 0, fontSize: "12px", color: "#94a3b8" }}>Transfer funds from your mobile money, Swish, or bank card into your KiKa USD balance.</p>
                 <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
                   <select value={paymentProvider} onChange={(e) => setPaymentProvider(e.target.value)} style={{ padding: "12px", backgroundColor: "#1e293b", color: "#ffffff", border: "1px solid #475569", borderRadius: "8px" }}>
-                    <option value="Swish Sweden">🇸🇪 Swish Sweden (SEK Instant)</option>
+                    <option value="Swish Sweden">🇸🇪 Swish Sweden (USD Instant)</option>
                     <option value="MTN / Airtel Mobile Money">🇺🇬 MTN / Airtel Mobile Money</option>
                     <option value="Visa / Mastercard">💳 Visa / Mastercard Global</option>
                     <option value="SEPA / Nordic Bank">🏦 SEPA / Nordic Bank Transfer</option>
                   </select>
                   <select value={topupAmountSEK} onChange={(e) => setTopupAmountSEK(e.target.value)} style={{ flex: 1, padding: "12px", backgroundColor: "#1e293b", color: "#ffffff", border: "1px solid #475569", borderRadius: "8px" }}>
-                    <option value="50">50.00 SEK Wallet Credit Top-Up</option>
-                    <option value="100">100.00 SEK Wallet Credit Top-Up</option>
-                    <option value="250">250.00 SEK Diaspora Bundle Top-Up</option>
-                    <option value="500">500.00 SEK Enterprise Credit Top-Up</option>
+               <option value="5">$5.00 USD Global Credit Top-Up</option>
+<option value="10">$10.00 USD Global Credit Top-Up</option>
+<option value="25">$25.00 USD Diaspora Bundle Top-Up</option>
+<option value="50">$50.00 USD Enterprise Credit Top-Up</option>
+
                   </select>
                   <button type="submit" disabled={processing} style={{ padding: "12px 22px", backgroundColor: "#38bdf8", color: "#0f172a", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}>
                     {processing ? "Processing..." : "Deposit Wallet Credit"}
@@ -434,16 +524,18 @@ export default function MemberCockpitDashboard() {
                 </div>
               </form>
 
-              {/* STEP B: PURCHASE 50 SEK / 100 SEK CALLING VOUCHER */}
+              {/* STEP B: PURCHASE 50 USD / 100 USD CALLING VOUCHER */}
               <form onSubmit={handleVoucherPurchase} style={{ backgroundColor: "#0f172a", padding: "18px", borderRadius: "10px", border: "1px solid #334155", display: "flex", flexDirection: "column", gap: "12px" }}>
-                <h3 style={{ margin: 0, color: "#f59e0b", fontSize: "16px" }}>🎙️ Step B: Convert SEK Balance into VoIP Calling Vouchers</h3>
-                <p style={{ margin: 0, fontSize: "12px", color: "#94a3b8" }}>Allocate 50 SEK or 100 SEK vouchers from your KiKa balance directly into your per-second calling wallet.</p>
+                <h3 style={{ margin: 0, color: "#f59e0b", fontSize: "16px" }}>🎙️ Step B: Convert USD Balance into VoIP Calling Vouchers</h3>
+                <p style={{ margin: 0, fontSize: "12px", color: "#94a3b8" }}>Allocate 50 USD or 100 USD vouchers from your KiKa balance directly into your per-second calling wallet.</p>
                 <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                  <select value={voucherAmount} onChange={(e) => setVoucherAmount(e.target.value)} style={{ flex: 1, padding: "12px", backgroundColor: "#1e293b", color: "#ffffff", border: "1px solid #475569", borderRadius: "8px" }}>
-                    <option value="50">50.00 SEK Standard VoIP Calling Voucher</option>
-                    <option value="100">100.00 SEK Extended VoIP Calling Voucher</option>
-                    <option value="200">200.00 SEK Executive Corridor Voucher</option>
-                  </select>
+                  <select value={voucherAmount} onChange={(e) => setVoucherAmount(e.target.value)} style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "#090d16", border: "1px solid #334155", color: "#f8fafc" }}>
+  <option value="5">$5.00 USD Standard VoIP Calling Voucher</option>
+  <option value="10">$10.00 USD Extended VoIP Calling Voucher</option>
+  <option value="25">$25.00 USD Executive Corridor Voucher</option>
+</select>
+
+
                   <button type="submit" disabled={processing} style={{ padding: "12px 22px", backgroundColor: "#f59e0b", color: "#0f172a", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}>
                     {processing ? "Issuing..." : "Buy Calling Voucher"}
                   </button>
@@ -456,13 +548,13 @@ export default function MemberCockpitDashboard() {
           {selectedService === "SACCO_POOL" && (
             <form onSubmit={handleSaccoAction} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               <h3 style={{ margin: 0, color: "#34d399" }}>🏦 Cooperative SACCO Deposit & Liquidity Management</h3>
-              <p style={{ margin: 0, fontSize: "13px", color: "#94a3b8" }}>Deposits automatically increase your SEK pool balance and raise your algorithmic credit score.</p>
+              <p style={{ margin: 0, fontSize: "13px", color: "#94a3b8" }}>Deposits automatically increase your USD pool balance and raise your algorithmic credit score.</p>
               <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
                 <select value={saccoType} onChange={(e) => setSaccoType(e.target.value)} style={{ padding: "12px", backgroundColor: "#0f172a", color: "#ffffff", border: "1px solid #475569", borderRadius: "8px" }}>
-                  <option value="DEPOSIT">📥 Deposit Funds (SEK)</option>
-                  <option value="WITHDRAWAL">📤 Withdraw Funds (SEK)</option>
+                  <option value="DEPOSIT">📥 Deposit Funds (USD)</option>
+                  <option value="WITHDRAWAL">📤 Withdraw Funds (USD)</option>
                 </select>
-                <input type="number" placeholder="Amount in SEK (e.g. 500)" value={saccoAmount} onChange={(e) => setSaccoAmount(e.target.value)} required style={{ flex: 1, padding: "12px", backgroundColor: "#0f172a", color: "#ffffff", border: "1px solid #475569", borderRadius: "8px" }} />
+                <input type="number" placeholder="Amount in USD (e.g. 500)" value={saccoAmount} onChange={(e) => setSaccoAmount(e.target.value)} required style={{ flex: 1, padding: "12px", backgroundColor: "#0f172a", color: "#ffffff", border: "1px solid #475569", borderRadius: "8px" }} />
                 <button type="submit" disabled={processing} style={{ padding: "12px 24px", backgroundColor: "#10b981", color: "#022c22", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}>
                   {processing ? "Settling..." : "Execute SACCO Entry"}
                 </button>
@@ -473,8 +565,8 @@ export default function MemberCockpitDashboard() {
           {/* MODULE 4: GLOBAL CONTINENTAL REMITTANCE */}
           {selectedService === "GLOBAL_REMITTANCE" && (
             <form onSubmit={handleRemittanceSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-              <h3 style={{ margin: 0, color: "#38bdf8" }}>🌐 Global Continental Remittance (Springboard: Sweden SEK)</h3>
-              <p style={{ margin: 0, fontSize: "13px", color: "#94a3b8" }}>Send instant cross-border transfers from your SEK balance to major countries across all continents.</p>
+              <h3 style={{ margin: 0, color: "#38bdf8" }}>🌐 Global Continental Remittance (Springboard: Sweden USD)</h3>
+              <p style={{ margin: 0, fontSize: "13px", color: "#94a3b8" }}>Send instant cross-border transfers from your USD balance to major countries across all continents.</p>
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
                 <select value={destCountry} onChange={(e) => setDestCountry(e.target.value)} style={{ padding: "12px", backgroundColor: "#0f172a", color: "#ffffff", border: "1px solid #475569", borderRadius: "8px" }}>
@@ -485,7 +577,7 @@ export default function MemberCockpitDashboard() {
                     <option value="South Africa">South Africa (ZAR)</option>
                   </optgroup>
                   <optgroup label="🇪🇺 Europe">
-                    <option value="Sweden (Local)">Sweden (SEK)</option>
+                    <option value="Sweden (Local)">Sweden (USD)</option>
                     <option value="United Kingdom">United Kingdom (GBP)</option>
                     <option value="Eurozone (DE/FR/NL)">Eurozone (EUR)</option>
                   </optgroup>
@@ -501,15 +593,15 @@ export default function MemberCockpitDashboard() {
 
                 <input type="text" placeholder="Recipient Full Name" value={recipientName} onChange={(e) => setRecipientName(e.target.value)} required style={{ padding: "12px", backgroundColor: "#0f172a", color: "#ffffff", border: "1px solid #475569", borderRadius: "8px" }} />
                 <input type="text" placeholder="Recipient Mobile (+256...)" value={recipientPhone} onChange={(e) => setRecipientPhone(e.target.value)} required style={{ padding: "12px", backgroundColor: "#0f172a", color: "#ffffff", border: "1px solid #475569", borderRadius: "8px" }} />
-                <input type="number" placeholder="Send Amount (SEK)" value={remitAmountSEK} onChange={(e) => setRemitAmountSEK(e.target.value)} required style={{ padding: "12px", backgroundColor: "#0f172a", color: "#ffffff", border: "1px solid #475569", borderRadius: "8px" }} />
+                <input type="number" placeholder="Send Amount (USD)" value={remitAmountSEK} onChange={(e) => setRemitAmountSEK(e.target.value)} required style={{ padding: "12px", backgroundColor: "#0f172a", color: "#ffffff", border: "1px solid #475569", borderRadius: "8px" }} />
               </div>
 
               <div style={{ padding: "12px", backgroundColor: "#0f172a", borderRadius: "8px", border: "1px dashed #38bdf8", fontSize: "13px", color: "#bae6fd" }}>
-                💱 <strong>Live Springboard Conversion ({activeCorridor.region} – {destCountry}):</strong> Recipient receives <strong>{previewConverted} {activeCorridor.currency}</strong> (Rate: 1 SEK = {activeCorridor.rateFromSEK} {activeCorridor.currency})
+                💱 <strong>Live Springboard Conversion ({activeCorridor.region} – {destCountry}):</strong> Recipient receives <strong>{previewConverted} {activeCorridor.currency}</strong> (Rate: 1 USD = {activeCorridor.rateFromSEK} {activeCorridor.currency})
               </div>
 
               <button type="submit" disabled={processing} style={{ padding: "14px", backgroundColor: "#38bdf8", color: "#0f172a", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer", fontSize: "14px" }}>
-                {processing ? "Dispatching..." : `Send Remittance from Sweden (SEK) to ${destCountry}`}
+                {processing ? "Dispatching..." : `Send Remittance from Sweden (USD) to ${destCountry}`}
               </button>
             </form>
           )}
@@ -524,13 +616,13 @@ export default function MemberCockpitDashboard() {
             <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "12px", fontFamily: "monospace" }}>
               {remittances.map((r: any, idx: number) => (
                 <div key={`remit-${idx}`} style={{ padding: "10px", backgroundColor: "#0f172a", borderRadius: "6px", border: "1px solid #334155", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
-                  <span>🌐 [{r.continental_region} / {r.destination_country}] Sent <strong>{parseFloat(r.amount_sek).toFixed(2)} SEK</strong> → <strong>{parseFloat(r.converted_amount).toLocaleString()} {r.target_currency}</strong> ({r.recipient_name})</span>
+                  <span>🌐 [{r.continental_region} / {r.destination_country}] Sent <strong>{parseFloat(r.amount_sek).toFixed(2)} USD</strong> → <strong>{parseFloat(r.converted_amount).toLocaleString()} {r.target_currency}</strong> ({r.recipient_name})</span>
                   <span style={{ color: "#38bdf8" }}>{r.tx_reference}</span>
                 </div>
               ))}
               {ledger.map((tx: any, idx: number) => (
                 <div key={`tx-${idx}`} style={{ padding: "10px", backgroundColor: "#0f172a", borderRadius: "6px", border: "1px solid #334155", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
-                  <span>💳 [{tx.tx_type}] {parseFloat(tx.amount_sek).toFixed(2)} SEK | Balance Snapshot: {parseFloat(tx.balance_snapshot_sek).toFixed(2)} SEK</span>
+                  <span>💳 [{tx.tx_type}] {parseFloat(tx.amount_sek).toFixed(2)} USD | Balance Snapshot: {parseFloat(tx.balance_snapshot_sek).toFixed(2)} USD</span>
                   <span style={{ color: "#10b981" }}>{tx.tx_reference}</span>
                 </div>
               ))}

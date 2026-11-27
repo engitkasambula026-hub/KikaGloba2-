@@ -1,117 +1,160 @@
-// app/api/remittance/transfer/route.ts
 import { NextResponse } from "next/server";
-import crypto from "crypto";
-
-// Unified safe-load module fallback tracking strategy to avoid local import deadlocks
-let ormEngine: any = null;
-try {
-  const dbModule = require("@/lib/db");
-  ormEngine = dbModule.db || dbModule.default;
-} catch (e) {
-  try {
-    const prismaModule = require("@/lib/prisma");
-    ormEngine = prismaModule.prisma || prismaModule.default;
-  } catch (err) {
-    console.error("[REMITTANCE DATA ENGINE DEADLOCK]: Could not mount database context maps.");
-  }
-}
+import { neon } from "@neondatabase/serverless";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(req: Request) {
+const FX_RATES_FROM_USD: Record<string, number> = {
+  USD: 1.0,
+  UGX: 3720.0,
+  KES: 129.5,
+  SEK: 10.5,
+  EUR: 0.92,
+  GBP: 0.79
+};
+
+export async function POST(request: Request) {
   try {
-    const body = await req.json();
-    const { 
-      transferType, recipientAccount, recipientName, amount, currency,
-      targetSaccoId, targetBankName, bankBranch,
-      cardHolderName, cardNumber, cardExpiry, cardCvc 
+    const body = await request.json();
+    const {
+      senderEmail,
+      transferChannel, // "INTERNAL_MEMBER" | "MOBILE_MONEY" | "BANK_ACCOUNT"
+      recipientName,
+      recipientIdentifier, // Member email, Mobile Money phone (+256...), or Bank IBAN/Account
+      providerOrBank, // e.g., "MTN MoMo Uganda", "Airtel Money", "Swedbank IBAN", "Stanbic Bank"
+      targetCurrency, // "UGX" | "KES" | "SEK" | "EUR" | "GBP" | "USD"
+      amountUSD
     } = body;
 
-    // 1. Core Cryptographic Card Parameters Structural Safeguard Validation
-    if (!amount || !cardNumber || !cardCvc || !cardHolderName || !recipientName) {
+    const cleanSender = senderEmail?.toLowerCase().trim();
+    const numericUSD = parseFloat(amountUSD || "0");
+    const currency = (targetCurrency || "UGX").toUpperCase();
+    const fxRate = FX_RATES_FROM_USD[currency] || 1.0;
+
+    if (!cleanSender || numericUSD < 1 || !recipientIdentifier) {
       return NextResponse.json(
-        { error: "Required core funding source or recipient target parameters are missing." }, 
-        { status: 400, headers: { "Access-Control-Allow-Origin": "*" } }
+        { success: false, error: "Valid sender, recipient details, and minimum $1.00 USD required." },
+        { status: 400 }
       );
     }
 
-    if (!ormEngine) {
+    const feeUSD = transferChannel === "INTERNAL_MEMBER" ? 0 : Number((numericUSD * 0.015).toFixed(2)); // 0% internal, 1.5% external
+    const totalDebitUSD = Number((numericUSD + feeUSD).toFixed(2));
+    const convertedPayout = Number((numericUSD * fxRate).toFixed(2));
+    const txRef = `REMIT-${Date.now().toString(36).toUpperCase()}`;
+
+    const sql = neon(process.env.DATABASE_URL || "");
+
+    // Ensure audit table exists
+    await sql`
+      CREATE TABLE IF NOT EXISTS remittance_transfers (
+        id SERIAL PRIMARY KEY,
+        tx_reference TEXT UNIQUE NOT NULL,
+        sender_email TEXT NOT NULL,
+        transfer_channel TEXT NOT NULL,
+        recipient_name TEXT,
+        recipient_identifier TEXT NOT NULL,
+        provider_or_bank TEXT,
+        amount_usd NUMERIC(12,2) NOT NULL,
+        fee_usd NUMERIC(12,2) NOT NULL,
+        target_currency TEXT NOT NULL,
+        converted_amount NUMERIC(14,2) NOT NULL,
+        fx_rate NUMERIC(12,4) NOT NULL,
+        status TEXT NOT NULL DEFAULT 'COMPLETED',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `;
+
+    // Verify sender balance
+    const senderRows = await sql`
+      SELECT savings_balance_sek, status
+      FROM sacco_members
+      WHERE LOWER(TRIM(email)) = ${cleanSender}
+      LIMIT 1;
+    `;
+
+    if (!senderRows.length) {
+      return NextResponse.json({ success: false, error: "Sender account not found." }, { status: 404 });
+    }
+
+    const currentBalance = parseFloat(senderRows[0].savings_balance_sek || "0");
+    if (currentBalance < totalDebitUSD) {
       return NextResponse.json(
-        { error: "Ecosystem core ledger synchronization database is completely offline." }, 
-        { status: 500, headers: { "Access-Control-Allow-Origin": "*" } }
+        {
+          success: false,
+          error: `Insufficient wallet balance ($${currentBalance.toFixed(2)} USD available; $${totalDebitUSD.toFixed(2)} USD needed including $${feeUSD.toFixed(2)} fee).`
+        },
+        { status: 400 }
       );
     }
 
-    const numericAmount = parseFloat(amount);
-    if (isNaN(numericAmount) || numericAmount <= 0) {
-      return NextResponse.json({ error: "Invalid transactional principal payment amount value." }, { status: 400 });
+    // 1. Debit sender USD wallet
+    const debited = await sql`
+      UPDATE sacco_members
+      SET savings_balance_sek = savings_balance_sek - ${totalDebitUSD}
+      WHERE LOWER(TRIM(email)) = ${cleanSender}
+      RETURNING savings_balance_sek;
+    `;
+    const newSenderBalance = parseFloat(debited[0].savings_balance_sek || "0");
+
+    // 2. If Internal Member-to-Member transfer, credit recipient immediately
+    let payoutStatus = "DISBURSEMENT_QUEUED";
+    if (transferChannel === "INTERNAL_MEMBER") {
+      const cleanRecipient = recipientIdentifier.toLowerCase().trim();
+      const recUpdated = await sql`
+        UPDATE sacco_members
+        SET savings_balance_sek = COALESCE(savings_balance_sek, 0) + ${numericUSD}
+        WHERE LOWER(TRIM(email)) = ${cleanRecipient}
+        RETURNING savings_balance_sek;
+      `;
+      if (!recUpdated.length) {
+        // Refund sender if recipient email does not exist
+        await sql`
+          UPDATE sacco_members
+          SET savings_balance_sek = savings_balance_sek + ${totalDebitUSD}
+          WHERE LOWER(TRIM(email)) = ${cleanSender};
+        `;
+        return NextResponse.json(
+          { success: false, error: `Recipient member (${cleanRecipient}) not found in KiKa registry.` },
+          { status: 404 }
+        );
+      }
+      payoutStatus = "SETTLED_INSTANTLY";
+
+      await sql`
+        INSERT INTO sacco_ledger (member_email, tx_type, amount_sek, balance_snapshot_sek, tx_reference)
+        VALUES (${cleanRecipient}, 'REMITTANCE_IN_USD', ${numericUSD}, ${parseFloat(recUpdated[0].savings_balance_sek)}, ${txRef});
+      `;
     }
 
-    // 2. Generate a Unique External Reference Hash Trace to map third-party processing clearings
-    const transactionReference = "TXN-" + crypto.randomBytes(6).toString("hex").toUpperCase();
-    console.log(`[REMITTANCE ENGINE] Initializing Pipe Transit Loop: ${transferType} | Amount: ${numericAmount} UGX`);
+    // 3. Log sender debit & remittance audit receipt
+    await sql`
+      INSERT INTO sacco_ledger (member_email, tx_type, amount_sek, balance_snapshot_sek, tx_reference)
+      VALUES (${cleanSender}, ${`REMIT_OUT_${transferChannel}`}, ${-totalDebitUSD}, ${newSenderBalance}, ${txRef});
+    `;
 
-    // 3. Conditional Relational Persistent Database Ledger Commit Mapping Block
-    try {
-      // Safely locate an active member node session to assign the transactional logs to
-      const targetUser = await ormEngine.user.findFirst();
-      const currentUserId = targetUser ? targetUser.id : 1; // Fallback to seed node index if testing anonymous checkout paths
+    await sql`
+      INSERT INTO remittance_transfers (
+        tx_reference, sender_email, transfer_channel, recipient_name,
+        recipient_identifier, provider_or_bank, amount_usd, fee_usd,
+        target_currency, converted_amount, fx_rate, status
+      )
+      VALUES (
+        ${txRef}, ${cleanSender}, ${transferChannel}, ${recipientName || "Beneficiary"},
+        ${recipientIdentifier.trim()}, ${providerOrBank || transferChannel}, ${numericUSD}, ${feeUSD},
+        ${currency}, ${convertedPayout}, ${fxRate}, ${payoutStatus}
+      );
+    `;
 
-      if (ormEngine.remittanceLog) {
-        await ormEngine.remittanceLog.create({
-          data: {
-            senderId: currentUserId,
-            recipientName: recipientName.trim(),
-            recipientAccount: recipientAccount ? recipientAccount.trim() : (targetSaccoId || targetBankName || "SYSTEM_ESCROW"),
-            amount: numericAmount,
-            currency: currency || "UGX",
-            gateway: transferType === "MOBILE_MONEY" ? "mpesa" : transferType === "SACCO_DEPOSIT" ? "sacco_wire" : "bank_clearing",
-            status: "SUCCESSFUL", // Marked as pre-settled under Local Sandbox Toggle Rules
-            isSaccoDeposit: transferType === "SACCO_DEPOSIT",
-            saccoSubscriptionId: transferType === "SACCO_DEPOSIT" ? targetSaccoId : null
-          }
-        });
-      }
-      // 4. If destination target node is a SACCO, programmatically increment its corporate running ledger asset pool
-      if (transferType === "SACCO_DEPOSIT" && ormEngine.saccoSubscription) {
-        const activeSaccoNode = await ormEngine.saccoSubscription.findFirst({
-          where: { idNumber: targetSaccoId }
-        });
-
-        if (activeSaccoNode) {
-          await ormEngine.saccoSubscription.update({
-            where: { id: activeSaccoNode.id },
-            data: { balanceUGX: (activeSaccoNode.balanceUGX || 0) + numericAmount }
-          });
-          console.log(`[SACCO CAPITAL SYNC] Incremented corporate cash pool for node: ${targetSaccoId} by +${numericAmount} UGX`);
-        }
-      }
-
-    } catch (databaseWriteError) {
-      console.warn("[LEDGER WARNING] Transaction bypassed direct internal schema recording smoothly:", databaseWriteError);
-    }
-
-    // 5. Plug Socket Layer Exception Mapping: Disburse Native Transaction Confirmation Payload Node
     return NextResponse.json({
       success: true,
-      message: "Cross-border financial routing settlement transfer successfully authorized.",
-      transactionId: transactionReference,
-      destinationSummary: {
-        channel: transferType,
-        recipient: recipientName,
-        volume: numericAmount,
-        unit: currency || "UGX"
-      }
-    }, { 
-      status: 200, 
-      headers: { "Access-Control-Allow-Origin": "*" } 
+      txReference: txRef,
+      status: payoutStatus,
+      debitedUSD: totalDebitUSD,
+      convertedAmount: convertedPayout,
+      targetCurrency: currency,
+      newBalanceUSD: newSenderBalance
     });
-
-  } catch (error: any) {
-    console.error("[CRITICAL REMITTANCE PIPE DROP ANOMALY]:", error);
-    return NextResponse.json(
-      { error: "Internal cross-border transactional structural serialization loop failed." }, 
-      { status: 500, headers: { "Access-Control-Allow-Origin": "*" } }
-    );
+  } catch (err: any) {
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }

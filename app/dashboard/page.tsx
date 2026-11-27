@@ -73,6 +73,56 @@ const [voucherAmount, setVoucherAmount] = useState("5");
       { enableHighAccuracy: true, timeout: 10000 }
     );
   }
+  const [remitChannel, setRemitChannel] = useState<"INTERNAL_MEMBER" | "MOBILE_MONEY" | "BANK_ACCOUNT">("MOBILE_MONEY");
+  const [remitRecipientName, setRemitRecipientName] = useState("");
+  const [remitRecipientId, setRemitRecipientId] = useState("");
+  const [remitProviderBank, setRemitProviderBank] = useState("MTN MoMo Uganda (+256)");
+  const [remitCurrency, setRemitCurrency] = useState("UGX");
+  const [remitUsdAmount, setRemitUsdAmount] = useState("5");
+  const [remitReceipt, setRemitReceipt] = useState<string>("");
+
+  const LIVE_FX_PREVIEW: Record<string, number> = {
+    UGX: 3720.0,
+    KES: 129.5,
+    SEK: 10.5,
+    EUR: 0.92,
+    GBP: 0.79,
+    USD: 1.0
+  };
+
+  async function handleSendRemittance(e: React.FormEvent) {
+    e.preventDefault();
+    setProcessing(true);
+    setRemitReceipt("");
+    try {
+      const res = await fetch("/api/remittance/transfer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          senderEmail: userEmail,
+          transferChannel: remitChannel,
+          recipientName: remitRecipientName,
+          recipientIdentifier: remitRecipientId,
+          providerOrBank: remitProviderBank,
+          targetCurrency: remitCurrency,
+          amountUSD: remitUsdAmount
+        })
+      });
+      const data = await res.json();
+      setProcessing(false);
+      if (data.success) {
+        setRemitReceipt(
+          `✅ Ref ${data.txReference} (${data.status}): Sent $${parseFloat(remitUsdAmount).toFixed(2)} USD → ${data.convertedAmount.toLocaleString()} ${data.targetCurrency}. New Wallet Balance: $${data.newBalanceUSD.toFixed(2)} USD`
+        );
+        loadCockpitData(userEmail);
+      } else {
+        alert(data.error || "Remittance transfer failed.");
+      }
+    } catch (err: any) {
+      setProcessing(false);
+      alert(err.message || "Network error during remittance.");
+    }
+  }
 
   // WebRTC Dialer & Destination Rate Drawer States
   const [originCountry, setOriginCountry] = useState("Sweden");
@@ -152,6 +202,133 @@ const [voucherAmount, setVoucherAmount] = useState("5");
       alert(err.message || "Network error connecting to Stripe.");
     }
   }
+<div style={{ background: "#0f172a", border: "1px solid #1e293b", borderRadius: "16px", padding: "22px", marginTop: "20px" }}>
+  <h3 style={{ margin: "0 0 6px 0", color: "#38bdf8", fontSize: "17px" }}>
+    💸 3. Continental Remittance & Linked Bank / Mobile Money Payouts (USD Base)
+  </h3>
+  <p style={{ margin: "0 0 16px 0", color: "#94a3b8", fontSize: "13px" }}>
+    Send funds instantly from your USD Wallet to another KiKa Member (0% fee), Mobile Money (MTN MoMo / Airtel / M-Pesa), or Bank IBAN.
+  </p>
+
+  <form onSubmit={handleSendRemittance} style={{ display: "grid", gap: "12px" }}>
+    <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+      <select
+        value={remitChannel}
+        onChange={(e) => {
+          const val = e.target.value as "INTERNAL_MEMBER" | "MOBILE_MONEY" | "BANK_ACCOUNT";
+          setRemitChannel(val);
+          if (val === "INTERNAL_MEMBER") {
+            setRemitProviderBank("KiKa Internal Wallet");
+            setRemitCurrency("USD");
+          } else if (val === "MOBILE_MONEY") {
+            setRemitProviderBank("MTN MoMo Uganda (+256)");
+            setRemitCurrency("UGX");
+          } else {
+            setRemitProviderBank("Swedbank / SEPA IBAN");
+            setRemitCurrency("SEK");
+          }
+        }}
+        style={{ flex: 1, minWidth: "200px", padding: "12px", borderRadius: "8px", background: "#090d16", border: "1px solid #334155", color: "#f8fafc" }}
+      >
+        <option value="MOBILE_MONEY">📱 Mobile Money Wallet (MTN MoMo / Airtel / M-Pesa)</option>
+        <option value="BANK_ACCOUNT">🏦 Bank Account / IBAN (Swedbank / Stanbic / SEPA)</option>
+        <option value="INTERNAL_MEMBER">⚡ KiKa Member-to-Member Instant Transfer (0% Fee)</option>
+      </select>
+
+      <select
+        value={remitProviderBank}
+        onChange={(e) => setRemitProviderBank(e.target.value)}
+        style={{ flex: 1, minWidth: "200px", padding: "12px", borderRadius: "8px", background: "#090d16", border: "1px solid #334155", color: "#f8fafc" }}
+      >
+        {remitChannel === "MOBILE_MONEY" && (
+          <>
+            <option value="MTN MoMo Uganda (+256)">MTN MoMo Uganda (+256)</option>
+            <option value="Airtel Money Uganda (+256)">Airtel Money Uganda (+256)</option>
+            <option value="Safaricom M-Pesa Kenya (+254)">Safaricom M-Pesa Kenya (+254)</option>
+          </>
+        )}
+        {remitChannel === "BANK_ACCOUNT" && (
+          <>
+            <option value="Swedbank Sweden (IBAN / Clearing)">Swedbank Sweden (IBAN / Clearing)</option>
+            <option value="SEPA Eurozone Bank (IBAN)">SEPA Eurozone Bank (IBAN)</option>
+            <option value="Stanbic Bank Uganda (SWIFT / Acct)">Stanbic Bank Uganda (SWIFT / Acct)</option>
+            <option value="Equity Bank East Africa">Equity Bank East Africa</option>
+          </>
+        )}
+        {remitChannel === "INTERNAL_MEMBER" && (
+          <option value="KiKa Instant Ledger">KiKa Instant Ledger (Zero Fee)</option>
+        )}
+      </select>
+    </div>
+
+    <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+      <input
+        type="text"
+        required
+        placeholder="Beneficiary Full Name (e.g. Adam Kasambula)"
+        value={remitRecipientName}
+        onChange={(e) => setRemitRecipientName(e.target.value)}
+        style={{ flex: 1, minWidth: "200px", padding: "12px", borderRadius: "8px", background: "#090d16", border: "1px solid #334155", color: "#f8fafc" }}
+      />
+      <input
+        type="text"
+        required
+        placeholder={
+          remitChannel === "INTERNAL_MEMBER"
+            ? "Recipient KiKa Email (e.g. subscriber01@kika-ecosystem.com)"
+            : remitChannel === "MOBILE_MONEY"
+            ? "Mobile Money Number (e.g. +256770000000)"
+            : "Bank IBAN or Account Number (e.g. SE45 8000...)"
+        }
+        value={remitRecipientId}
+        onChange={(e) => setRemitRecipientId(e.target.value)}
+        style={{ flex: 1, minWidth: "220px", padding: "12px", borderRadius: "8px", background: "#090d16", border: "1px solid #334155", color: "#f8fafc" }}
+      />
+    </div>
+
+    <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
+      <input
+        type="number"
+        min="1"
+        step="0.01"
+        required
+        value={remitUsdAmount}
+        onChange={(e) => setRemitUsdAmount(e.target.value)}
+        placeholder="Amount in USD"
+        style={{ flex: 1, minWidth: "140px", padding: "12px", borderRadius: "8px", background: "#090d16", border: "1px solid #334155", color: "#f8fafc" }}
+      />
+      <select
+        value={remitCurrency}
+        onChange={(e) => setRemitCurrency(e.target.value)}
+        style={{ width: "130px", padding: "12px", borderRadius: "8px", background: "#090d16", border: "1px solid #334155", color: "#f8fafc" }}
+      >
+        <option value="UGX">UGX (Uganda)</option>
+        <option value="KES">KES (Kenya)</option>
+        <option value="SEK">SEK (Sweden)</option>
+        <option value="EUR">EUR (Europe)</option>
+        <option value="GBP">GBP (UK)</option>
+        <option value="USD">USD (Dollar)</option>
+      </select>
+      <div style={{ flex: 1, minWidth: "200px", fontSize: "13px", color: "#10b981", fontWeight: 700 }}>
+        Recipient Gets: {((parseFloat(remitUsdAmount || "0")) * (LIVE_FX_PREVIEW[remitCurrency] || 1)).toLocaleString()} {remitCurrency}
+      </div>
+    </div>
+
+    <button
+      type="submit"
+      disabled={processing}
+      style={{ padding: "13px", borderRadius: "10px", background: "linear-gradient(90deg, #06b6d4, #10b981)", color: "#020617", fontWeight: 800, border: "none", cursor: "pointer" }}
+    >
+      {processing ? "Processing Transfer..." : `Execute Remittance ($${parseFloat(remitUsdAmount || "0").toFixed(2)} USD)`}
+    </button>
+  </form>
+
+  {remitReceipt && (
+    <div style={{ marginTop: "14px", padding: "12px", borderRadius: "8px", background: "#064e3b", border: "1px solid #10b981", color: "#a7f3d0", fontSize: "13px", fontWeight: 600 }}>
+      {remitReceipt}
+    </div>
+  )}
+</div>
 
 
   async function handleVoucherPurchase(e: React.FormEvent) {
